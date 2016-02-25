@@ -1,15 +1,20 @@
 import h5py
-import numpy as np
 
-class HDFLog(object):
+class HDF5Log(object):
 
-    def __init__(self, p_filename):
-        #self._file = h5py.File(p_filename, 'w')
-        self._filename = p_filename
+    def __init__(self):
+        self._file = None
+
+    def open(self, p_filename):
+        self._file = h5py.File(p_filename, 'w')
 
     def write(self, p_path, p_objectname, p_object):
-        self._file = h5py.File(self._filename, 'w')
-        group = self._file.create_group(p_path)
-        group.create_dataset(name=p_objectname, data=p_object)
-        self._file.flush()
-        self._file.close()
+        if type(self._file) is h5py._hl.files.File:
+            #TODO: check if group exists before creating it
+            group = self._file.create_group(p_path)
+            group.create_dataset(name=p_objectname, data=p_object)
+            self._file.flush()
+
+    def close(self):
+        if type(self._file) is h5py._hl.files.File:
+            self._file.close()
