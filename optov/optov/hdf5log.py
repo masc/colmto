@@ -73,7 +73,7 @@ class HDF5Log(object):
             for i_objname,i_objvalue in p_objectdict.items():
 
                 # remove compression if we have a scalar object, i.e. string, int, float
-                if type(i_objname) in [type(u""),  int, float]:
+                if type(i_objname) in [type(u""), int, float]:
                     kwargs.pop("compression", None)
                     kwargs.pop("compression_opts", None)
 
@@ -133,7 +133,7 @@ if __name__ == "__main__":
             hdf5log.writeOnce(l_vehiclename, u"/", l_object, compression="gzip", compression_opts=9)
     hdf5log.close(l_fileid)
 
-    print("printing structure of test_longwrite.hdf5 run0 (fist 10 elements):")
+    print("printing structure of test_longwrite.hdf5 run0 (first 10 elements):")
 
     l_file = h5py.File("test_longwrite.hdf5", mode="r")
     l_items = []
