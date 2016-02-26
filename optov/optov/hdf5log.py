@@ -1,11 +1,40 @@
 from __future__ import print_function
 import h5py
 
+## @package hd5flog
+# @cond LICENSE
+# ######################################################################################
+# # LGPL License                                                                       #
+# #                                                                                    #
+# # This file is part of the Optimized Overtaking (optov) project.                     #
+# # Copyright (c) 2016, Malte Aschermann (malte.aschermann@tu-clausthal.de)            #
+# # This program is free software: you can redistribute it and/or modify               #
+# # it under the terms of the GNU Lesser General Public License as                     #
+# # published by the Free Software Foundation, either version 3 of the                 #
+# # License, or (at your option) any later version.                                    #
+# #                                                                                    #
+# # This program is distributed in the hope that it will be useful,                    #
+# # but WITHOUT ANY WARRANTY; without even the implied warranty of                     #
+# # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                      #
+# # GNU Lesser General Public License for more details.                                #
+# #                                                                                    #
+# # You should have received a copy of the GNU Lesser General Public License           #
+# # along with this program. If not, see http://www.gnu.org/licenses/                  #
+# ######################################################################################
+# @endcond
+
+
 class HDF5Log(object):
 
+    ## Constructor initializing an empty dictionary for concurrently open files
     def __init__(self):
         self._fileids = {}
 
+    ## Open a hdf5 file
+    #  @param self The object pointer
+    #  @param p_filename The file name as a string
+    #  @param p_mode The mode this file will be opened (Optional, default "a")
+    #  @return unique file id, received from OS
     def open(self, p_filename, p_mode="a"):
         try:
             l_file = h5py.File(p_filename, p_mode)
@@ -14,6 +43,13 @@ class HDF5Log(object):
         except IOError:
             print(u"Exception while trying to open file %s with mode %s", (p_filename, p_mode))
 
+    ## Write an object to a specific path into an open file, identified by fileid
+    #  Will overwrite existing objects in HDF5 path, will not flush or close file afterwards. (Intended for frequent data logs to same file)
+    #  @param self The object pointer
+    #  @param p_fileid The file id, obtained by open()
+    #  @param p_path Destination path in HDF5 structure, will be created if not existent.
+    #  @param p_objectdict Object(s) to be stored in a named dictionary structure ([name] -> str|int|float|list|numpy object)
+    #  @param **kwargs Optional arguments passed to create_dataset
     def write(self, p_fileid, p_path, p_objectdict, **kwargs):
         # verify whether arguments are sane
         if type(p_fileid) is not int:
@@ -47,11 +83,21 @@ class HDF5Log(object):
 
                 l_group.create_dataset(name=i_objname, data=i_objvalue, **kwargs)
 
+    ## Write an object to a specific path into a file.
+    #  Same functionality as write(), but does not need an previously open file. Flushes and closes file afterwards.
+    #  @param self The object pointer
+    #  @param p_filename The file name as a string
+    #  @param p_path Destination path in HDF5 structure, will be created if not existent.
+    #  @param p_objectdict Object(s) to be stored in a named dictionary structure ([name] -> str|int|float|list|numpy object)
+    #  @param **kwargs Optional arguments passed to create_dataset
     def writeOnce(self, p_filename, p_path, p_objectdict, p_mode="a", **kwargs):
         l_fileid = self.open(p_filename, p_mode)
         self.write(l_fileid, p_path, p_objectdict, **kwargs)
         self.close(l_fileid)
 
+    ## Closes an open file, identified by p_fileid
+    #  @param self The object pointer
+    #  @param p_fileid The file id, obtained by open()
     def close(self, p_fileid):
         l_file = self._fileids[p_fileid]
         if l_file and type(l_file) is h5py._hl.files.File:
@@ -59,7 +105,9 @@ class HDF5Log(object):
             l_file.close()
         del self._fileids[p_fileid]
 
-
+    ## Flushes an open file, identified by p_fileid
+    #  @param self The object pointer
+    #  @param p_fileid The file id, obtained by open()
     def flush(self, p_fileid):
         l_file = self._fileids[p_fileid]
         if l_file and type(l_file) is h5py._hl.files.File:
@@ -93,7 +141,3 @@ if __name__ == "__main__":
     for i_name, i_obj in l_items[:10]:
         print(i_name,i_obj)
     l_file.close()
-
-
-
-
