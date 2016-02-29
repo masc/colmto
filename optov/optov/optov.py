@@ -1,5 +1,5 @@
-from world import World
 from gurobipy import *
+from env.world import World
 
 class Optov(object):
 
