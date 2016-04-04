@@ -1,5 +1,9 @@
+from __future__ import print_function
+
 from gurobipy import *
-from env.world import World
+
+from optov.optov.gurobi.env import World
+
 
 class Optov(object):
 
@@ -68,12 +72,12 @@ class Optov(object):
             m.optimize()
 
             for v in m.getVars():
-                print v.varName, v.x
+                print(v.varName, v.x)
 
-            print 'Obj:', m.objVal
+            print('Obj:', m.objVal)
 
         except GurobiError:
-            print 'Error reported'
+            print('Error reported')
 
     def minOTSpace(self, vpreceding, vfollowing):
         return 3
