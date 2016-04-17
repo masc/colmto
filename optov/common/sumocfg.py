@@ -11,7 +11,6 @@ import os
 import matplotlib.colors as colors
 import matplotlib.cm as cm
 import matplotlib.pyplot as plt
-import numpy as np
 
 class SumoConfig(object):
 
