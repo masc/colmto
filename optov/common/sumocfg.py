@@ -165,8 +165,6 @@ class SumoConfig(object):
     def _generateTripXML(self, p_roadwayconfig, p_runcfgsumo, p_tripfile):
         # generate simple traffic demand by considering AADT, Vmax, roadtype etc
         l_aadt = p_roadwayconfig.get("parameters").get("aadt")
-        l_vmax = p_roadwayconfig.get("parameters").get("vmax")
-        l_type = p_roadwayconfig.get("parameters").get("type")
         l_timebegin = p_runcfgsumo.get("time").get("begin")
         l_timeend = p_runcfgsumo.get("time").get("end")
 
