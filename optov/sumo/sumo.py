@@ -9,4 +9,4 @@ import sumolib
 class Sumo(object):
 
     def __init__(self, p_args):
-        self._sumocfg = SumoConfig(p_args, checkBinary("netconvert"))
+        self._sumocfg = SumoConfig(p_args, checkBinary("netconvert"), checkBinary("duarouter"))

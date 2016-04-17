@@ -15,9 +15,10 @@ import numpy as np
 
 class SumoConfig(object):
 
-    def __init__(self, p_args, p_netconvertbinary):
+    def __init__(self, p_args, p_netconvertbinary, p_duarouterbinary):
         self._config = Configuration(p_args)
         self._netconvertbinary = p_netconvertbinary
+        self._duarouterbinary = p_duarouterbinary
         self.generateSUMOConfigs()
 
 
@@ -54,8 +55,9 @@ class SumoConfig(object):
                                 l_runcfgsumo.get("time").get("begin"),
                                 l_runcfgsumo.get("time").get("end"))
         self._generateSettingsXML(p_roadwayconfig, l_runcfgsumo.get("gui-delay"), l_settingsfile)
-        self._generateRouteXML(p_roadwayconfig, l_runcfgsumo, l_tripfile, l_routefile)
+        self._generateTripXML(p_roadwayconfig, l_runcfgsumo, l_tripfile)
         self._generateNetXML(l_nodefile, l_edgefile, l_netfile)
+        self._generateRouteXML(l_netfile, l_tripfile, l_routefile)
 
     ## Return a pretty-printed XML string for the Element (https://pymotw.com/2/xml/etree/ElementTree/create.html)
     def _prettify(self, p_element):
@@ -80,6 +82,7 @@ class SumoConfig(object):
         # parameters
         l_length = p_roadwayconfig.get("parameters").get("length")
         l_switches = p_roadwayconfig.get("parameters").get("switches")
+        l_maxspeed = p_roadwayconfig.get("parameters").get("maxSpeed")
 
         # assume even distributed otl segment lengths
         l_segmentlength = l_length / ( l_switches + 1 )
@@ -87,13 +90,13 @@ class SumoConfig(object):
         # create edges xml
         l_edges = ElementTree.Element("edges")
         #ElementTree.SubElement(l_edges, "edge", attrib={"id": "ramp_entrance-2_1_start", "from" : "ramp_entrance", "to": "2_1_start", "numLanes": "1"})
-        l_21edge = ElementTree.SubElement(l_edges, "edge", attrib={"id": "2_1_segment", "from" : "2_1_start", "to": "2_1_end", "numLanes": "2"})
-        ElementTree.SubElement(l_edges, "edge", attrib={"id": "2_1_end-ramp_exit", "from" : "2_1_end", "to": "ramp_exit", "numLanes": "1"})
+        l_21edge = ElementTree.SubElement(l_edges, "edge", attrib={"id": "2_1_segment", "from" : "2_1_start", "to": "2_1_end", "numLanes": "2", "speed": str(l_maxspeed)})
+        ElementTree.SubElement(l_edges, "edge", attrib={"id": "2_1_end-ramp_exit", "from" : "2_1_end", "to": "ramp_exit", "numLanes": "1", "speed": str(l_maxspeed)})
 
         # add splits and joins
         l_addotllane = False
         for i_segmentpos in xrange(0,int(l_length),int(l_segmentlength)):
-            ElementTree.SubElement(l_21edge, "split", attrib={"pos": str(i_segmentpos), "lanes": "0 1" if l_addotllane else "0"})
+            ElementTree.SubElement(l_21edge, "split", attrib={"pos": str(i_segmentpos), "lanes": "0 1" if l_addotllane else "0", "speed": str(l_maxspeed)})
             l_addotllane ^= True
 
         with open(p_edgefile, "w") as fpedgexml:
@@ -144,11 +147,11 @@ class SumoConfig(object):
         return l_dspeeddistribution
 
     def _getColormap(self, p_desiredspeeds):
-        l_jet=plt.get_cmap('jet')
+        l_jet=plt.get_cmap('jet_r')
         l_cnorm  = colors.Normalize(vmin=min(p_desiredspeeds), vmax=max(p_desiredspeeds))
         return cm.ScalarMappable(norm=l_cnorm, cmap=l_jet)
 
-    def _generateRouteXML(self, p_roadwayconfig, p_runcfgsumo, p_tripfile, p_routefile):
+    def _generateTripXML(self, p_roadwayconfig, p_runcfgsumo, p_tripfile):
         # generate simple traffic demand by considering AADT, Vmax, roadtype etc
         l_aadt = p_roadwayconfig.get("parameters").get("aadt")
         l_vmax = p_roadwayconfig.get("parameters").get("vmax")
@@ -208,4 +211,11 @@ class SumoConfig(object):
                                                "--edge-files={}".format(p_edgefile),
                                                "--output-file={}".format(p_netfile)])
         l_netconvertprocess.wait()
+
+    def _generateRouteXML(self, p_netfile, p_tripfile, p_routefile):
+        l_duarouterprocess = subprocess.Popen([self._duarouterbinary,
+                                                "-n", p_netfile,
+                                                "-t", p_tripfile,
+                                                "-o", p_routefile])
+        l_duarouterprocess.wait()
 
