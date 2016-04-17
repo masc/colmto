@@ -72,7 +72,7 @@ class SumoConfig(object):
         #ElementTree.SubElement(l_nodes, "node", attrib={"id": "ramp_entrance", "x": "-500", "y": "0"})
         ElementTree.SubElement(l_nodes, "node", attrib={"id": "2_1_start", "x": "0", "y": "0"})
         ElementTree.SubElement(l_nodes, "node", attrib={"id": "2_1_end", "x": str(l_length), "y": "0"})
-        ElementTree.SubElement(l_nodes, "node", attrib={"id": "ramp_exit", "x": str(l_length+500), "y": "0"})
+        ElementTree.SubElement(l_nodes, "node", attrib={"id": "ramp_exit", "x": str(l_length+0.1), "y": "0"})
 
         with open(p_nodefile, "w") as fpnodesxml:
             fpnodesxml.write(self._prettify(l_nodes))
@@ -90,14 +90,25 @@ class SumoConfig(object):
         # create edges xml
         l_edges = ElementTree.Element("edges")
         #ElementTree.SubElement(l_edges, "edge", attrib={"id": "ramp_entrance-2_1_start", "from" : "ramp_entrance", "to": "2_1_start", "numLanes": "1"})
-        l_21edge = ElementTree.SubElement(l_edges, "edge", attrib={"id": "2_1_segment", "from" : "2_1_start", "to": "2_1_end", "numLanes": "2", "speed": str(l_maxspeed)})
-        ElementTree.SubElement(l_edges, "edge", attrib={"id": "2_1_end-ramp_exit", "from" : "2_1_end", "to": "ramp_exit", "numLanes": "1", "speed": str(l_maxspeed)})
+        l_21edge = ElementTree.SubElement(l_edges, "edge", attrib={"id": "2_1_segment",
+                                                                   "from" : "2_1_start",
+                                                                   "to": "2_1_end",
+                                                                   "numLanes": "2",
+                                                                   "speed": str(l_maxspeed)})
 
         # add splits and joins
         l_addotllane = False
         for i_segmentpos in xrange(0,int(l_length),int(l_segmentlength)):
-            ElementTree.SubElement(l_21edge, "split", attrib={"pos": str(i_segmentpos), "lanes": "0 1" if l_addotllane else "0", "speed": str(l_maxspeed)})
+            ElementTree.SubElement(l_21edge, "split", attrib={"pos": str(i_segmentpos),
+                                                              "lanes": "0 1" if l_addotllane else "0",
+                                                              "speed": str(l_maxspeed)})
             l_addotllane ^= True
+
+        ElementTree.SubElement(l_edges, "edge", attrib={"id": "2_1_end-ramp_exit",
+                                                        "from" : "2_1_end",
+                                                        "to": "ramp_exit",
+                                                        "numLanes": "2" if l_addotllane else "1",
+                                                        "speed": str(l_maxspeed)})
 
         with open(p_edgefile, "w") as fpedgexml:
             fpedgexml.write(self._prettify(l_edges))
