@@ -39,22 +39,22 @@ class SumoConfig(object):
 
         if self._config.getRunConfig().get("sumo") == None:
             self._config.getRunConfig()["sumo"] = {}
-        l_runcfgsumo = self._config.getRunConfig().get("sumo")
-        l_nodefile = l_runcfgsumo["nodefile"] = os.path.join(l_destinationdir, "{}.nod.xml".format(p_scenarioname))
-        l_edgefile = l_runcfgsumo["edgefile"] = os.path.join(l_destinationdir, "{}.edg.xml".format(p_scenarioname))
-        l_netfile = l_runcfgsumo["netfile"] = os.path.join(l_destinationdir, "{}.net.xml".format(p_scenarioname))
-        l_tripfile = l_runcfgsumo["tripfile"] = os.path.join(l_destinationdir, "{}.trip.xml".format(p_scenarioname))
-        l_routefile = l_runcfgsumo["routefile"] = os.path.join(l_destinationdir, "{}.rou.xml".format(p_scenarioname))
-        l_settingsfile = l_runcfgsumo["settingsfile"] = os.path.join(l_destinationdir, "{}.settings.xml".format(p_scenarioname))
-        l_configfile = l_runcfgsumo["configfile"] = os.path.join(l_destinationdir, "{}.config.cfg".format(p_scenarioname))
+        l_runcfg = self._config.getRunConfig()
+        l_nodefile = l_runcfg.get("sumo")["nodefile"] = os.path.join(l_destinationdir, "{}.nod.xml".format(p_scenarioname))
+        l_edgefile = l_runcfg.get("sumo")["edgefile"] = os.path.join(l_destinationdir, "{}.edg.xml".format(p_scenarioname))
+        l_netfile = l_runcfg.get("sumo")["netfile"] = os.path.join(l_destinationdir, "{}.net.xml".format(p_scenarioname))
+        l_tripfile = l_runcfg.get("sumo")["tripfile"] = os.path.join(l_destinationdir, "{}.trip.xml".format(p_scenarioname))
+        l_routefile = l_runcfg.get("sumo")["routefile"] = os.path.join(l_destinationdir, "{}.rou.xml".format(p_scenarioname))
+        l_settingsfile = l_runcfg.get("sumo")["settingsfile"] = os.path.join(l_destinationdir, "{}.settings.xml".format(p_scenarioname))
+        l_configfile = l_runcfg.get("sumo")["configfile"] = os.path.join(l_destinationdir, "{}.config.cfg".format(p_scenarioname))
 
         self._generateNodeXML(p_roadwayconfig, l_nodefile)
         self._generateEdgeXML(p_roadwayconfig, l_edgefile)
         self._generateConfigXML(l_configfile, l_netfile, l_routefile, l_settingsfile,
-                                l_runcfgsumo.get("time").get("begin"),
-                                l_runcfgsumo.get("time").get("end"))
-        self._generateSettingsXML(p_roadwayconfig, l_runcfgsumo.get("gui-delay"), l_settingsfile)
-        self._generateTripXML(p_roadwayconfig, l_runcfgsumo, l_tripfile)
+                                l_runcfg.get("sumo").get("time").get("begin"),
+                                l_runcfg.get("sumo").get("time").get("end"))
+        self._generateSettingsXML(p_roadwayconfig, l_runcfg, l_settingsfile)
+        self._generateTripXML(p_roadwayconfig, l_runcfg, l_tripfile)
         self._generateNetXML(l_nodefile, l_edgefile, l_netfile)
         self._generateRouteXML(l_netfile, l_tripfile, l_routefile)
 
@@ -128,54 +128,56 @@ class SumoConfig(object):
         with open(p_configfile, "w") as fpconfigxml:
             fpconfigxml.write(self._prettify(l_configuration))
 
-    def _generateSettingsXML(self, p_roadwayconfig, p_delay, p_settingsfile):
+    def _generateSettingsXML(self, p_roadwayconfig, p_runcfg, p_settingsfile):
 
         l_viewsettings = ElementTree.Element("viewsettings")
         ElementTree.SubElement(l_viewsettings, "viewport",
                                attrib={"x": str(p_roadwayconfig.get("parameters").get("length") / 2),
                                        "y": "0",
                                        "zoom": "100"})
-        ElementTree.SubElement(l_viewsettings, "delay", attrib={"value": str(p_delay)})
+        ElementTree.SubElement(l_viewsettings, "delay", attrib={"value": str(p_runcfg.get("sumo").get("gui-delay"))})
 
         with open(p_settingsfile, "w") as fpconfigxml:
             fpconfigxml.write(self._prettify(l_viewsettings))
 
-    def _createDesiredSpeedDistribution(self, p_distribution, p_args, p_nbvehicles):
-        if p_distribution == "GAUSS":
-            l_dspeeddistribution = []
-            while len(l_dspeeddistribution) < p_nbvehicles:
+    def _createVehicleDistribution(self, p_distribution, p_args, p_nbvehicles, p_aadt):
+        l_speeddistribution = []
+        l_starttimes = []
+        while len(l_speeddistribution) < p_nbvehicles:
+            l_vid = len(l_speeddistribution)
+            if p_distribution == "GAUSS":
                 l_dspeed = int(round(random.gauss(*p_args)))
-                if l_dspeed > 0:
-                    l_dspeeddistribution.append(l_dspeed)
-        else:
-            l_dspeeddistribution = [250]*p_nbvehicles
+            else:
+                l_dspeed = 250
+            if l_dspeed > 0:
+                l_vehps = (p_aadt / (24*60*60))
+                l_starttimes.append(int((l_vid+1) / l_vehps))
+                l_speeddistribution.append(l_dspeed)
 
-        # put lowest speed in front
-        l_minspeed = min(l_dspeeddistribution)
-        l_dspeeddistribution.remove(l_minspeed)
-        l_dspeeddistribution.insert(0, l_minspeed)
-        return l_dspeeddistribution
+
+        return l_speeddistribution, l_starttimes
 
     def _getColormap(self, p_desiredspeeds):
         l_jet=plt.get_cmap('jet_r')
         l_cnorm  = colors.Normalize(vmin=min(p_desiredspeeds), vmax=max(p_desiredspeeds))
         return cm.ScalarMappable(norm=l_cnorm, cmap=l_jet)
 
-    def _generateTripXML(self, p_roadwayconfig, p_runcfgsumo, p_tripfile):
+    def _generateTripXML(self, p_roadwayconfig, p_runcfg, p_tripfile):
         # generate simple traffic demand by considering AADT, Vmax, roadtype etc
         l_aadt = p_roadwayconfig.get("parameters").get("aadt")
-        l_timebegin = p_runcfgsumo.get("time").get("begin")
-        l_timeend = p_runcfgsumo.get("time").get("end")
+        l_timebegin = p_runcfg.get("sumo").get("time").get("begin")
+        l_timeend = p_runcfg.get("sumo").get("time").get("end")
 
         # number of vehicles = AADT / [seconds of day] * [scenario time in seconds]
         l_numberofvehicles = int(round(l_aadt / (24 * 3600) * (l_timeend - l_timebegin)))
         print("Scenaro's AADT of {} vehicles/average annual day => {} vehicles for {} simulation seconds".format(
             l_aadt, l_numberofvehicles, (l_timeend - l_timebegin)
         ))
-        l_dspeeddistribution = self._createDesiredSpeedDistribution(
-            p_runcfgsumo.get("desiredspeeds").get("distribution"),
-            p_runcfgsumo.get("desiredspeeds").get("args"),
-            l_numberofvehicles
+        l_dspeeddistribution, l_starttimes = self._createVehicleDistribution(
+            p_runcfg.get("desiredspeeds").get("distribution"),
+            p_runcfg.get("desiredspeeds").get("args"),
+            l_numberofvehicles,
+            l_aadt
         )
 
         # generate colormap for speeds
@@ -191,7 +193,7 @@ class SumoConfig(object):
         for i_dspeed in l_vtypeset:
             l_vid, l_vattr = filter(
                 lambda (k, v): v.get("dspeedbucket").get("min") <= i_dspeed < v.get("dspeedbucket").get("max"),
-                p_runcfgsumo.get("vtypes").iteritems()
+                p_runcfg.get("vtypes").iteritems()
             ).pop()
             # filter for relevant attributes
             l_vattr = dict( map( lambda (k, v): (k, str(v)), filter(
@@ -206,7 +208,7 @@ class SumoConfig(object):
         # add trips
         map(lambda (i_id, i_dspeed):
             ElementTree.SubElement(l_trips, "trip", attrib={
-                "id": str(i_id), "depart": "0", "from": "2_1_segment", "to": "2_1_end-ramp_exit", "type": str(i_dspeed), "departSpeed": "max"
+                "id": str(i_id), "depart": str(l_starttimes[i_id]), "from": "2_1_segment", "to": "2_1_end-ramp_exit", "type": str(i_dspeed), "departSpeed": "max"
             }), enumerate(l_dspeeddistribution))
 
         with open(p_tripfile, "w") as fptripxml:
