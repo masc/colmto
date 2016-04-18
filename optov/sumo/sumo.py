@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import print_function
-from runtime import runtime
+from runtime.runtime import Runtime
 from common.sumocfg import SumoConfig
 from sumolib import checkBinary
 import os
@@ -9,9 +9,16 @@ import sumolib
 
 class Sumo(object):
 
-    def __init__(self, p_args):
-        self._sumocfg = SumoConfig(p_args, checkBinary("netconvert"), checkBinary("duarouter"))
-        self._runtime = runtime.Runtime(self._sumocfg,
+    def __init__(self, p_configuration):
+        self._sumocfg = SumoConfig(p_configuration, checkBinary("netconvert"), checkBinary("duarouter"))
+        self._runtime = Runtime(self._sumocfg,
                                         checkBinary("sumo")
-                                            if self._sumocfg.getConfig().getRunConfig().get("headless")
+                                            if self._sumocfg.get("headless")
                                             else checkBinary("sumo-gui"))
+
+    def runScenarios(self, p_scenarios=[]):
+        for i_scenario in p_scenarios:
+            self._runtime.run(i_scenario)
+
+    def runAllScenarios(self):
+        self.runScenarios(self._sumocfg.get("scenarios").keys())

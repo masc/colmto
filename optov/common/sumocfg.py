@@ -14,17 +14,17 @@ import matplotlib.pyplot as plt
 
 class SumoConfig(object):
 
-    def __init__(self, p_args, p_netconvertbinary, p_duarouterbinary):
-        self._config = Configuration(p_args)
+    def __init__(self, p_configuration, p_netconvertbinary, p_duarouterbinary):
+        self._config = p_configuration
         self._netconvertbinary = p_netconvertbinary
         self._duarouterbinary = p_duarouterbinary
-        self.generateSUMOConfigs()
+        self.generateAllSUMOConfigs()
 
 
-    def getConfig(self):
-        return self._config
+    def get(self, p_key):
+        return self._config.getRunConfig().get("sumo").get(p_key)
 
-    def generateSUMOConfigs(self):
+    def generateAllSUMOConfigs(self):
         map(lambda (name, cfg): self._generateSUMOConfig(name, cfg), self._config.getRoadwayConfig().iteritems())
 
     def _generateSUMOConfig(self, p_scenarioname , p_roadwayconfig):
@@ -39,20 +39,30 @@ class SumoConfig(object):
 
         if self._config.getRunConfig().get("sumo") == None:
             self._config.getRunConfig()["sumo"] = {}
+
+        if self._config.getRunConfig().get("sumo").get("scenarios") == None:
+            self._config.getRunConfig().get("sumo")["scenarios"] = {}
+
+        if self._config.getRunConfig().get("sumo").get("scenarios").get(p_scenarioname) == None:
+            self._config.getRunConfig().get("sumo").get("scenarios")[p_scenarioname] = {}
+
         l_runcfg = self._config.getRunConfig()
-        l_nodefile = l_runcfg.get("sumo")["nodefile"] = os.path.join(l_destinationdir, "{}.nod.xml".format(p_scenarioname))
-        l_edgefile = l_runcfg.get("sumo")["edgefile"] = os.path.join(l_destinationdir, "{}.edg.xml".format(p_scenarioname))
-        l_netfile = l_runcfg.get("sumo")["netfile"] = os.path.join(l_destinationdir, "{}.net.xml".format(p_scenarioname))
-        l_tripfile = l_runcfg.get("sumo")["tripfile"] = os.path.join(l_destinationdir, "{}.trip.xml".format(p_scenarioname))
-        l_routefile = l_runcfg.get("sumo")["routefile"] = os.path.join(l_destinationdir, "{}.rou.xml".format(p_scenarioname))
-        l_settingsfile = l_runcfg.get("sumo")["settingsfile"] = os.path.join(l_destinationdir, "{}.settings.xml".format(p_scenarioname))
-        l_configfile = l_runcfg.get("sumo")["configfile"] = os.path.join(l_destinationdir, "{}.config.cfg".format(p_scenarioname))
+        l_sumocfg = l_runcfg.get("sumo")
+        l_scenarios = l_sumocfg.get("scenarios")
+        l_nodefile = l_scenarios.get(p_scenarioname)["nodefile"] = os.path.join(l_destinationdir, "{}.nod.xml".format(p_scenarioname))
+        l_edgefile = l_scenarios.get(p_scenarioname)["edgefile"] = os.path.join(l_destinationdir, "{}.edg.xml".format(p_scenarioname))
+        l_netfile = l_scenarios.get(p_scenarioname)["netfile"] = os.path.join(l_destinationdir, "{}.net.xml".format(p_scenarioname))
+        l_tripfile = l_scenarios.get(p_scenarioname)["tripfile"] = os.path.join(l_destinationdir, "{}.trip.xml".format(p_scenarioname))
+        l_routefile = l_scenarios.get(p_scenarioname)["routefile"] = os.path.join(l_destinationdir, "{}.rou.xml".format(p_scenarioname))
+        l_settingsfile = l_scenarios.get(p_scenarioname)["settingsfile"] = os.path.join(l_destinationdir, "{}.settings.xml".format(p_scenarioname))
+        l_configfile = l_scenarios.get(p_scenarioname)["configfile"] = os.path.join(l_destinationdir, "{}.config.cfg".format(p_scenarioname))
+        l_scenarios.get(p_scenarioname)["tripinfofile"] = os.path.join(l_destinationdir, "{}.tripinfo.xml".format(p_scenarioname))
 
         self._generateNodeXML(p_roadwayconfig, l_nodefile)
         self._generateEdgeXML(p_roadwayconfig, l_edgefile)
         self._generateConfigXML(l_configfile, l_netfile, l_routefile, l_settingsfile,
-                                l_runcfg.get("sumo").get("time").get("begin"),
-                                l_runcfg.get("sumo").get("time").get("end"))
+                                l_sumocfg.get("time").get("begin"),
+                                l_sumocfg.get("time").get("end"))
         self._generateSettingsXML(p_roadwayconfig, l_runcfg, l_settingsfile)
         self._generateTripXML(p_roadwayconfig, l_runcfg, l_tripfile)
         self._generateNetXML(l_nodefile, l_edgefile, l_netfile)
@@ -140,6 +150,11 @@ class SumoConfig(object):
         with open(p_settingsfile, "w") as fpconfigxml:
             fpconfigxml.write(self._prettify(l_viewsettings))
 
+    def _nextTime(self, p_lambda, p_starttimes):
+        if len(p_starttimes) == 0:
+            return random.expovariate(p_lambda)
+        return p_starttimes[-1]+random.expovariate(p_lambda)
+
     def _createVehicleDistribution(self, p_distribution, p_args, p_nbvehicles, p_aadt):
         l_speeddistribution = []
         l_starttimes = []
@@ -151,9 +166,8 @@ class SumoConfig(object):
                 l_dspeed = 250
             if l_dspeed > 0:
                 l_vehps = (p_aadt / (24*60*60))
-                l_starttimes.append(int((l_vid+1) / l_vehps))
+                l_starttimes.append(self._nextTime(l_vehps, l_starttimes))
                 l_speeddistribution.append(l_dspeed)
-
 
         return l_speeddistribution, l_starttimes
 
@@ -197,7 +211,7 @@ class SumoConfig(object):
             ).pop()
             # filter for relevant attributes
             l_vattr = dict( map( lambda (k, v): (k, str(v)), filter(
-                lambda (k, v): k in ["length","width","height","minGap","accel","decel","speedFactor","speedDev"], l_vattr.iteritems()
+                lambda (k, v): k in ["vClass","length","width","height","minGap","accel","decel","speedFactor","speedDev"], l_vattr.iteritems()
             )))
             l_vattr["id"] = str(i_dspeed)
             l_vattr["type"] = l_vid

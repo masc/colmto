@@ -58,6 +58,7 @@ defaultroadwayconfig = {
 defaultrunconfig = {
     "vtypes" : {
         "passenger" : {
+            "vClass" : "passenger",
             "length" : 4.3,
             "width" : 1.8,
             "height" : 1.5,
@@ -73,6 +74,7 @@ defaultrunconfig = {
             }
         },
         "van" : {
+            "vClass" : "delivery",
             "length" : 4.7,
             "width" : 1.9,
             "height" : 1.73,
@@ -88,6 +90,7 @@ defaultrunconfig = {
             }
         },
         "delivery" : {
+            "vClass" : "delivery",
             "length" : 6.5,
             "width" : 2.16,
             "height" : 2.86,
@@ -103,6 +106,7 @@ defaultrunconfig = {
             }
         },
         "truck" : {
+            "vClass" : "truck",
             "length" : 7.1,
             "width" : 2.4,
             "height" : 2.4,
@@ -118,6 +122,7 @@ defaultrunconfig = {
             }
         },
         "heavytransport" : {
+            "vClass" : "trailer",
             "length" : 7.1,
             "width" : 2.4,
             "height" : 2.4,
@@ -133,6 +138,7 @@ defaultrunconfig = {
             }
         },
         "tractor" : {
+            "vClass" : "truck",
             "length" : 3.0,
             "width" : 2.4,
             "height" : 2.4,
@@ -150,13 +156,14 @@ defaultrunconfig = {
     },
     "desiredspeeds" : {
         "distribution" : "GAUSS",
-        "args" : [90/3.6, 30/3.6] # Gauss: [mu, sigma]
+        "args" : [100/3.6, 30/3.6] # Gauss: [mu, sigma]
     },
     "sumo" : {
         "time" : {
             "begin" : 0,
             "end" : 60*60
         },
+        "port" : 8873,
         "gui-delay" : 200,
         "headless" : False,
     }

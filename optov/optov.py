@@ -4,7 +4,7 @@ from __future__ import print_function
 import argparse
 import sys,os
 from sumo.sumo import Sumo
-
+from common.configuration import Configuration
 
 class Optov(object):
 
@@ -25,8 +25,10 @@ class Optov(object):
         l_mutexgrouprunchoice.add_argument("--nf", dest="runnf", default=False, action='store_true', help="run network flow optimization")
         l_args = l_parser.parse_args()
 
+        l_configuration = Configuration(l_args)
         if l_args.runsumo:
-            l_sumo = Sumo(l_args)
+            l_sumo = Sumo(l_configuration)
+            l_sumo.runAllScenarios()
 
 
 if __name__ == "__main__":
