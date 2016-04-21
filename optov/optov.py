@@ -14,7 +14,7 @@ class Optov(object):
         # place default config in ~/.optov if there exists none
         if not os.path.exists(l_configdir):
             os.mkdir(l_configdir)
-        if not os.path.isfile(os.path.join(l_configdir, u"runconfig.json")):
+        if not os.path.isfile(os.path.join(l_configdir, u"runconfig.yaml")):
             shutil.copy("resources/runconfig.yaml",os.path.join(l_configdir, u"runconfig.yaml"))
         if not os.path.isfile(os.path.join(l_configdir, u"roadwayconfig.json")):
             shutil.copy("resources/roadwayconfig.yaml",os.path.join(l_configdir, u"roadwayconfig.yaml"))
