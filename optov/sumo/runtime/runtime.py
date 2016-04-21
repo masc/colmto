@@ -11,6 +11,7 @@ class Runtime(object):
         self._sumoconfig = p_sumoconfig
         self._sumobinary = p_sumobinary
 
+
     def run(self, p_scenario):
         l_scenario = self._sumoconfig.get("scenarios").get(p_scenario)
         print(l_scenario.get("tripinfofile"))

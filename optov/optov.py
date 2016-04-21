@@ -3,6 +3,7 @@ from __future__ import print_function
 
 import argparse
 import sys,os
+import shutil
 from sumo.sumo import Sumo
 from common.configuration import Configuration
 
@@ -10,8 +11,14 @@ class Optov(object):
 
     def __init__(self):
         l_configdir = os.path.expanduser(u"~/.optov")
+
+        # place default config in ~/.optov if there exists none
         if not os.path.exists(l_configdir):
             os.mkdir(l_configdir)
+        if not os.path.isfile(os.path.join(l_configdir, u"runconfig.json")):
+            shutil.copy("resources/runconfig.json",os.path.join(l_configdir, u"runconfig.json"))
+        if not os.path.isfile(os.path.join(l_configdir, u"roadwayconfig.json")):
+            shutil.copy("resources/roadwayconfig.json",os.path.join(l_configdir, u"roadwayconfig.json"))
 
         l_parser = argparse.ArgumentParser(description="Process parameters for optov")
         l_parser.add_argument("--runconfig", dest="runconfig", type=str, default=os.path.join(l_configdir, u"runconfig.json"))
@@ -26,6 +33,7 @@ class Optov(object):
         l_args = l_parser.parse_args()
 
         l_configuration = Configuration(l_args)
+
         if l_args.runsumo:
             l_sumo = Sumo(l_configuration)
             l_sumo.runAllScenarios()
