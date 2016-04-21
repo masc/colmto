@@ -15,9 +15,9 @@ class Optov(object):
         if not os.path.exists(l_configdir):
             os.mkdir(l_configdir)
         if not os.path.isfile(os.path.join(l_configdir, u"runconfig.json")):
-            shutil.copy("resources/runconfig.json",os.path.join(l_configdir, u"runconfig.yaml"))
+            shutil.copy("resources/runconfig.yaml",os.path.join(l_configdir, u"runconfig.yaml"))
         if not os.path.isfile(os.path.join(l_configdir, u"roadwayconfig.json")):
-            shutil.copy("resources/roadwayconfig.json",os.path.join(l_configdir, u"roadwayconfig.yaml"))
+            shutil.copy("resources/roadwayconfig.yaml",os.path.join(l_configdir, u"roadwayconfig.yaml"))
 
         l_parser = argparse.ArgumentParser(description="Process parameters for optov")
         l_parser.add_argument("--runconfig", dest="runconfig", type=str, default=os.path.join(l_configdir, u"runconfig.yaml"))
