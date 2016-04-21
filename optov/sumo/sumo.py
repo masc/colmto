@@ -15,7 +15,6 @@ class Sumo(object):
                                         checkBinary("sumo")
                                             if self._sumocfg.get("headless")
                                             else checkBinary("sumo-gui"))
-        self._sumocfg.write(self._sumocfg.getRunConfig(),"test.json")
 
     def runScenarios(self, p_scenarios=[]):
         for i_scenario in p_scenarios:
