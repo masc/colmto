@@ -2,7 +2,7 @@
 from __future__ import print_function
 
 import argparse
-import sys,os
+import os
 import shutil
 from sumo.sumo import Sumo
 

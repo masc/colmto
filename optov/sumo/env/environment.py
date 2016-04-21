@@ -23,3 +23,7 @@ class Environment(object):
 
     def addVehicle(self, p_vehicle):
         self._vehicles[p_vehicle.getID()] = p_vehicle
+
+class VehicleFactory(object):
+    pass
+

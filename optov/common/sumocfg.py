@@ -2,22 +2,23 @@
 from __future__ import print_function
 from __future__ import division
 
-from configuration import Configuration
-import xml.etree.ElementTree as ElementTree
-from xml.dom import minidom
 import random
 import subprocess
 import os
-import matplotlib.colors as colors
-import matplotlib.cm as cm
-import matplotlib.pyplot as plt
+import xml.etree.ElementTree as ElementTree
+from xml.dom import minidom
+
+from configuration import Configuration
+from visualisation import Visualisation
+
 
 class SumoConfig(Configuration):
 
-    def __init__(self, p_args, p_netconvertbinary, p_duarouterbinary):
+    def __init__(self, p_args, p_visualisation, p_netconvertbinary, p_duarouterbinary):
         super(SumoConfig, self).__init__(p_args)
         self._netconvertbinary = p_netconvertbinary
         self._duarouterbinary = p_duarouterbinary
+        self._visualisation = p_visualisation
         self.generateAllSUMOConfigs()
 
 
@@ -171,10 +172,7 @@ class SumoConfig(Configuration):
 
         return l_speeddistribution, l_starttimes
 
-    def _getColormap(self, p_desiredspeeds):
-        l_jet=plt.get_cmap('jet_r')
-        l_cnorm  = colors.Normalize(vmin=min(p_desiredspeeds), vmax=max(p_desiredspeeds))
-        return cm.ScalarMappable(norm=l_cnorm, cmap=l_jet)
+
 
     def _generateTripXML(self, p_roadwayconfig, p_runcfg, p_tripfile):
         # generate simple traffic demand by considering AADT, Vmax, roadtype etc
@@ -195,7 +193,7 @@ class SumoConfig(Configuration):
         )
 
         # generate colormap for speeds
-        l_colormap = self._getColormap(l_dspeeddistribution)
+        l_colormap = self._visualisation.getColormap(l_dspeeddistribution, 'jet_r')
 
         # create unique vtypes identified by dspeed
         l_vtypeset = list(set(l_dspeeddistribution))
