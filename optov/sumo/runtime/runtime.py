@@ -33,7 +33,7 @@ class Runtime(object):
         # do simulation time steps as long as vehicles are present in the network
         while traci.simulation.getMinExpectedNumber() > 0:
 
-            print(traci.vehicle.getIDCount())
+
 
             # tell SUMO to do a simulation step
             traci.simulationStep()

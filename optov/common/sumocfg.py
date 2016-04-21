@@ -78,9 +78,9 @@ class SumoConfig(Configuration):
         l_length = p_roadwayconfig.get("parameters").get("length")
 
         l_nodes = ElementTree.Element("nodes")
-        #ElementTree.SubElement(l_nodes, "node", attrib={"id": "ramp_entrance", "x": "-500", "y": "0"})
         ElementTree.SubElement(l_nodes, "node", attrib={"id": "2_1_start", "x": "0", "y": "0"})
         ElementTree.SubElement(l_nodes, "node", attrib={"id": "2_1_end", "x": str(l_length), "y": "0"})
+        # dummy node for easier from-to routing
         ElementTree.SubElement(l_nodes, "node", attrib={"id": "ramp_exit", "x": str(l_length+0.1), "y": "0"})
 
         with open(p_nodefile, "w") as fpnodesxml:
