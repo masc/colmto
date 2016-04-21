@@ -9,12 +9,13 @@ import sumolib
 
 class Sumo(object):
 
-    def __init__(self, p_configuration):
-        self._sumocfg = SumoConfig(p_configuration, checkBinary("netconvert"), checkBinary("duarouter"))
+    def __init__(self, p_args):
+        self._sumocfg = SumoConfig(p_args, checkBinary("netconvert"), checkBinary("duarouter"))
         self._runtime = Runtime(self._sumocfg,
                                         checkBinary("sumo")
                                             if self._sumocfg.get("headless")
                                             else checkBinary("sumo-gui"))
+        self._sumocfg.write(self._sumocfg.getRunConfig(),"test.json")
 
     def runScenarios(self, p_scenarios=[]):
         for i_scenario in p_scenarios:

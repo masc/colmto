@@ -1,0 +1,81 @@
+desiredspeeds:
+  args: [27.77777777777778, 8.333333333333334]
+  distribution: GAUSS
+sumo:
+  gui-delay: 200
+  headless: false
+  port: 8873
+  time: {begin: 0, end: 3600}
+vtypes:
+  delivery:
+    accel: 2.9
+    decel: 7.5
+    dspeedbucket: {max: 27.77777777777778, min: 22.22222222222222}
+    height: 2.86
+    length: 6.5
+    maxSpeed: 50.0
+    minGap: 2.5
+    speedDev: 0.1
+    speedFactor: 1
+    vClass: delivery
+    width: 2.16
+  heavytransport:
+    accel: 1.3
+    decel: 4.0
+    dspeedbucket: {max: 19.444444444444443, min: 8.333333333333334}
+    height: 2.4
+    length: 7.1
+    maxSpeed: 11.11111111111111
+    minGap: 2.5
+    speedDev: 0.1
+    speedFactor: 1
+    vClass: trailer
+    width: 2.4
+  passenger:
+    accel: 2.9
+    decel: 7.5
+    dspeedbucket: {max: 69.44444444444444, min: 36.11111111111111}
+    height: 1.5
+    length: 4.3
+    maxSpeed: 50.0
+    minGap: 2.5
+    speedDev: 0.1
+    speedFactor: 1
+    vClass: passenger
+    width: 1.8
+  tractor:
+    accel: 1.3
+    decel: 4.0
+    dspeedbucket: {max: 8.333333333333334, min: 0}
+    height: 2.4
+    length: 3.0
+    maxSpeed: 8.333333333333334
+    minGap: 2.5
+    speedDev: 0.1
+    speedFactor: 1
+    vClass: truck
+    width: 2.4
+  truck:
+    accel: 1.3
+    decel: 4.0
+    dspeedbucket: {max: 22.22222222222222, min: 19.444444444444443}
+    height: 2.4
+    length: 7.1
+    maxSpeed: 36.11111111111111
+    minGap: 2.5
+    speedDev: 0.1
+    speedFactor: 1
+    vClass: truck
+    width: 2.4
+  van:
+    accel: 2.9
+    decel: 7.5
+    dspeedbucket: {max: 36.11111111111111, min: 27.77777777777778}
+    height: 1.73
+    length: 4.7
+    maxSpeed: 50.0
+    minGap: 2.5
+    speedDev: 0.1
+    speedFactor: 1
+    vClass: delivery
+    width: 1.9

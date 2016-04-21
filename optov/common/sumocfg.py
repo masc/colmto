@@ -12,41 +12,41 @@ import matplotlib.colors as colors
 import matplotlib.cm as cm
 import matplotlib.pyplot as plt
 
-class SumoConfig(object):
+class SumoConfig(Configuration):
 
-    def __init__(self, p_configuration, p_netconvertbinary, p_duarouterbinary):
-        self._config = p_configuration
+    def __init__(self, p_args, p_netconvertbinary, p_duarouterbinary):
+        super(SumoConfig, self).__init__(p_args)
         self._netconvertbinary = p_netconvertbinary
         self._duarouterbinary = p_duarouterbinary
         self.generateAllSUMOConfigs()
 
 
     def get(self, p_key):
-        return self._config.getRunConfig().get("sumo").get(p_key)
+        return self.getRunConfig().get("sumo").get(p_key)
 
     def generateAllSUMOConfigs(self):
-        map(lambda (name, cfg): self._generateSUMOConfig(name, cfg), self._config.getRoadwayConfig().iteritems())
+        map(lambda (name, cfg): self._generateSUMOConfig(name, cfg), self.getRoadwayConfig().iteritems())
 
     def _generateSUMOConfig(self, p_scenarioname , p_roadwayconfig):
 
         print("generating SUMO configuration files for scenario", p_scenarioname)
 
-        l_destinationdir = os.path.join(self._config.getConfigDir(), "SUMO", p_scenarioname)
-        if not os.path.exists(os.path.join(self._config.getConfigDir(), "SUMO")):
-            os.mkdir(os.path.join(self._config.getConfigDir(), "SUMO"))
+        l_destinationdir = os.path.join(self.getConfigDir(), "SUMO", p_scenarioname)
+        if not os.path.exists(os.path.join(self.getConfigDir(), "SUMO")):
+            os.mkdir(os.path.join(self.getConfigDir(), "SUMO"))
         if not os.path.exists(os.path.join(l_destinationdir)):
             os.mkdir(l_destinationdir)
 
-        if self._config.getRunConfig().get("sumo") == None:
-            self._config.getRunConfig()["sumo"] = {}
+        if self.getRunConfig().get("sumo") == None:
+            self.getRunConfig()["sumo"] = {}
 
-        if self._config.getRunConfig().get("sumo").get("scenarios") == None:
-            self._config.getRunConfig().get("sumo")["scenarios"] = {}
+        if self.getRunConfig().get("sumo").get("scenarios") == None:
+            self.getRunConfig().get("sumo")["scenarios"] = {}
 
-        if self._config.getRunConfig().get("sumo").get("scenarios").get(p_scenarioname) == None:
-            self._config.getRunConfig().get("sumo").get("scenarios")[p_scenarioname] = {}
+        if self.getRunConfig().get("sumo").get("scenarios").get(p_scenarioname) == None:
+            self.getRunConfig().get("sumo").get("scenarios")[p_scenarioname] = {}
 
-        l_runcfg = self._config.getRunConfig()
+        l_runcfg = self.getRunConfig()
         l_sumocfg = l_runcfg.get("sumo")
         l_scenarios = l_sumocfg.get("scenarios")
         l_nodefile = l_scenarios.get(p_scenarioname)["nodefile"] = os.path.join(l_destinationdir, "{}.nod.xml".format(p_scenarioname))

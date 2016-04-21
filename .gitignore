@@ -5,6 +5,7 @@
 !optov/MANIFEST.in
 !optov/README.rst
 !optov/setup.cfg
+!optov/resources/*.yaml
 !*.txt
 !*.py
 !*.md

@@ -3,7 +3,7 @@ from __future__ import print_function
 from __future__ import division
 
 import os
-import json
+import yaml
 
 class Configuration(object):
 
@@ -22,14 +22,18 @@ class Configuration(object):
 
         self._configdir = p_args.configdir
 
-        self._runconfig = json.load(open(p_args.runconfig))
+        self._runconfig = yaml.safe_load(open(p_args.runconfig))
 
-        self._roadwayconfig = json.load(open(p_args.roadwayconfig))
+        self._roadwayconfig = yaml.safe_load(open(p_args.roadwayconfig))
+
+        if p_args.headless != None:
+            self._runconfig.get("sumo")["headless"] = p_args.headless
+
 
 
     def write(self, p_config, p_location):
-        fp = open(p_location, mode="w")
-        json.dump(p_config, fp, sort_keys=True, indent=4, separators=(',', ' : '))
+        fp = open(p_location, "w")
+        yaml.safe_dump(p_config, fp)
         fp.close()
 
     def getRunConfig(self):
