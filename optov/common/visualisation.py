@@ -19,15 +19,17 @@ class Visualisation(object):
         xdc,ydc = zip(*p_density)
 
         plt.figure(1)
-        plt.title(p_scenarioname)
 
         plt.subplot(211)
+        plt.title(p_scenarioname)
         plt.plot(xvc,yvc,'b')
+        plt.axis([0,max(xvc),0,max(yvc)])
         plt.xlabel("Time steps")
         plt.ylabel("Number of vehicles")
 
         plt.subplot(212)
         plt.plot(xdc,ydc,'r')
+        plt.axis([0,max(xdc),0,1])
         plt.xlabel("Time steps")
         plt.ylabel("Average density")
 
