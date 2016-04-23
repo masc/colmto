@@ -1,7 +1,12 @@
+# -*- coding: utf-8 -*-
 from __future__ import print_function
+from __future__ import division
+
+import json
+import gzip
 import h5py
 
-## @package hdf5
+# @package resultswriter
 # @cond LICENSE
 # ######################################################################################
 # # LGPL License                                                                       #
@@ -24,16 +29,33 @@ import h5py
 # @endcond
 
 
-class HDF5(object):
+class ResultsWriter(object):
+
+    def writeJsonCompact(self, p_object, p_filename):
+        self._writeJson(p_object, p_filename, p_sort_keys=True, p_indent=None, p_separators=(',', ':'))
+
+    def writeJson(self, p_object, p_filename):
+        self._writeJson(p_object, p_filename, p_sort_keys=True, p_indent=4, p_separators=(', ', ' : '))
+
+    def _writeJson(self, p_object, p_filename, **p_jsonargs):
+        if p_filename.endswith(".gz"):
+            fp = gzip.GzipFile(p_filename, 'w')
+        else:
+            fp = open(p_filename, mode="w")
+
+        print(" * writing {}".format(p_filename))
+        print(p_jsonargs)
+        json.dump(p_object, fp, p_jsonargs)
+        fp.close()
+        print("   done")
 
     ## Write an object to a specific path into an open file, identified by fileid
-    #  Will overwrite existing objects in HDF5 path, will not flush or close file afterwards. (Intended for frequent data logs to same file)
     #  @param self The object pointer
     #  @param p_filename The file name
     #  @param p_path Destination path in HDF5 structure, will be created if not existent.
-    #  @param p_objectdict Object(s) to be stored in a named dictionary structure ([name] -> str|int|float|list|numpy object)
+    #  @param p_objectdict Object(s) to be stored in a named dictionary structure ([name] -> str|int|float|list|numpy)
     #  @param **kwargs Optional arguments passed to create_dataset
-    def write(self, p_filename, p_path, p_objectdict, **kwargs):
+    def writeHDF5(self, p_filename, p_path, p_objectdict, **kwargs):
         # verify whether arguments are sane
         if type(p_objectdict) is not dict:
             raise TypeError(u"p_objectdict is not dict")
@@ -62,9 +84,4 @@ class HDF5(object):
 
                 l_group.create_dataset(name=i_objname, data=i_objvalue, **kwargs)
 
-        l_file.flush()
         l_file.close()
-
-
-    def read(self, p_filename):
-        return h5py.File(p_filename, 'r')

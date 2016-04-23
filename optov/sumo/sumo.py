@@ -4,7 +4,7 @@ from __future__ import print_function
 import traci
 import sumolib
 
-from common.sumocfg import SumoConfig
+from configuration.sumocfg import SumoConfig
 from sumolib import checkBinary
 
 from runtime.runtime import Runtime

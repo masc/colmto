@@ -30,6 +30,8 @@ class Optov(object):
         l_mutexgrouprunchoice.add_argument("--naive", dest="runnaive", default=False, action='store_true', help="run naive calculation")
         l_mutexgrouprunchoice.add_argument("--mip", dest="runmip", default=False, action='store_true', help="run MIP optimization")
         l_mutexgrouprunchoice.add_argument("--nf", dest="runnf", default=False, action='store_true', help="run network flow optimization")
+        l_sumogroup = l_parser.add_argument_group("SUMO")
+        l_sumogroup.add_argument("--force-rebuild-scenarios", dest="forcerebuildscenarios", default=False, action='store_true', help="Rebuild and overwrite existing SUMO scenarios in configuration directory ({})".format(l_configdir))
         l_args = l_parser.parse_args()
 
         if l_args.runsumo:

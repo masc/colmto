@@ -1,15 +1,14 @@
 # -*- coding: utf-8 -*-
-from __future__ import print_function
 from __future__ import division
+from __future__ import print_function
 
+import os
 import random
 import subprocess
-import os
 import xml.etree.ElementTree as ElementTree
 from xml.dom import minidom
 
 from configuration import Configuration
-from visualisation import Visualisation
 
 
 class SumoConfig(Configuration):
@@ -19,6 +18,7 @@ class SumoConfig(Configuration):
         self._netconvertbinary = p_netconvertbinary
         self._duarouterbinary = p_duarouterbinary
         self._visualisation = p_visualisation
+        self._forcerebuildscenarios = p_args.forcerebuildscenarios
         self.generateAllSUMOConfigs()
 
 
@@ -29,8 +29,6 @@ class SumoConfig(Configuration):
         map(lambda (name, cfg): self._generateSUMOConfig(name, cfg), self.getRoadwayConfig().iteritems())
 
     def _generateSUMOConfig(self, p_scenarioname , p_roadwayconfig):
-
-        print("generating SUMO configuration files for scenario", p_scenarioname)
 
         l_destinationdir = os.path.join(self.getConfigDir(), "SUMO", p_scenarioname)
         if not os.path.exists(os.path.join(self.getConfigDir(), "SUMO")):
@@ -58,22 +56,32 @@ class SumoConfig(Configuration):
         l_settingsfile = l_scenarios.get(p_scenarioname)["settingsfile"] = os.path.join(l_destinationdir, "{}.settings.xml".format(p_scenarioname))
         l_configfile = l_scenarios.get(p_scenarioname)["configfile"] = os.path.join(l_destinationdir, "{}.config.cfg".format(p_scenarioname))
         l_scenarios.get(p_scenarioname)["tripinfofile"] = os.path.join(l_destinationdir, "{}.tripinfo.xml".format(p_scenarioname))
+        l_sumocfgfiles = [l_nodefile, l_edgefile, l_netfile, l_tripfile, l_routefile, l_settingsfile, l_configfile]
 
-        self._generateNodeXML(p_roadwayconfig, l_nodefile)
-        self._generateEdgeXML(p_roadwayconfig, l_edgefile)
+        print(" * checking for SUMO configuration files for scenario", p_scenarioname)
+        if len(filter(lambda fname: not os.path.isfile(fname), l_sumocfgfiles)) > 0:
+            print("   incomplete scenario configuration detected -> forcing rebuild")
+            self._forcerebuildscenarios = True
+
+        self._generateNodeXML(p_roadwayconfig, l_nodefile, self._forcerebuildscenarios)
+        self._generateEdgeXML(p_roadwayconfig, l_edgefile, self._forcerebuildscenarios)
         self._generateConfigXML(l_configfile, l_netfile, l_routefile, l_settingsfile,
                                 l_sumocfg.get("time").get("begin"),
-                                l_sumocfg.get("time").get("end"))
-        self._generateSettingsXML(p_roadwayconfig, l_runcfg, l_settingsfile)
-        self._generateTripXML(p_roadwayconfig, l_runcfg, l_tripfile)
-        self._generateNetXML(l_nodefile, l_edgefile, l_netfile)
-        self._generateRouteXML(l_netfile, l_tripfile, l_routefile)
+                                l_sumocfg.get("time").get("end"),
+                                self._forcerebuildscenarios)
+        self._generateSettingsXML(p_roadwayconfig, l_runcfg, l_settingsfile, self._forcerebuildscenarios)
+        self._generateTripXML(p_roadwayconfig, l_runcfg, l_tripfile, self._forcerebuildscenarios)
+        self._generateNetXML(l_nodefile, l_edgefile, l_netfile, self._forcerebuildscenarios)
+        self._generateRouteXML(l_netfile, l_tripfile, l_routefile, self._forcerebuildscenarios)
+
 
     ## Return a pretty-printed XML string for the Element (https://pymotw.com/2/xml/etree/ElementTree/create.html)
     def _prettify(self, p_element):
         return minidom.parseString(ElementTree.tostring(p_element)).toprettyxml(indent="  ")
 
-    def _generateNodeXML(self, p_roadwayconfig, p_nodefile):
+    def _generateNodeXML(self, p_roadwayconfig, p_nodefile, p_forcerebuildscenarios=False):
+        if os.path.isfile(p_nodefile) and not p_forcerebuildscenarios:
+            return
 
         # parameters
         l_length = p_roadwayconfig.get("parameters").get("length")
@@ -87,7 +95,9 @@ class SumoConfig(Configuration):
         with open(p_nodefile, "w") as fpnodesxml:
             fpnodesxml.write(self._prettify(l_nodes))
 
-    def _generateEdgeXML(self, p_roadwayconfig, p_edgefile):
+    def _generateEdgeXML(self, p_roadwayconfig, p_edgefile, p_forcerebuildscenarios=False):
+        if os.path.isfile(p_edgefile) and not p_forcerebuildscenarios:
+            return
 
         # parameters
         l_length = p_roadwayconfig.get("parameters").get("length")
@@ -125,7 +135,9 @@ class SumoConfig(Configuration):
 
 
     ## create sumo config
-    def _generateConfigXML(self, p_configfile, p_netfile, p_routefile, p_settingsfile, p_begin, p_end):
+    def _generateConfigXML(self, p_configfile, p_netfile, p_routefile, p_settingsfile, p_begin, p_end, p_forcerebuildscenarios=False):
+        if os.path.isfile(p_configfile) and not p_forcerebuildscenarios:
+            return
 
         l_configuration = ElementTree.Element("configuration")
         l_input = ElementTree.SubElement(l_configuration, "input")
@@ -139,7 +151,9 @@ class SumoConfig(Configuration):
         with open(p_configfile, "w") as fpconfigxml:
             fpconfigxml.write(self._prettify(l_configuration))
 
-    def _generateSettingsXML(self, p_roadwayconfig, p_runcfg, p_settingsfile):
+    def _generateSettingsXML(self, p_roadwayconfig, p_runcfg, p_settingsfile, p_forcerebuildscenarios=False):
+        if os.path.isfile(p_settingsfile) and not p_forcerebuildscenarios:
+            return
 
         l_viewsettings = ElementTree.Element("viewsettings")
         ElementTree.SubElement(l_viewsettings, "viewport",
@@ -174,7 +188,10 @@ class SumoConfig(Configuration):
 
 
 
-    def _generateTripXML(self, p_roadwayconfig, p_runcfg, p_tripfile):
+    def _generateTripXML(self, p_roadwayconfig, p_runcfg, p_tripfile, p_forcerebuildscenarios=False):
+        if os.path.isfile(p_tripfile) and not p_forcerebuildscenarios:
+            return
+
         # generate simple traffic demand by considering AADT, Vmax, roadtype etc
         l_aadt = p_roadwayconfig.get("parameters").get("aadt")
         l_timebegin = p_runcfg.get("sumo").get("time").get("begin")
@@ -227,14 +244,20 @@ class SumoConfig(Configuration):
             fptripxml.write(self._prettify(l_trips))
 
     ## create net xml using netconvert
-    def _generateNetXML(self, p_nodefile, p_edgefile, p_netfile):
+    def _generateNetXML(self, p_nodefile, p_edgefile, p_netfile, p_forcerebuildscenarios=False):
+        if os.path.isfile(p_netfile) and not p_forcerebuildscenarios:
+            return
+
         l_netconvertprocess = subprocess.Popen([self._netconvertbinary,
                                                "--node-files={}".format(p_nodefile),
                                                "--edge-files={}".format(p_edgefile),
                                                "--output-file={}".format(p_netfile)])
         l_netconvertprocess.wait()
 
-    def _generateRouteXML(self, p_netfile, p_tripfile, p_routefile):
+    def _generateRouteXML(self, p_netfile, p_tripfile, p_routefile, p_forcerebuildscenarios=False):
+        if os.path.isfile(p_routefile) and not p_forcerebuildscenarios:
+            return
+
         l_duarouterprocess = subprocess.Popen([self._duarouterbinary,
                                                 "-n", p_netfile,
                                                 "-t", p_tripfile,
