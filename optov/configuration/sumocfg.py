@@ -19,6 +19,7 @@ class SumoConfig(Configuration):
         self._duarouterbinary = p_duarouterbinary
         self._visualisation = p_visualisation
         self._forcerebuildscenarios = p_args.forcerebuildscenarios
+        self._onlyoneotlsegment = p_args.onlyoneotlsegment
         self.generateAllSUMOConfigs()
 
 
@@ -85,6 +86,9 @@ class SumoConfig(Configuration):
 
         # parameters
         l_length = p_roadwayconfig.get("parameters").get("length")
+        if self._onlyoneotlsegment:
+            l_nbswitches = p_roadwayconfig.get("parameters").get("switches")
+            l_length = 2*(l_length / (l_nbswitches+1)) # two times segment length
 
         l_nodes = ElementTree.Element("nodes")
         ElementTree.SubElement(l_nodes, "node", attrib={"id": "2_1_start", "x": "0", "y": "0"})
@@ -101,11 +105,11 @@ class SumoConfig(Configuration):
 
         # parameters
         l_length = p_roadwayconfig.get("parameters").get("length")
-        l_switches = p_roadwayconfig.get("parameters").get("switches")
+        l_nbswitches = p_roadwayconfig.get("parameters").get("switches")
         l_maxspeed = p_roadwayconfig.get("parameters").get("maxSpeed")
 
         # assume even distributed otl segment lengths
-        l_segmentlength = l_length / ( l_switches + 1 )
+        l_segmentlength = l_length / ( l_nbswitches + 1 )
 
         # create edges xml
         l_edges = ElementTree.Element("edges")
@@ -118,11 +122,13 @@ class SumoConfig(Configuration):
 
         # add splits and joins
         l_addotllane = False
-        for i_segmentpos in xrange(0,int(l_length),int(l_segmentlength)):
+        for i_segmentpos in xrange(0,int(l_length),int(l_segmentlength)) \
+                if not self._onlyoneotlsegment else xrange(0,int(2*l_segmentlength),int(l_segmentlength)):
             ElementTree.SubElement(l_21edge, "split", attrib={"pos": str(i_segmentpos),
                                                               "lanes": "0 1" if l_addotllane else "0",
                                                               "speed": str(l_maxspeed)})
             l_addotllane ^= True
+
 
         ElementTree.SubElement(l_edges, "edge", attrib={"id": "2_1_end-ramp_exit",
                                                         "from" : "2_1_end",
@@ -180,7 +186,7 @@ class SumoConfig(Configuration):
             else:
                 l_dspeed = 250
             if l_dspeed > 0:
-                l_vehps = (p_aadt / (24*60*60))
+                l_vehps = p_aadt / (24*60*60)
                 l_starttimes.append(self._nextTime(l_vehps, l_starttimes))
                 l_speeddistribution.append(l_dspeed)
 
@@ -198,10 +204,11 @@ class SumoConfig(Configuration):
         l_timeend = p_runcfg.get("sumo").get("time").get("end")
 
         # number of vehicles = AADT / [seconds of day] * [scenario time in seconds]
-        l_numberofvehicles = int(round(l_aadt / (24 * 3600) * (l_timeend - l_timebegin)))
-        print("Scenaro's AADT of {} vehicles/average annual day => {} vehicles for {} simulation seconds".format(
+        l_numberofvehicles = int(round(l_aadt / (24*60*60) * (l_timeend - l_timebegin)))
+        print("Scenario's AADT of {} vehicles/average annual day => {} vehicles for {} simulation seconds".format(
             l_aadt, l_numberofvehicles, (l_timeend - l_timebegin)
         ))
+
         l_dspeeddistribution, l_starttimes = self._createVehicleDistribution(
             p_runcfg.get("desiredspeeds").get("distribution"),
             p_runcfg.get("desiredspeeds").get("args"),
