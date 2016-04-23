@@ -136,7 +136,8 @@ class SumoConfig(Configuration):
         ElementTree.SubElement(l_edges, "edge", attrib={"id": "2_1_end-ramp_exit",
                                                         "from" : "2_1_end",
                                                         "to": "ramp_exit",
-                                                        "numLanes": "2" if l_addotllane else "1",
+                                                        #"numLanes": "2" if l_addotllane else "1",
+                                                        "numLanes": "1",
                                                         "speed": str(l_maxspeed)})
 
         with open(p_edgefile, "w") as fpedgexml:
