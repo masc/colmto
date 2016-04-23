@@ -3,7 +3,10 @@ from __future__ import print_function
 from __future__ import division
 import subprocess
 import sys
+import numpy as np
+
 from common.resultswriter import ResultsWriter
+from common.statistics import Statistics
 
 import traci
 import sumolib
@@ -17,6 +20,7 @@ class Runtime(object):
         self._visualisation = p_visualisation
         self._sumobinary = p_sumobinary
         self._resultswriter = ResultsWriter()
+        self._statistics = Statistics()
 
     def run(self, p_scenario):
         l_scenario = self._sumoconfig.get("scenarios").get(p_scenario)
@@ -83,9 +87,27 @@ class Runtime(object):
             l_step += 1
 
 
-        print("\n\nSteps: {}".format(l_step))
+        print("Steps: {}".format(l_step))
 
+        for i_vid, i_vobj in l_vehicles.iteritems():
+            l_vtraj = i_vobj.get("trajectory")
+            l_path = "/" + str(i_vid) + "/"
+            l_trajmatrix = np.zeros((max(l_vtraj.keys())+1,6))
+            l_obj = {"timeinterval": [min(l_vtraj.keys()), max(l_vtraj.keys())], "trajectory": l_trajmatrix, "lane":[]}
+            for i_step in sorted(l_vtraj.keys()):
+                l_trajmatrix[int(i_step)][0] = l_vtraj.get(i_step).get(tc.VAR_SPEED)
+                l_trajmatrix[int(i_step)][1] = l_vtraj.get(i_step).get(tc.VAR_MAXSPEED)
+                l_trajmatrix[int(i_step)][2] = l_vtraj.get(i_step).get(tc.VAR_POSITION)[0]
+                l_trajmatrix[int(i_step)][3] = l_vtraj.get(i_step).get(tc.VAR_POSITION)[1]
+                l_trajmatrix[int(i_step)][4] = l_vtraj.get(i_step).get(tc.VAR_LANE_INDEX)
+                l_trajmatrix[int(i_step)][5] = l_vtraj.get(i_step).get("satisfaction")
+                l_obj.get("lane").append( [i_step, l_vtraj.get(i_step).get(tc.VAR_LANE_ID)] )
+
+            self._resultswriter.writeHDF5(p_scenario+".hdf5", l_path, l_obj, compression=None)
+            self._resultswriter.writeHDF5(p_scenario+".gz.hdf5", l_path, l_obj, compression="gzip", compression_opts=9)
+            self._resultswriter.writeHDF5(p_scenario+".lzf.hdf5", l_path, l_obj, compression="lzf")
         self._resultswriter.writeJsonCompact(l_vehicles, p_scenario+".json.gz")
+
 
         #json.dump(l_vehicles, open(p_scenario+".json", "w"), sort_keys=False, indent=None, separators=(',', ':'))
         # for i_vid in l_vehicles.iterkeys():

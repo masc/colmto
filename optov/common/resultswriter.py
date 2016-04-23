@@ -44,7 +44,6 @@ class ResultsWriter(object):
             fp = open(p_filename, mode="w")
 
         print(" * writing {}".format(p_filename))
-        print(p_jsonargs)
         json.dump(p_object, fp, p_jsonargs)
         fp.close()
         print("   done")
@@ -74,7 +73,7 @@ class ResultsWriter(object):
             for i_objname,i_objvalue in p_objectdict.items():
 
                 # remove compression if we have a scalar object, i.e. string, int, float
-                if type(i_objname) in [str, int, float]:
+                if type(i_objvalue) in [str, int, float]:
                     kwargs.pop("compression", None)
                     kwargs.pop("compression_opts", None)
 
