@@ -117,7 +117,6 @@ class SumoConfig(Configuration):
 
         # create edges xml
         l_edges = ElementTree.Element("edges")
-        #ElementTree.SubElement(l_edges, "edge", attrib={"id": "ramp_entrance-2_1_start", "from" : "ramp_entrance", "to": "2_1_start", "numLanes": "1"})
         l_21edge = ElementTree.SubElement(l_edges, "edge", attrib={"id": "2_1_segment",
                                                                    "from" : "2_1_start",
                                                                    "to": "2_1_end",
@@ -133,7 +132,7 @@ class SumoConfig(Configuration):
                                                               "speed": str(l_maxspeed)})
             l_addotllane ^= True
 
-
+        # dummy edge
         ElementTree.SubElement(l_edges, "edge", attrib={"id": "2_1_end-ramp_exit",
                                                         "from" : "2_1_end",
                                                         "to": "ramp_exit",
