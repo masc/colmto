@@ -26,8 +26,6 @@ class Configuration(object):
 
         self._roadwayconfig = yaml.safe_load(open(p_args.roadwayconfig))
 
-        if p_args.headless != None:
-            self._runconfig.get("sumo")["headless"] = p_args.headless
 
 
 

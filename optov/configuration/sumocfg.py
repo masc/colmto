@@ -21,6 +21,10 @@ class SumoConfig(Configuration):
         self._forcerebuildscenarios = p_args.forcerebuildscenarios
         self._onlyoneotlsegment = p_args.onlyoneotlsegment
         self.generateAllSUMOConfigs()
+        if p_args.headless == True:
+            self.getRunConfig().get("sumo")["headless"] = True
+        if p_args.gui == True:
+            self.getRunConfig().get("sumo")["headless"] = False
 
 
     def get(self, p_key):
