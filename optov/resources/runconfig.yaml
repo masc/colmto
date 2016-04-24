@@ -6,6 +6,7 @@ sumo:
   headless: false
   port: 8873
   time: {begin: 0, end: 10800}
+  runs: 1
 vtypes:
   delivery:
     accel: 2.9

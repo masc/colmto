@@ -248,7 +248,7 @@ class SumoConfig(Configuration):
         # add trips
         map(lambda (i_id, i_dspeed):
             ElementTree.SubElement(l_trips, "trip", attrib={
-                "id": str(i_id), "depart": str(l_starttimes[i_id]), "from": "2_1_segment", "to": "2_1_end-ramp_exit", "type": str(i_dspeed), "departSpeed": "max"
+                "id": "vehicle{}".format(i_id), "depart": str(l_starttimes[i_id]), "from": "2_1_segment", "to": "2_1_end-ramp_exit", "type": str(i_dspeed), "departSpeed": "max"
             }), enumerate(l_dspeeddistribution))
 
         with open(p_tripfile, "w") as fptripxml:

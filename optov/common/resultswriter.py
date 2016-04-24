@@ -1,11 +1,4 @@
 # -*- coding: utf-8 -*-
-from __future__ import print_function
-from __future__ import division
-
-import json
-import gzip
-import h5py
-
 # @package resultswriter
 # @cond LICENSE
 # ######################################################################################
@@ -28,23 +21,29 @@ import h5py
 # ######################################################################################
 # @endcond
 
+from __future__ import print_function
+from __future__ import division
+
+import json
+import gzip
+import h5py
+import os
+import numpy as np
+import traci.constants as tc
 
 class ResultsWriter(object):
 
     def writeJsonCompact(self, p_object, p_filename):
         self._writeJson(p_object, p_filename, p_sort_keys=True, p_indent=None, p_separators=(',', ':'))
 
-    def writeJson(self, p_object, p_filename):
-        self._writeJson(p_object, p_filename, p_sort_keys=True, p_indent=4, p_separators=(', ', ' : '))
-
-    def _writeJson(self, p_object, p_filename, **p_jsonargs):
+    def writeJson(self, p_object, p_filename, p_sort_keys=True, p_indent=4, p_separators=(', ', ' : ')):
         if p_filename.endswith(".gz"):
             fp = gzip.GzipFile(p_filename, 'w')
         else:
             fp = open(p_filename, mode="w")
 
         print(" * writing {}".format(p_filename))
-        json.dump(p_object, fp, p_jsonargs)
+        json.dump(p_object, fp, sort_keys=p_sort_keys, indent=p_indent, separators=p_separators)
         fp.close()
         print("   done")
 
@@ -84,3 +83,22 @@ class ResultsWriter(object):
                 l_group.create_dataset(name=i_objname, data=i_objvalue, **kwargs)
 
         l_file.close()
+
+    def dumpSUMOResults(self, p_scenario, p_results):
+        for i_runid, i_runobj in p_results.iteritems():
+            for i_vid, i_vobj in i_runobj.iteritems():
+                l_vtraj = i_vobj.get("trajectory")
+                l_path = os.path.join("/", str(i_runid), str(i_vid))
+                l_trajmatrix = np.zeros((max(l_vtraj.keys())+1,6))
+                l_obj = {"timeinterval": [min(l_vtraj.keys()), max(l_vtraj.keys())], "trajectory": l_trajmatrix, "lane":[]}
+                for i_step in sorted(l_vtraj.keys()):
+                    l_trajmatrix[int(i_step)][0] = l_vtraj.get(i_step).get(tc.VAR_SPEED)
+                    l_trajmatrix[int(i_step)][1] = l_vtraj.get(i_step).get(tc.VAR_MAXSPEED)
+                    l_trajmatrix[int(i_step)][2] = l_vtraj.get(i_step).get(tc.VAR_POSITION)[0]
+                    l_trajmatrix[int(i_step)][3] = l_vtraj.get(i_step).get(tc.VAR_POSITION)[1]
+                    l_trajmatrix[int(i_step)][4] = l_vtraj.get(i_step).get(tc.VAR_LANE_INDEX)
+                    l_trajmatrix[int(i_step)][5] = l_vtraj.get(i_step).get("satisfaction")
+                    l_obj.get("lane").append( [i_step, l_vtraj.get(i_step).get(tc.VAR_LANE_ID)] )
+
+                self.writeHDF5(p_scenario+".gz.hdf5", l_path, l_obj, compression="gzip", compression_opts=9)
+        self.writeJson(p_results, p_scenario+".json")
