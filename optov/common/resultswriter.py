@@ -101,4 +101,4 @@ class ResultsWriter(object):
                     l_obj.get("lane").append( [i_step, l_vtraj.get(i_step).get(tc.VAR_LANE_ID)] )
 
                 self.writeHDF5(p_scenario+".gz.hdf5", l_path, l_obj, compression="gzip", compression_opts=9)
-        self.writeJson(p_results, p_scenario+".json")
+        self.writeJson(p_results, p_scenario+".json.gz")

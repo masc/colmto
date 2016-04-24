@@ -13,9 +13,11 @@ class Statistics(object):
         self._visualisation = Visualisation()
 
     def pushSUMOResults(self, p_scenario, p_results):
-        for i_vid, i_vobj in p_results.iteritems():
-            l_vtraj = i_vobj.get("trajectory")
-
+        for i_runid, i_runobj in p_results.iteritems():
+            self._visualisation.plotAvgGlobalSatisfactionPrePost(p_scenario, i_runid, i_runobj)
+            # for i_vid, i_vobj in i_runobj.iteritems():
+            #     l_vtraj = i_vobj.get("trajectory")
+            #     self._visualisation.plotRunStats()
 
     def _density(self, p_scenario, p_run, p_results):
         pass

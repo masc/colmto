@@ -37,6 +37,8 @@ class Runtime(object):
         l_runresults = {}
         l_activevehicleids = set()
 
+        l_density = []
+
         # do simulation time steps as long as vehicles are present in the network
         while traci.simulation.getMinExpectedNumber() > 0:
             # tell SUMO to do a simulation step
@@ -60,23 +62,30 @@ class Runtime(object):
                         tc.VAR_LANE_ID,
                         tc.VAR_LANE_INDEX,
                         tc.VAR_POSITION,
+                        tc.VAR_LENGTH
                     )
                 )
 
                 # create new vehicle objects
                 l_runresults.update(
-                    (i_vid, {"trajectory" : {} }) for i_vid in l_departedvehicleids
+                    (i_vid, {"length": 0,"trajectory" : {} }) for i_vid in l_departedvehicleids
                 )
 
             # update subscription results for all active vehicles in this step
             for i_vid in l_activevehicleids:
                 l_results = traci.vehicle.getSubscriptionResults(i_vid)
                 l_results["satisfaction"] = l_results.get(tc.VAR_SPEED)/l_results.get(tc.VAR_MAXSPEED)
+                l_runresults.get(i_vid)["length"] = l_results.pop(tc.VAR_LENGTH)
                 l_runresults.get(i_vid).get("trajectory")[l_step] = l_results
 
             #l_nbvehicles = traci.vehicle.getIDCount()
             #l_vehiclesinstep.append( (l_step, l_nbvehicles ) )
             #l_globaldensity.append( (l_step, l_nbvehicles / (self._sumoconfig.getRoadwayConfig().get(p_scenario).get("parameters").get("length") / 5) ))
+
+            l_totalroadlength = self._sumoconfig.getRoadwayConfig().get(p_scenario).get("parameters").get("length")
+            l_density.append(
+                sum(map(lambda v: l_runresults.get(v).get("length"), l_activevehicleids))/l_totalroadlength
+            )
 
             l_step += 1
 
@@ -93,7 +102,7 @@ class Runtime(object):
         sys.stdout.flush()
 
         l_sumoprocess.wait()
-
+        self._visualisation.plotDensity(p_scenario, p_runnumber, l_density)
         return l_runresults
 
 
