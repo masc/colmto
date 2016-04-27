@@ -11,20 +11,25 @@ class Configuration(object):
         if p_args.runconfig == None:
             raise BaseException("run configuration flag is None")
 
-        if p_args.roadwayconfig == None:
-            raise BaseException("roadway configuration flag is None")
+        if p_args.scenarioconfig == None:
+            raise BaseException("scenario configuration flag is None")
+
+        if p_args.vtypesconfig == None:
+            raise BaseException("vtype configuration flag is None")
 
         if not os.path.isfile(p_args.runconfig):
             raise BaseException("run configuration {} is not a file".format(p_args.runconfig))
 
-        if not os.path.isfile(p_args.roadwayconfig):
-            raise BaseException("roadway configuration {} is not a file".format(p_args.roadwayconfig))
+        if not os.path.isfile(p_args.scenarioconfig):
+            raise BaseException("scenario configuration {} is not a file".format(p_args.scenarioconfig))
+
+        if not os.path.isfile(p_args.vtypesconfig):
+                    raise BaseException("vtype configuration {} is not a file".format(p_args.vtypesconfig))
 
         self._configdir = p_args.configdir
-
         self._runconfig = yaml.safe_load(open(p_args.runconfig))
-
-        self._roadwayconfig = yaml.safe_load(open(p_args.roadwayconfig))
+        self._scenarioconfig = yaml.safe_load(open(p_args.scenarioconfig))
+        self._vtypesconfig = yaml.safe_load(open(p_args.vtypesconfig))
 
 
 
@@ -37,8 +42,11 @@ class Configuration(object):
     def getRunConfig(self):
         return self._runconfig
 
-    def getRoadwayConfig(self):
-        return self._roadwayconfig
+    def getScenarioConfig(self):
+        return self._scenarioconfig
+
+    def getVtypesConfig(self):
+        return self._vtypesconfig
 
     def getConfigDir(self):
         return self._configdir

@@ -97,9 +97,9 @@ class Runtime(object):
 
             #l_nbvehicles = traci.vehicle.getIDCount()
             #l_vehiclesinstep.append( (l_step, l_nbvehicles ) )
-            #l_globaldensity.append( (l_step, l_nbvehicles / (self._sumoconfig.getRoadwayConfig().get(p_scenario).get("parameters").get("length") / 5) ))
+            #l_globaldensity.append( (l_step, l_nbvehicles / (self._sumoconfig.getScenarioConfig().get(p_scenario).get("parameters").get("length") / 5) ))
 
-            l_totalroadlength = self._sumoconfig.getRoadwayConfig().get(p_scenario).get("parameters").get("length")
+            l_totalroadlength = self._sumoconfig.getScenarioConfig().get(p_scenario).get("parameters").get("length")
             l_density.append(
                 sum(map(lambda v: l_runresults.get(v).get("length"), l_activevehicleids))/l_totalroadlength
             )

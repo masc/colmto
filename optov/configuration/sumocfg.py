@@ -31,9 +31,9 @@ class SumoConfig(Configuration):
         return self.getRunConfig().get("sumo").get(p_key)
 
     def generateAllSUMOConfigs(self):
-        map(lambda (name, cfg): self._generateSUMOConfig(name, cfg), self.getRoadwayConfig().iteritems())
+        map(lambda (name, cfg): self._generateSUMOConfig(name, cfg), self.getScenarioConfig().iteritems())
 
-    def _generateSUMOConfig(self, p_scenarioname , p_roadwayconfig):
+    def _generateSUMOConfig(self, p_scenarioname , p_scenarioconfig):
 
         l_destinationdir = os.path.join(self.getConfigDir(), "SUMO", p_scenarioname)
         if not os.path.exists(os.path.join(self.getConfigDir(), "SUMO")):
@@ -51,6 +51,7 @@ class SumoConfig(Configuration):
             self.getRunConfig().get("sumo").get("scenarios")[p_scenarioname] = {}
 
         l_runcfg = self.getRunConfig()
+        l_vtypescfg = self.getVtypesConfig()
         l_sumocfg = l_runcfg.get("sumo")
         l_scenarios = l_sumocfg.get("scenarios")
         l_nodefile = l_scenarios.get(p_scenarioname)["nodefile"] = os.path.join(l_destinationdir, "{}.nod.xml".format(p_scenarioname))
@@ -69,15 +70,12 @@ class SumoConfig(Configuration):
             print("   incomplete scenario configuration detected -> forcing rebuild")
             self._forcerebuildscenarios = True
 
-        self._generateNodeXML(p_roadwayconfig, l_nodefile, self._forcerebuildscenarios)
-        self._generateEdgeXML(p_roadwayconfig, l_edgefile, self._forcerebuildscenarios)
-        self._generateAdditionalXML(p_roadwayconfig, p_scenarioname, l_additionalfile, self._forcerebuildscenarios)
-        self._generateConfigXML(l_configfile, l_netfile, l_routefile, l_additionalfile, l_settingsfile,
-                                l_sumocfg.get("time").get("begin"),
-                                l_sumocfg.get("time").get("end"),
-                                self._forcerebuildscenarios)
-        self._generateSettingsXML(p_roadwayconfig, l_runcfg, l_settingsfile, self._forcerebuildscenarios)
-        self._generateTripXML(p_roadwayconfig, l_runcfg, l_tripfile, self._forcerebuildscenarios)
+        self._generateNodeXML(p_scenarioconfig, l_nodefile, self._forcerebuildscenarios)
+        self._generateEdgeXML(p_scenarioconfig, l_edgefile, self._forcerebuildscenarios)
+        self._generateAdditionalXML(p_scenarioconfig, p_scenarioname, l_additionalfile, self._forcerebuildscenarios)
+        self._generateConfigXML(l_configfile, l_netfile, l_routefile, l_additionalfile, l_settingsfile, l_runcfg.get("simtimeinterval"), self._forcerebuildscenarios)
+        self._generateSettingsXML(p_scenarioconfig, l_runcfg, l_settingsfile, self._forcerebuildscenarios)
+        self._generateTripXML(p_scenarioconfig, l_runcfg, l_vtypescfg, l_tripfile, self._forcerebuildscenarios)
         self._generateNetXML(l_nodefile, l_edgefile, l_netfile, self._forcerebuildscenarios)
         self._generateRouteXML(l_netfile, l_tripfile, l_routefile, self._forcerebuildscenarios)
 
@@ -86,13 +84,13 @@ class SumoConfig(Configuration):
     def _prettify(self, p_element):
         return minidom.parseString(ElementTree.tostring(p_element)).toprettyxml(indent="  ")
 
-    def _generateNodeXML(self, p_roadwayconfig, p_nodefile, p_forcerebuildscenarios=False):
+    def _generateNodeXML(self, p_scenarioconfig, p_nodefile, p_forcerebuildscenarios=False):
         if os.path.isfile(p_nodefile) and not p_forcerebuildscenarios:
             return
 
         # parameters
-        l_length = p_roadwayconfig.get("parameters").get("length")
-        l_nbswitches = p_roadwayconfig.get("parameters").get("switches")
+        l_length = p_scenarioconfig.get("parameters").get("length")
+        l_nbswitches = p_scenarioconfig.get("parameters").get("switches")
 
         if self._onlyoneotlsegment:
             l_length = 2*(l_length / (l_nbswitches+1)) # two times segment length
@@ -108,14 +106,14 @@ class SumoConfig(Configuration):
         with open(p_nodefile, "w") as fpnodesxml:
             fpnodesxml.write(self._prettify(l_nodes))
 
-    def _generateEdgeXML(self, p_roadwayconfig, p_edgefile, p_forcerebuildscenarios=False):
+    def _generateEdgeXML(self, p_scenarioconfig, p_edgefile, p_forcerebuildscenarios=False):
         if os.path.isfile(p_edgefile) and not p_forcerebuildscenarios:
             return
 
         # parameters
-        l_length = p_roadwayconfig.get("parameters").get("length")
-        l_nbswitches = p_roadwayconfig.get("parameters").get("switches")
-        l_maxspeed = p_roadwayconfig.get("parameters").get("maxSpeed")
+        l_length = p_scenarioconfig.get("parameters").get("length")
+        l_nbswitches = p_scenarioconfig.get("parameters").get("switches")
+        l_maxspeed = p_scenarioconfig.get("parameters").get("maxSpeed")
 
         # assume even distributed otl segment lengths
         l_segmentlength = l_length / ( l_nbswitches + 1 )
@@ -147,13 +145,13 @@ class SumoConfig(Configuration):
         with open(p_edgefile, "w") as fpedgexml:
             fpedgexml.write(self._prettify(l_edges))
 
-    def _generateAdditionalXML(self, p_roadwayconfig, p_scenarioname, p_additionalfile, p_forcerebuildscenarios):
+    def _generateAdditionalXML(self, p_scenarioconfig, p_scenarioname, p_additionalfile, p_forcerebuildscenarios):
         if os.path.isfile(p_additionalfile) and not p_forcerebuildscenarios:
             return
 
         # parameters
-        l_length = p_roadwayconfig.get("parameters").get("length")
-        l_nbswitches = p_roadwayconfig.get("parameters").get("switches")
+        l_length = p_scenarioconfig.get("parameters").get("length")
+        l_nbswitches = p_scenarioconfig.get("parameters").get("switches")
 
         # assume even distributed otl segment lengths
         l_segmentlength = l_length / ( l_nbswitches + 1 )
@@ -184,9 +182,10 @@ class SumoConfig(Configuration):
             fpaddxml.write(self._prettify(l_additional))
 
     ## create sumo config
-    def _generateConfigXML(self, p_configfile, p_netfile, p_routefile, p_additionalfile, p_settingsfile, p_begin, p_end, p_forcerebuildscenarios=False):
+    def _generateConfigXML(self, p_configfile, p_netfile, p_routefile, p_additionalfile, p_settingsfile, p_simtimeinterval, p_forcerebuildscenarios=False):
         if os.path.isfile(p_configfile) and not p_forcerebuildscenarios:
             return
+        assert type(p_simtimeinterval) == list and len(p_simtimeinterval) == 2
 
         l_configuration = ElementTree.Element("configuration")
         l_input = ElementTree.SubElement(l_configuration, "input")
@@ -195,19 +194,19 @@ class SumoConfig(Configuration):
         ElementTree.SubElement(l_input, "additional-files", attrib={"value": p_additionalfile})
         ElementTree.SubElement(l_input, "gui-settings-file", attrib={"value": p_settingsfile})
         l_time = ElementTree.SubElement(l_configuration, "time")
-        ElementTree.SubElement(l_time, "begin", attrib={"value": str(p_begin)})
-        ElementTree.SubElement(l_time, "end", attrib={"value": str(p_end)})
+        ElementTree.SubElement(l_time, "begin", attrib={"value": str(p_simtimeinterval[0])})
+        ElementTree.SubElement(l_time, "end", attrib={"value": str(p_simtimeinterval[1])})
 
         with open(p_configfile, "w") as fpconfigxml:
             fpconfigxml.write(self._prettify(l_configuration))
 
-    def _generateSettingsXML(self, p_roadwayconfig, p_runcfg, p_settingsfile, p_forcerebuildscenarios=False):
+    def _generateSettingsXML(self, p_scenarioconfig, p_runcfg, p_settingsfile, p_forcerebuildscenarios=False):
         if os.path.isfile(p_settingsfile) and not p_forcerebuildscenarios:
             return
 
         l_viewsettings = ElementTree.Element("viewsettings")
         ElementTree.SubElement(l_viewsettings, "viewport",
-                               attrib={"x": str(p_roadwayconfig.get("parameters").get("length") / 2),
+                               attrib={"x": str(p_scenarioconfig.get("parameters").get("length") / 2),
                                        "y": "0",
                                        "zoom": "100"})
         ElementTree.SubElement(l_viewsettings, "delay", attrib={"value": str(p_runcfg.get("sumo").get("gui-delay"))})
@@ -238,14 +237,13 @@ class SumoConfig(Configuration):
 
 
 
-    def _generateTripXML(self, p_roadwayconfig, p_runcfg, p_tripfile, p_forcerebuildscenarios=False):
+    def _generateTripXML(self, p_scenarioconfig, p_runcfg, p_vtypescfg, p_tripfile, p_forcerebuildscenarios=False):
         if os.path.isfile(p_tripfile) and not p_forcerebuildscenarios:
             return
 
         # generate simple traffic demand by considering AADT, Vmax, roadtype etc
-        l_aadt = p_roadwayconfig.get("parameters").get("aadt")
-        l_timebegin = p_runcfg.get("sumo").get("time").get("begin")
-        l_timeend = p_runcfg.get("sumo").get("time").get("end")
+        l_aadt = p_scenarioconfig.get("parameters").get("aadt")
+        l_timebegin, l_timeend = p_runcfg.get("simtimeinterval")
 
         # number of vehicles = AADT / [seconds of day] * [scenario time in seconds]
         l_numberofvehicles = int(round(l_aadt / (24*60*60) * (l_timeend - l_timebegin)))
@@ -273,7 +271,7 @@ class SumoConfig(Configuration):
         for i_dspeed in l_vtypeset:
             l_vid, l_vattr = filter(
                 lambda (k, v): v.get("dspeedbucket").get("min") <= i_dspeed < v.get("dspeedbucket").get("max"),
-                p_runcfg.get("vtypes").iteritems()
+                p_vtypescfg.iteritems()
             ).pop()
             # filter for relevant attributes
             l_vattr = dict( map( lambda (k, v): (k, str(v)), filter(
