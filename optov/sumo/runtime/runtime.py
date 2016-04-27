@@ -39,6 +39,22 @@ class Runtime(object):
 
         l_density = []
 
+        # induct loop value subscription
+        traci.inductionloop.subscribe(
+            "start",
+            (
+                tc.LAST_STEP_VEHICLE_ID_LIST,
+                tc.LAST_STEP_VEHICLE_DATA
+            )
+        )
+        traci.inductionloop.subscribe(
+            "exit",
+            (
+                tc.LAST_STEP_VEHICLE_ID_LIST,
+                tc.LAST_STEP_VEHICLE_DATA
+            )
+        )
+
         # do simulation time steps as long as vehicles are present in the network
         while traci.simulation.getMinExpectedNumber() > 0:
             # tell SUMO to do a simulation step
@@ -67,8 +83,9 @@ class Runtime(object):
                 )
 
                 # create new vehicle objects
+                # TODO: Initialise new vehicles objects on xml generation
                 l_runresults.update(
-                    (i_vid, {"length": 0,"trajectory" : {} }) for i_vid in l_departedvehicleids
+                    (i_vid, {"length": 0, "trajectory": {}, "inductionloop": {} }) for i_vid in l_departedvehicleids
                 )
 
             # update subscription results for all active vehicles in this step
@@ -86,6 +103,23 @@ class Runtime(object):
             l_density.append(
                 sum(map(lambda v: l_runresults.get(v).get("length"), l_activevehicleids))/l_totalroadlength
             )
+
+            # induct loop value retrieval
+            l_inductionresults = traci.inductionloop.getSubscriptionResults()
+            #print(l_step,l_inductionresults)
+            for i_vid in l_inductionresults.get("start").get(tc.LAST_STEP_VEHICLE_ID_LIST):
+                if l_inductionresults.get("start").get(tc.LAST_STEP_VEHICLE_DATA)[0][0] == i_vid:
+                    l_entrytime = l_inductionresults.get("start").get(tc.LAST_STEP_VEHICLE_DATA)[0][2]
+                    l_speed = l_runresults.get(i_vid).get("trajectory").get(l_step) #.get(tc.VAR_SPEED)
+                    l_maxspeed = l_runresults.get(i_vid).get("trajectory").get(l_step) #.get(tc.VAR_MAXSPEED)
+                    l_runresults.get(i_vid).get("inductionloop")["starttime"] = (l_entrytime, l_speed, l_maxspeed)
+
+            for i_vid in l_inductionresults.get("exit").get(tc.LAST_STEP_VEHICLE_ID_LIST):
+                if l_inductionresults.get("exit").get(tc.LAST_STEP_VEHICLE_DATA)[0][0] == i_vid:
+                    l_entrytime = l_inductionresults.get("exit").get(tc.LAST_STEP_VEHICLE_DATA)[0][2]
+                    l_speed = l_runresults.get(i_vid).get("trajectory").get(l_step) #.get(tc.VAR_SPEED)
+                    l_maxspeed = l_runresults.get(i_vid).get("trajectory").get(l_step) #.get(tc.VAR_MAXSPEED)
+                    l_runresults.get(i_vid).get("inductionloop")["exittime"] = (l_entrytime, l_speed, l_maxspeed)
 
             l_step += 1
 

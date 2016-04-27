@@ -20,13 +20,14 @@ class Visualisation(object):
         pass
 
     def plotAvgGlobalSatisfactionPrePost(self, p_scenarioname, p_runnumber, p_vehicles):
-        plt.figure(1)
-        plt.title("{}: run {}".format(p_scenarioname, p_runnumber))
+        l_nbsteps = 0
+        l_nbvehicles = len(p_vehicles)
         l_preotlsatisfaction=[]
         l_postotlsatisfaction=[]
         for i_vid, i_vehicle in p_vehicles.iteritems():
             l_vpresat=(0,0)
             l_vpostsat=(0,0)
+            l_nbsteps = max(i_vehicle.get("trajectory").keys())
             for i_timestep, i_result in i_vehicle.get("trajectory").iteritems():
                 if i_result.get(tc.VAR_LANE_ID)=="2_1_segment_0":
                     l_vpresat=(i_timestep,i_result.get("satisfaction"))
@@ -35,11 +36,13 @@ class Visualisation(object):
             l_preotlsatisfaction.append(l_vpresat[1])
             l_postotlsatisfaction.append(l_vpostsat[1])
 
+        plt.figure(1)
+        plt.title("{}: {} vehicles, {} steps, run {}".format(p_scenarioname, l_nbvehicles, l_nbsteps, p_runnumber))
         plt.boxplot((l_preotlsatisfaction, l_postotlsatisfaction))
-        plt.xlabel("Pre vs Post average satisfaction")
+        plt.xlabel("Pre vs Post satisfaction")
         plt.ylabel("Satisfaction in %")
-        plt.savefig("{}-{}-AvgGlobalSatisfactionPrePost.pdf".format(p_scenarioname,p_runnumber))
-        plt.savefig("{}-{}-AvgGlobalSatisfactionPrePost.png".format(p_scenarioname,p_runnumber))
+        plt.savefig("{}-{}-{}-AvgGlobalSatisfactionPrePost.pdf".format(p_scenarioname,p_runnumber,l_nbsteps))
+        plt.savefig("{}-{}-{}-AvgGlobalSatisfactionPrePost.png".format(p_scenarioname,p_runnumber,l_nbsteps))
         plt.close()
 
     def plotDensity(self, p_scenarioname, p_runnumber, p_density):
@@ -47,8 +50,8 @@ class Visualisation(object):
         plt.title("{}: run {}".format(p_scenarioname, p_runnumber))
 
         plt.plot(p_density, "b")
-        plt.savefig("{}-{}-Density.pdf".format(p_scenarioname,p_runnumber))
-        plt.savefig("{}-{}-Density.png".format(p_scenarioname,p_runnumber))
+        plt.savefig("{}-{}-{}-Density.pdf".format(p_scenarioname,p_runnumber,len(p_density)))
+        plt.savefig("{}-{}-{}-Density.png".format(p_scenarioname,p_runnumber,len(p_density)))
         plt.close()
 
 

@@ -57,11 +57,12 @@ class SumoConfig(Configuration):
         l_edgefile = l_scenarios.get(p_scenarioname)["edgefile"] = os.path.join(l_destinationdir, "{}.edg.xml".format(p_scenarioname))
         l_netfile = l_scenarios.get(p_scenarioname)["netfile"] = os.path.join(l_destinationdir, "{}.net.xml".format(p_scenarioname))
         l_tripfile = l_scenarios.get(p_scenarioname)["tripfile"] = os.path.join(l_destinationdir, "{}.trip.xml".format(p_scenarioname))
+        l_additionalfile = l_scenarios.get(p_scenarioname)["additionalfile"] = os.path.join(l_destinationdir, "{}.add.xml".format(p_scenarioname))
         l_routefile = l_scenarios.get(p_scenarioname)["routefile"] = os.path.join(l_destinationdir, "{}.rou.xml".format(p_scenarioname))
         l_settingsfile = l_scenarios.get(p_scenarioname)["settingsfile"] = os.path.join(l_destinationdir, "{}.settings.xml".format(p_scenarioname))
         l_configfile = l_scenarios.get(p_scenarioname)["configfile"] = os.path.join(l_destinationdir, "{}.config.cfg".format(p_scenarioname))
         l_scenarios.get(p_scenarioname)["tripinfofile"] = os.path.join(l_destinationdir, "{}.tripinfo.xml".format(p_scenarioname))
-        l_sumocfgfiles = [l_nodefile, l_edgefile, l_netfile, l_tripfile, l_routefile, l_settingsfile, l_configfile]
+        l_sumocfgfiles = [l_nodefile, l_edgefile, l_netfile, l_tripfile, l_additionalfile, l_routefile, l_settingsfile, l_configfile]
 
         print(" * checking for SUMO configuration files for scenario", p_scenarioname)
         if len(filter(lambda fname: not os.path.isfile(fname), l_sumocfgfiles)) > 0:
@@ -70,7 +71,8 @@ class SumoConfig(Configuration):
 
         self._generateNodeXML(p_roadwayconfig, l_nodefile, self._forcerebuildscenarios)
         self._generateEdgeXML(p_roadwayconfig, l_edgefile, self._forcerebuildscenarios)
-        self._generateConfigXML(l_configfile, l_netfile, l_routefile, l_settingsfile,
+        self._generateAdditionalXML(p_roadwayconfig, p_scenarioname, l_additionalfile, self._forcerebuildscenarios)
+        self._generateConfigXML(l_configfile, l_netfile, l_routefile, l_additionalfile, l_settingsfile,
                                 l_sumocfg.get("time").get("begin"),
                                 l_sumocfg.get("time").get("end"),
                                 self._forcerebuildscenarios)
@@ -96,6 +98,7 @@ class SumoConfig(Configuration):
             l_length = 2*(l_length / (l_nbswitches+1)) # two times segment length
 
         l_nodes = ElementTree.Element("nodes")
+        #ElementTree.SubElement(l_nodes, "node", attrib={"id": "ramp_start", "x": "-1500", "y": "0"})
         ElementTree.SubElement(l_nodes, "node", attrib={"id": "2_1_start", "x": "0", "y": "0"})
         ElementTree.SubElement(l_nodes, "node", attrib={"id": "2_1_end", "x": str(l_length), "y": "0"})
         # dummy node for easier from-to routing
@@ -138,16 +141,50 @@ class SumoConfig(Configuration):
         ElementTree.SubElement(l_edges, "edge", attrib={"id": "2_1_end-ramp_exit",
                                                         "from" : "2_1_end",
                                                         "to": "ramp_exit",
-                                                        #"numLanes": "2" if l_addotllane else "1",
                                                         "numLanes": "1",
                                                         "speed": str(l_maxspeed)})
 
         with open(p_edgefile, "w") as fpedgexml:
             fpedgexml.write(self._prettify(l_edges))
 
+    def _generateAdditionalXML(self, p_roadwayconfig, p_scenarioname, p_additionalfile, p_forcerebuildscenarios):
+        if os.path.isfile(p_additionalfile) and not p_forcerebuildscenarios:
+            return
+
+        # parameters
+        l_length = p_roadwayconfig.get("parameters").get("length")
+        l_nbswitches = p_roadwayconfig.get("parameters").get("switches")
+
+        # assume even distributed otl segment lengths
+        l_segmentlength = l_length / ( l_nbswitches + 1 )
+
+        l_additional = ElementTree.Element("additional")
+        # place induction loop right before the first split (i.e. end of starting edge)
+        #     <inductionLoop id="myLoop1" lane="foo_0" pos="42" freq="900" file="out.xml"/>
+        ElementTree.SubElement(l_additional, "inductionLoop",
+                               attrib={
+                                   "id": "start",
+                                   "lane": "2_1_segment_0",
+                                   "pos": str(l_segmentlength),
+                                   "friendlyPos": "true",
+                                   "freq" : "900",
+                                   "file": os.path.join(self.getConfigDir(),"SUMO", p_scenarioname, "{}.inductionLoop.start.xml".format(p_scenarioname))
+                               })
+
+        ElementTree.SubElement(l_additional, "inductionLoop",
+                               attrib={
+                                   "id": "exit",
+                                   "lane": "2_1_end-ramp_exit_0",
+                                   "pos": str(l_segmentlength),
+                                   "friendlyPos": "true",
+                                   "freq" : "900",
+                                   "file": os.path.join(self.getConfigDir(),"SUMO", p_scenarioname, "{}.inductionLoop.exit.xml".format(p_scenarioname))
+                               })
+        with open(p_additionalfile, "w") as fpaddxml:
+            fpaddxml.write(self._prettify(l_additional))
 
     ## create sumo config
-    def _generateConfigXML(self, p_configfile, p_netfile, p_routefile, p_settingsfile, p_begin, p_end, p_forcerebuildscenarios=False):
+    def _generateConfigXML(self, p_configfile, p_netfile, p_routefile, p_additionalfile, p_settingsfile, p_begin, p_end, p_forcerebuildscenarios=False):
         if os.path.isfile(p_configfile) and not p_forcerebuildscenarios:
             return
 
@@ -155,6 +192,7 @@ class SumoConfig(Configuration):
         l_input = ElementTree.SubElement(l_configuration, "input")
         ElementTree.SubElement(l_input, "net-file", attrib={"value": p_netfile})
         ElementTree.SubElement(l_input, "route-files", attrib={"value": p_routefile})
+        ElementTree.SubElement(l_input, "additional-files", attrib={"value": p_additionalfile})
         ElementTree.SubElement(l_input, "gui-settings-file", attrib={"value": p_settingsfile})
         l_time = ElementTree.SubElement(l_configuration, "time")
         ElementTree.SubElement(l_time, "begin", attrib={"value": str(p_begin)})
