@@ -16,4 +16,6 @@ vtypedistribution:
   tractors: 0.1
   trucks: 0.2
   passenger: 0.7
+bunches: 1
+bunchlength: 30
 initialsorting: bestcase

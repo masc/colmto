@@ -28,6 +28,7 @@ class Optov(object):
         l_parser.add_argument("--configdir", dest="configdir", type=str, default=l_configdir)
         l_parser.add_argument("--scenario", dest="scenario", type=str, default="all")
         l_parser.add_argument("--runs", dest="runs", type=int, default=1)
+        l_parser.add_argument("--bunches", dest="bunches", type=int, default=1)
 
         l_mutexgrouprunchoice = l_parser.add_mutually_exclusive_group(required=False)
         l_mutexgrouprunchoice.add_argument("--sumo", dest="runsumo", default=False, action='store_true', help="run SUMO simulation")

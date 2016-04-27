@@ -9,7 +9,7 @@ import xml.etree.ElementTree as ElementTree
 from xml.dom import minidom
 
 from configuration import Configuration
-
+from sumo.vehicle.vehicle import Vehicle
 
 class SumoConfig(Configuration):
 
@@ -219,7 +219,7 @@ class SumoConfig(Configuration):
             return random.expovariate(p_lambda)
         return p_starttimes[-1]+random.expovariate(p_lambda)
 
-    def _createVehicleDistribution(self, p_distribution, p_args, p_nbvehicles, p_aadt):
+    def _createVehicleSpeedDistribution(self, p_distribution, p_args, p_nbvehicles, p_aadt):
         l_speeddistribution = []
         l_starttimes = []
         while len(l_speeddistribution) < p_nbvehicles:
@@ -234,6 +234,32 @@ class SumoConfig(Configuration):
                 l_speeddistribution.append(l_dspeed)
 
         return l_speeddistribution, l_starttimes
+
+    def _createFixedInitialVehicleDistribution(self, p_vtypescfg, p_nbvehicles, p_aadt, p_initialsorting="random", p_pcpassengers=1/3, p_pctrucks=1/3, p_pctractors=1/3):
+        l_vtypepopulation = ["passenger"]*int(round(100*p_pcpassengers)) + ["truck"]*int(round(100*p_pctrucks)) + ["tractor"]*int(round(100*p_pctractors))
+        l_vehps = p_aadt / (24*60*60)
+
+        l_vtypes = random.sample(l_vtypepopulation, p_nbvehicles)
+
+        # sort speeds according to initialsorting
+        if p_initialsorting == "bestcase":
+            l_vtypes.sort(key=lambda t: t.get("maxSpeeds"))
+        elif p_initialsorting == "worstcase":
+            l_vtypes.sort(key=lambda t: t.get("maxSpeeds"), reverse=True)
+
+        # create vehicles and assign start times to each one
+        l_vehicles = []
+        for i,i_vtype in enumerate(l_vtypes):
+            l_vehicles.append(
+                (
+                    "vehicle{}".format(i),
+                    Vehicle("vehicle{}".format(i),
+                        i_vtype,
+                        self._nextTime(l_vehps, l_vehicles[i-1] if i > 0 else 0))
+                )
+            )
+
+        return dict(l_vehicles)
 
 
 
@@ -251,7 +277,7 @@ class SumoConfig(Configuration):
             l_aadt, l_numberofvehicles, (l_timeend - l_timebegin)
         ))
 
-        l_dspeeddistribution, l_starttimes = self._createVehicleDistribution(
+        l_dspeeddistribution, l_starttimes = self._createVehicleSpeedDistribution(
             p_runcfg.get("desiredspeeds").get("distribution"),
             p_runcfg.get("desiredspeeds").get("args"),
             l_numberofvehicles,
