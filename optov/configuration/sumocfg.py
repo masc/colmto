@@ -223,7 +223,7 @@ class SumoConfig(Configuration):
         else:
             return p_prevstarttime
 
-    def _createFixedInitialVehicleDistribution(self, p_vtypescfg, p_runcfg, p_nbvehicles, p_aadt, p_initialsorting, p_vtypedistribution):
+    def _createFixedInitialVehicleDistribution(self, p_vtypescfg, p_runcfg, p_scenarioconfig, p_nbvehicles, p_aadt, p_initialsorting, p_vtypedistribution):
         print("create fixed initial vehicle distribution with {}".format(p_vtypedistribution))
         l_vtypedistribution = list(itertools.chain.from_iterable(
             map(
@@ -242,7 +242,7 @@ class SumoConfig(Configuration):
 
         # generate color map for vehicle max speeds
         l_colormap = self._visualisation.getColormap(
-            map(lambda v: v.getMaxSpeed(), l_vehicles),
+            xrange(int(round(p_scenarioconfig.get("parameters").get("maxSpeed")))),
             'jet_r'
         )
 
@@ -287,6 +287,7 @@ class SumoConfig(Configuration):
 
         l_vehicles = self._createFixedInitialVehicleDistribution(p_vtypescfg,
                                                                  p_runcfg,
+                                                                 p_scenarioconfig,
                                                                  l_numberofvehicles,
                                                                  l_aadt,
                                                                  p_runcfg.get("initialsorting"),
