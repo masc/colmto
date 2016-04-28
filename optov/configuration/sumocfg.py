@@ -7,6 +7,7 @@ import random
 import subprocess
 import xml.etree.ElementTree as ElementTree
 from xml.dom import minidom
+import itertools
 
 from configuration import Configuration
 from sumo.vehicle.vehicle import Vehicle
@@ -214,52 +215,55 @@ class SumoConfig(Configuration):
         with open(p_settingsfile, "w") as fpconfigxml:
             fpconfigxml.write(self._prettify(l_viewsettings))
 
-    def _nextTime(self, p_lambda, p_starttimes):
-        if len(p_starttimes) == 0:
-            return random.expovariate(p_lambda)
-        return p_starttimes[-1]+random.expovariate(p_lambda)
+    def _nextTime(self, p_lambda, p_prevstarttime, p_distribution="poisson"):
+        if p_distribution=="poisson":
+            return p_prevstarttime+random.expovariate(p_lambda)
+        elif p_distribution=="linear":
+            return p_prevstarttime+1/p_lambda
+        else:
+            return p_prevstarttime
 
-    def _createVehicleSpeedDistribution(self, p_distribution, p_args, p_nbvehicles, p_aadt):
-        l_speeddistribution = []
-        l_starttimes = []
-        while len(l_speeddistribution) < p_nbvehicles:
-            l_vid = len(l_speeddistribution)
-            if p_distribution == "GAUSS":
-                l_dspeed = int(round(random.gauss(*p_args)))
-            else:
-                l_dspeed = 250
-            if l_dspeed > 0:
-                l_vehps = p_aadt / (24*60*60)
-                l_starttimes.append(self._nextTime(l_vehps, l_starttimes))
-                l_speeddistribution.append(l_dspeed)
-
-        return l_speeddistribution, l_starttimes
-
-    def _createFixedInitialVehicleDistribution(self, p_vtypescfg, p_nbvehicles, p_aadt, p_initialsorting="random", p_pcpassengers=1/3, p_pctrucks=1/3, p_pctractors=1/3):
-        l_vtypepopulation = ["passenger"]*int(round(100*p_pcpassengers)) + ["truck"]*int(round(100*p_pctrucks)) + ["tractor"]*int(round(100*p_pctractors))
-        l_vehps = p_aadt / (24*60*60)
-
-        l_vtypes = random.sample(l_vtypepopulation, p_nbvehicles)
-
-        # sort speeds according to initialsorting
-        if p_initialsorting == "bestcase":
-            l_vtypes.sort(key=lambda t: t.get("maxSpeeds"))
-        elif p_initialsorting == "worstcase":
-            l_vtypes.sort(key=lambda t: t.get("maxSpeeds"), reverse=True)
-
-        # create vehicles and assign start times to each one
-        l_vehicles = []
-        for i,i_vtype in enumerate(l_vtypes):
-            l_vehicles.append(
-                (
-                    "vehicle{}".format(i),
-                    Vehicle("vehicle{}".format(i),
-                        i_vtype,
-                        self._nextTime(l_vehps, l_vehicles[i-1] if i > 0 else 0))
-                )
+    def _createFixedInitialVehicleDistribution(self, p_vtypescfg, p_runcfg, p_nbvehicles, p_aadt, p_initialsorting, p_vtypedistribution):
+        print("create fixed initial vehicle distribution with {}".format(p_vtypedistribution))
+        l_vtypedistribution = list(itertools.chain.from_iterable(
+            map(
+                lambda (k,v): [k] * int(round(100 * v.get("fraction"))),
+                p_vtypedistribution.iteritems()
             )
+        ))
 
-        return dict(l_vehicles)
+        l_vehps = p_aadt / (24*60*60) \
+            if not p_runcfg.get("vehiclespersecond").get("enabled") else p_runcfg.get("vehiclespersecond").get("value")
+
+        l_vehicles = map(
+            lambda vtype: Vehicle(p_vtypescfg.get(vtype), p_vtypedistribution.get(vtype).get("speedsigma")),
+            [random.choice(l_vtypedistribution) for i in xrange(p_nbvehicles)]
+        )
+
+        # generate color map for vehicle max speeds
+        l_colormap = self._visualisation.getColormap(
+            map(lambda v: v.getMaxSpeed(), l_vehicles),
+            'jet_r'
+        )
+
+        # update colors
+        for i_vehicle in l_vehicles:
+            i_vehicle.setColor(l_colormap.to_rgba(i_vehicle.getMaxSpeed()))
+
+        # sort speeds according to initialsorting flag
+        if p_initialsorting == "bestcase":
+            l_vehicles.sort(key=lambda v: v.getMaxSpeed(), reverse=True)
+        elif p_initialsorting == "worstcase":
+            l_vehicles.sort(key=lambda v: v.getMaxSpeed())
+
+        # assign start time and id to each vehicle
+        for i,i_vehicle in enumerate(l_vehicles):
+            i_vehicle.provision("vehicle{}".format(i),
+                                self._nextTime(l_vehps,
+                                               l_vehicles[i-1].getStartTime() if i > 0 else 0,
+                                               p_runcfg.get("starttimedistribution")))
+
+        return l_vehicles
 
 
 
@@ -268,52 +272,56 @@ class SumoConfig(Configuration):
             return
 
         # generate simple traffic demand by considering AADT, Vmax, roadtype etc
-        l_aadt = p_scenarioconfig.get("parameters").get("aadt")
+        l_aadt = p_scenarioconfig.get("parameters").get("aadt") \
+            if not p_runcfg.get("aadt").get("enabled") else p_runcfg.get("aadt").get("value")
+
         l_timebegin, l_timeend = p_runcfg.get("simtimeinterval")
 
         # number of vehicles = AADT / [seconds of day] * [scenario time in seconds]
-        l_numberofvehicles = int(round(l_aadt / (24*60*60) * (l_timeend - l_timebegin)))
+        l_numberofvehicles = int(round(l_aadt / (24*60*60) * (l_timeend - l_timebegin))) \
+            if not p_runcfg.get("nbvehicles").get("enabled") else p_runcfg.get("nbvehicles").get("value")
+
         print("Scenario's AADT of {} vehicles/average annual day => {} vehicles for {} simulation seconds".format(
             l_aadt, l_numberofvehicles, (l_timeend - l_timebegin)
         ))
 
-        l_dspeeddistribution, l_starttimes = self._createVehicleSpeedDistribution(
-            p_runcfg.get("desiredspeeds").get("distribution"),
-            p_runcfg.get("desiredspeeds").get("args"),
-            l_numberofvehicles,
-            l_aadt
-        )
+        l_vehicles = self._createFixedInitialVehicleDistribution(p_vtypescfg,
+                                                                 p_runcfg,
+                                                                 l_numberofvehicles,
+                                                                 l_aadt,
+                                                                 p_runcfg.get("initialsorting"),
+                                                                 p_runcfg.get("vtypedistribution")
+                                                                 )
 
-        # generate colormap for speeds
-        l_colormap = self._visualisation.getColormap(l_dspeeddistribution, 'jet_r')
-
-        # create unique vtypes identified by dspeed
-        l_vtypeset = list(set(l_dspeeddistribution))
 
         # xml
         l_trips = ElementTree.Element("trips")
 
-        # create vehicles as dictionaries containing the type depending on desired speed buckets (see cfg)
-        for i_dspeed in l_vtypeset:
-            l_vid, l_vattr = filter(
-                lambda (k, v): v.get("dspeedbucket").get("min") <= i_dspeed < v.get("dspeedbucket").get("max"),
-                p_vtypescfg.iteritems()
-            ).pop()
+        # create a sumo vtype for each desired speed
+        l_vtypes = dict(map(lambda v: (int(v.getMaxSpeed()), v), l_vehicles))
+
+        for i_vtype, i_vehicle in l_vtypes.iteritems():
+
             # filter for relevant attributes
             l_vattr = dict( map( lambda (k, v): (k, str(v)), filter(
-                lambda (k, v): k in ["vClass","length","width","height","minGap","accel","decel","speedFactor","speedDev"], l_vattr.iteritems()
+                lambda (k, v): k in ["vClass","length","width","height","minGap","accel","decel","speedFactor","speedDev"], i_vehicle.getVType().iteritems()
             )))
-            l_vattr["id"] = str(i_dspeed)
-            l_vattr["type"] = l_vid
-            l_vattr["maxSpeed"] = str(i_dspeed)
-            l_vattr["color"] = "{},{},{},{}".format(*l_colormap.to_rgba(i_dspeed))
+            l_vattr["id"] = str(i_vtype)
+            l_vattr["type"] = l_vattr.get("vClass")
+            l_vattr["maxSpeed"] = str(i_vehicle.getMaxSpeed())
             ElementTree.SubElement(l_trips, "vType", attrib=l_vattr)
 
         # add trips
-        map(lambda (i_id, i_dspeed):
+        for i_vehicle in l_vehicles:
             ElementTree.SubElement(l_trips, "trip", attrib={
-                "id": "vehicle{}".format(i_id), "depart": str(l_starttimes[i_id]), "from": "2_1_segment", "to": "2_1_end-ramp_exit", "type": str(i_dspeed), "departSpeed": "max"
-            }), enumerate(l_dspeeddistribution))
+                "id": i_vehicle.getID(),
+                "depart": str(i_vehicle.getStartTime()),
+                "from": "2_1_segment",
+                "to": "2_1_end-ramp_exit",
+                "type": str(i_vehicle.getMaxSpeed()),
+                "departSpeed": "max",
+                "color" : "{},{},{},{}".format(*i_vehicle.getColor())
+            })
 
         with open(p_tripfile, "w") as fptripxml:
             fptripxml.write(self._prettify(l_trips))

@@ -1,6 +1,3 @@
-desiredspeeds:
-  args: [27.77777777777778, 8.333333333333334]
-  distribution: GAUSS
 sumo:
   enabled: true
   gui-delay: 200
@@ -13,9 +10,23 @@ mip:
 simtimeinterval: [0, 10800]
 runs: 1
 vtypedistribution:
-  tractors: 0.1
-  trucks: 0.2
-  passenger: 0.7
-bunches: 1
-bunchlength: 30
+  tractor:
+    fraction: 0.1
+    speedsigma: 1
+  truck:
+    fraction: 0.3
+    speedsigma: 1
+  passenger:
+    fraction: 0.5
+    speedsigma: 1
+starttimedistribution: linear
+nbvehicles:
+  enabled: true
+  value: 20
+aadt:
+  enabled: false
+  value: 86400
+vehiclespersecond:
+  enabled: true
+  value: 0.5
 initialsorting: bestcase
