@@ -26,17 +26,14 @@ class Sumo(object):
                                             else checkBinary("sumo-gui"))
 
     def runScenario(self, p_scenario):
-        if self._sumocfg.get("scenarios").get(p_scenario) == None:
+        if self._sumocfg.getScenarioConfig().get(p_scenario) == None:
             print("/!\ scenario {} not found in configuration".format(p_scenario))
             return
 
-        l_runresults = {}
         for i_run in xrange(self._sumocfg.getRunConfig().get("runs")):
-            l_runresults[i_run] = self._runtime.run(p_scenario, i_run)
+            l_scenario = self._sumocfg.generateScenario(p_scenario, i_run)
+            self._runtime.run(l_scenario)
 
-        # push results to resultswriter and statistics for dumping data and plotting fancy figures
-        self._resultswriter.dumpSUMOResults(p_scenario, l_runresults)
-        self._statistics.pushSUMOResults(p_scenario, l_runresults)
 
 
     def runScenarios(self, p_scenarios=tuple()):
@@ -44,4 +41,4 @@ class Sumo(object):
             self.runScenario(i_scenario)
 
     def runAllScenarios(self):
-        self.runScenarios(self._sumocfg.get("scenarios").keys())
+        self.runScenarios(self._sumocfg.getScenarioConfig().keys())

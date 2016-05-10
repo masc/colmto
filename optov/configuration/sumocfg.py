@@ -21,7 +21,7 @@ class SumoConfig(Configuration):
         self._visualisation = p_visualisation
         self._forcerebuildscenarios = p_args.forcerebuildscenarios
         self._onlyoneotlsegment = p_args.onlyoneotlsegment
-        self.generateAllSUMOConfigs()
+
         if p_args.headless == True:
             self.getRunConfig().get("sumo")["headless"] = True
         if p_args.gui == True:
@@ -31,10 +31,12 @@ class SumoConfig(Configuration):
     def get(self, p_key):
         return self.getRunConfig().get("sumo").get(p_key)
 
-    def generateAllSUMOConfigs(self):
-        map(lambda (name, cfg): self._generateSUMOConfig(name, cfg), self.getScenarioConfig().iteritems())
+    #def generateAllSUMOConfigs(self):
+    #    for name, cfg in self.getScenarioConfig().iteritems():
+    #        self._generateSUMOConfig(name, cfg)
 
-    def _generateSUMOConfig(self, p_scenarioname , p_scenarioconfig):
+    def generateScenario(self, p_scenarioname, p_run):
+        l_scenarioconfig = self.getScenarioConfig().get(p_scenarioname)
 
         l_destinationdir = os.path.join(self.getConfigDir(), "SUMO", p_scenarioname)
         if not os.path.exists(os.path.join(self.getConfigDir(), "SUMO")):
@@ -42,44 +44,41 @@ class SumoConfig(Configuration):
         if not os.path.exists(os.path.join(l_destinationdir)):
             os.mkdir(l_destinationdir)
 
-        if self.getRunConfig().get("sumo") == None:
-            self.getRunConfig()["sumo"] = {}
-
-        if self.getRunConfig().get("sumo").get("scenarios") == None:
-            self.getRunConfig().get("sumo")["scenarios"] = {}
-
-        if self.getRunConfig().get("sumo").get("scenarios").get(p_scenarioname) == None:
-            self.getRunConfig().get("sumo").get("scenarios")[p_scenarioname] = {}
-
         l_runcfg = self.getRunConfig()
+
         l_vtypescfg = self.getVtypesConfig()
-        l_sumocfg = l_runcfg.get("sumo")
-        l_scenarios = l_sumocfg.get("scenarios")
-        l_nodefile = l_scenarios.get(p_scenarioname)["nodefile"] = os.path.join(l_destinationdir, "{}.nod.xml".format(p_scenarioname))
-        l_edgefile = l_scenarios.get(p_scenarioname)["edgefile"] = os.path.join(l_destinationdir, "{}.edg.xml".format(p_scenarioname))
-        l_netfile = l_scenarios.get(p_scenarioname)["netfile"] = os.path.join(l_destinationdir, "{}.net.xml".format(p_scenarioname))
-        l_tripfile = l_scenarios.get(p_scenarioname)["tripfile"] = os.path.join(l_destinationdir, "{}.trip.xml".format(p_scenarioname))
-        l_additionalfile = l_scenarios.get(p_scenarioname)["additionalfile"] = os.path.join(l_destinationdir, "{}.add.xml".format(p_scenarioname))
-        l_routefile = l_scenarios.get(p_scenarioname)["routefile"] = os.path.join(l_destinationdir, "{}.rou.xml".format(p_scenarioname))
-        l_settingsfile = l_scenarios.get(p_scenarioname)["settingsfile"] = os.path.join(l_destinationdir, "{}.settings.xml".format(p_scenarioname))
-        l_configfile = l_scenarios.get(p_scenarioname)["configfile"] = os.path.join(l_destinationdir, "{}.config.cfg".format(p_scenarioname))
-        l_scenarios.get(p_scenarioname)["tripinfofile"] = os.path.join(l_destinationdir, "{}.tripinfo.xml".format(p_scenarioname))
+
+        if not os.path.exists(os.path.join(l_destinationdir, str(p_run))):
+            os.mkdir(os.path.join(os.path.join(l_destinationdir, str(p_run))))
+
+        l_scenariorun = { "name": p_scenarioname }
+        l_nodefile = l_scenariorun["nodefile"] = os.path.join(l_destinationdir, str(p_run), "{}.nod.xml".format(p_scenarioname))
+        l_edgefile = l_scenariorun["edgefile"] = os.path.join(l_destinationdir, str(p_run), "{}.edg.xml".format(p_scenarioname))
+        l_netfile = l_scenariorun["netfile"] = os.path.join(l_destinationdir, str(p_run), "{}.net.xml".format(p_scenarioname))
+        l_tripfile = l_scenariorun["tripfile"] = os.path.join(l_destinationdir, str(p_run), "{}.trip.xml".format(p_scenarioname))
+        l_additionalfile = l_scenariorun["additionalfile"] = os.path.join(l_destinationdir, str(p_run), "{}.add.xml".format(p_scenarioname))
+        l_routefile = l_scenariorun["routefile"] = os.path.join(l_destinationdir, str(p_run), "{}.rou.xml".format(p_scenarioname))
+        l_settingsfile = l_scenariorun["settingsfile"] = os.path.join(l_destinationdir, str(p_run), "{}.settings.xml".format(p_scenarioname))
+        l_configfile = l_scenariorun["configfile"] = os.path.join(l_destinationdir, str(p_run), "{}.sumo.cfg".format(p_scenarioname))
+        l_scenariorun["tripinfofile"] = os.path.join(l_destinationdir, str(p_run), "{}.tripinfo-output.xml".format(p_scenarioname))
+        l_scenariorun["fcdfile"] = os.path.join(l_destinationdir, str(p_run), "{}.fcd-output.xml".format(p_scenarioname))
         l_sumocfgfiles = [l_nodefile, l_edgefile, l_netfile, l_tripfile, l_additionalfile, l_routefile, l_settingsfile, l_configfile]
 
-        print(" * checking for SUMO configuration files for scenario", p_scenarioname)
+        print(" * checking for SUMO configuration files for scenario {} / run {}".format(p_scenarioname, p_run))
         if len(filter(lambda fname: not os.path.isfile(fname), l_sumocfgfiles)) > 0:
             print("   incomplete scenario configuration detected -> forcing rebuild")
             self._forcerebuildscenarios = True
 
-        self._generateNodeXML(p_scenarioconfig, l_nodefile, self._forcerebuildscenarios)
-        self._generateEdgeXML(p_scenarioconfig, l_edgefile, self._forcerebuildscenarios)
-        self._generateAdditionalXML(p_scenarioconfig, p_scenarioname, l_additionalfile, self._forcerebuildscenarios)
+        self._generateNodeXML(l_scenarioconfig, l_nodefile, self._forcerebuildscenarios)
+        self._generateEdgeXML(l_scenarioconfig, l_edgefile, self._forcerebuildscenarios)
+        self._generateAdditionalXML(l_scenarioconfig, p_run, p_scenarioname, l_additionalfile, self._forcerebuildscenarios)
         self._generateConfigXML(l_configfile, l_netfile, l_routefile, l_additionalfile, l_settingsfile, l_runcfg.get("simtimeinterval"), self._forcerebuildscenarios)
-        self._generateSettingsXML(p_scenarioconfig, l_runcfg, l_settingsfile, self._forcerebuildscenarios)
-        self._generateTripXML(p_scenarioconfig, l_runcfg, l_vtypescfg, l_tripfile, self._forcerebuildscenarios)
+        self._generateSettingsXML(l_scenarioconfig, l_runcfg, l_settingsfile, self._forcerebuildscenarios)
+        self._generateTripXML(l_scenarioconfig, l_runcfg, l_vtypescfg, l_tripfile, self._forcerebuildscenarios)
         self._generateNetXML(l_nodefile, l_edgefile, l_netfile, self._forcerebuildscenarios)
         self._generateRouteXML(l_netfile, l_tripfile, l_routefile, self._forcerebuildscenarios)
 
+        return l_scenariorun
 
     ## Return a pretty-printed XML string for the Element (https://pymotw.com/2/xml/etree/ElementTree/create.html)
     def _prettify(self, p_element):
@@ -92,16 +91,16 @@ class SumoConfig(Configuration):
         # parameters
         l_length = p_scenarioconfig.get("parameters").get("length")
         l_nbswitches = p_scenarioconfig.get("parameters").get("switches")
+        l_segmentlength = l_length / ( l_nbswitches + 1 )
 
         if self._onlyoneotlsegment:
-            l_length = 2*(l_length / (l_nbswitches+1)) # two times segment length
+            l_length = 2*l_segmentlength # two times segment length
 
         l_nodes = ElementTree.Element("nodes")
-        #ElementTree.SubElement(l_nodes, "node", attrib={"id": "ramp_start", "x": "-1500", "y": "0"})
         ElementTree.SubElement(l_nodes, "node", attrib={"id": "2_1_start", "x": "0", "y": "0"})
         ElementTree.SubElement(l_nodes, "node", attrib={"id": "2_1_end", "x": str(l_length), "y": "0"})
         # dummy node for easier from-to routing
-        l_segmentlength = l_length / ( l_nbswitches + 1 )
+
         ElementTree.SubElement(l_nodes, "node", attrib={"id": "ramp_exit", "x": str(l_length+l_segmentlength), "y": "0"})
 
         with open(p_nodefile, "w") as fpnodesxml:
@@ -146,14 +145,13 @@ class SumoConfig(Configuration):
         with open(p_edgefile, "w") as fpedgexml:
             fpedgexml.write(self._prettify(l_edges))
 
-    def _generateAdditionalXML(self, p_scenarioconfig, p_scenarioname, p_additionalfile, p_forcerebuildscenarios):
+    def _generateAdditionalXML(self, p_scenarioconfig, p_run, p_scenarioname, p_additionalfile, p_forcerebuildscenarios):
         if os.path.isfile(p_additionalfile) and not p_forcerebuildscenarios:
             return
 
         # parameters
         l_length = p_scenarioconfig.get("parameters").get("length")
         l_nbswitches = p_scenarioconfig.get("parameters").get("switches")
-
         # assume even distributed otl segment lengths
         l_segmentlength = l_length / ( l_nbswitches + 1 )
 
@@ -162,22 +160,24 @@ class SumoConfig(Configuration):
         #     <inductionLoop id="myLoop1" lane="foo_0" pos="42" freq="900" file="out.xml"/>
         ElementTree.SubElement(l_additional, "inductionLoop",
                                attrib={
-                                   "id": "start",
+                                   "id": "pre",
                                    "lane": "2_1_segment_0",
-                                   "pos": str(l_segmentlength),
+                                   "pos": str(l_segmentlength-5),
                                    "friendlyPos": "true",
-                                   "freq" : "900",
-                                   "file": os.path.join(self.getConfigDir(),"SUMO", p_scenarioname, "{}.inductionLoop.start.xml".format(p_scenarioname))
+                                   "splitByType": "true",
+                                   "freq" : "1",
+                                   "file": os.path.join(self.getConfigDir(),"SUMO", p_scenarioname, str(p_run), "{}.inductionLoop.start.xml".format(p_scenarioname))
                                })
 
         ElementTree.SubElement(l_additional, "inductionLoop",
                                attrib={
-                                   "id": "exit",
+                                   "id": "post",
                                    "lane": "2_1_end-ramp_exit_0",
-                                   "pos": str(l_segmentlength),
+                                   "pos": str(l_segmentlength-5),
                                    "friendlyPos": "true",
-                                   "freq" : "900",
-                                   "file": os.path.join(self.getConfigDir(),"SUMO", p_scenarioname, "{}.inductionLoop.exit.xml".format(p_scenarioname))
+                                   "splitByType": "true",
+                                   "freq" : "1",
+                                   "file": os.path.join(self.getConfigDir(),"SUMO", p_scenarioname, str(p_run), "{}.inductionLoop.exit.xml".format(p_scenarioname))
                                })
         with open(p_additionalfile, "w") as fpaddxml:
             fpaddxml.write(self._prettify(l_additional))
@@ -236,7 +236,7 @@ class SumoConfig(Configuration):
             if not p_runcfg.get("vehiclespersecond").get("enabled") else p_runcfg.get("vehiclespersecond").get("value")
 
         l_vehicles = map(
-            lambda vtype: Vehicle(p_vtypescfg.get(vtype), p_vtypedistribution.get(vtype).get("speedsigma")),
+            lambda vtype: Vehicle(p_vtypescfg.get(vtype), p_vtypedistribution.get(vtype).get("speedDev")),
             [random.choice(l_vtypedistribution) for i in xrange(p_nbvehicles)]
         )
 
@@ -298,18 +298,20 @@ class SumoConfig(Configuration):
         # xml
         l_trips = ElementTree.Element("trips")
 
-        # create a sumo vtype for each desired speed
-        l_vtypes = dict(map(lambda v: (int(v.getMaxSpeed()), v), l_vehicles))
-
-        for i_vtype, i_vehicle in l_vtypes.iteritems():
+        # create a sumo vtype for each vehicle
+        for i_vehicle in l_vehicles:
 
             # filter for relevant attributes
             l_vattr = dict( map( lambda (k, v): (k, str(v)), filter(
                 lambda (k, v): k in ["vClass","length","width","height","minGap","accel","decel","speedFactor","speedDev"], i_vehicle.getVType().iteritems()
             )))
-            l_vattr["id"] = str(i_vtype)
+            l_vattr["id"] = str(i_vehicle.getID())
             l_vattr["type"] = l_vattr.get("vClass")
             l_vattr["maxSpeed"] = str(i_vehicle.getMaxSpeed())
+            l_vattr["color"] = "{},{},{},{}".format(*i_vehicle.getColor())
+            l_runcfgspeeddev = self.getRunConfig().get("vtypedistribution").get(l_vattr.get("vClass")).get("speedDev")
+            if l_runcfgspeeddev != None:
+                l_vattr["speedDev"] = str(l_runcfgspeeddev)
             ElementTree.SubElement(l_trips, "vType", attrib=l_vattr)
 
         # add trips
@@ -319,9 +321,8 @@ class SumoConfig(Configuration):
                 "depart": str(i_vehicle.getStartTime()),
                 "from": "2_1_segment",
                 "to": "2_1_end-ramp_exit",
-                "type": str(i_vehicle.getMaxSpeed()),
+                "type": i_vehicle.getID(),
                 "departSpeed": "max",
-                "color" : "{},{},{},{}".format(*i_vehicle.getColor())
             })
 
         with open(p_tripfile, "w") as fptripxml:

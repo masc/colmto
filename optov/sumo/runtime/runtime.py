@@ -17,18 +17,43 @@ class Runtime(object):
         self._visualisation = p_visualisation
         self._sumobinary = p_sumobinary
 
-    def run(self, p_scenario, p_runnumber=0):
-        l_scenario = self._sumoconfig.get("scenarios").get(p_scenario)
+    def run(self, p_scenario):
         l_sumoprocess = subprocess.Popen(
-             [self._sumobinary,
-              "-c", l_scenario.get("configfile"),
-              "--tripinfo-output", l_scenario.get("tripinfofile"),
-              "--gui-settings-file", l_scenario.get("settingsfile"),
-              "--no-step-log",
-              "--remote-port", str(self._sumoconfig.get("port"))
-              ],
-             stdout=sys.stdout,
-             stderr=sys.stderr)
+            [self._sumobinary,
+             "-c", p_scenario.get("configfile"),
+             "--tripinfo-output", p_scenario.get("tripinfofile"),
+             "--fcd-output", p_scenario.get("fcdfile"),
+             "--gui-settings-file", p_scenario.get("settingsfile"),
+             "--no-step-log"
+             ],
+            stdout=sys.stdout,
+            stderr=sys.stderr)
+        l_sumoprocess.wait()
+
+    def runTraci(self, p_scenario):
+        l_sumoprocess = subprocess.Popen(
+            [self._sumobinary,
+             "-c", p_scenario.get("configfile"),
+             "--tripinfo-output", p_scenario.get("tripinfofile"),
+             "--fcd-output", p_scenario.get("fcdfile"),
+             "--gui-settings-file", p_scenario.get("settingsfile"),
+             "--no-step-log"
+             ],
+            stdout=sys.stdout,
+            stderr=sys.stderr)
+
+
+        l_runresults = self._iterateTraci(p_scenario)
+
+
+        # close the TraCI control loop
+        traci.close()
+        sys.stdout.flush()
+
+        l_sumoprocess.wait()
+        return l_runresults
+
+    def _iterateTraci(self, p_scenario):
         # execute the TraCI control loop
         traci.init(self._sumoconfig.get("port"))
 
@@ -41,14 +66,14 @@ class Runtime(object):
 
         # induct loop value subscription
         traci.inductionloop.subscribe(
-            "start",
+            "pre",
             (
                 tc.LAST_STEP_VEHICLE_ID_LIST,
                 tc.LAST_STEP_VEHICLE_DATA
             )
         )
         traci.inductionloop.subscribe(
-            "exit",
+            "post",
             (
                 tc.LAST_STEP_VEHICLE_ID_LIST,
                 tc.LAST_STEP_VEHICLE_DATA
@@ -66,7 +91,7 @@ class Runtime(object):
             l_activevehicleids = l_activevehicleids.union(l_departedvehicleids).difference(l_arrivedvehiclesids)
 
             if l_step % 1000 == 0:
-                print("{}: Step {}, {} active vehicles".format(p_scenario, l_step, len(l_activevehicleids)))
+                print("{}: Step {}, {} active vehicles".format(p_scenarioname, l_step, len(l_activevehicleids)))
 
             # subscribe newly departed vehicles to events
             for i_vid in l_departedvehicleids:
@@ -82,8 +107,6 @@ class Runtime(object):
                     )
                 )
 
-                # create new vehicle objects
-                # TODO: Initialise new vehicles objects on xml generation
                 l_runresults.update(
                     (i_vid, {"length": 0, "trajectory": {}, "inductionloop": {} }) for i_vid in l_departedvehicleids
                 )
@@ -106,37 +129,21 @@ class Runtime(object):
 
             # induct loop value retrieval
             l_inductionresults = traci.inductionloop.getSubscriptionResults()
-            #print(l_step,l_inductionresults)
-            for i_vid in l_inductionresults.get("start").get(tc.LAST_STEP_VEHICLE_ID_LIST):
-                if l_inductionresults.get("start").get(tc.LAST_STEP_VEHICLE_DATA)[0][0] == i_vid:
-                    l_entrytime = l_inductionresults.get("start").get(tc.LAST_STEP_VEHICLE_DATA)[0][2]
-                    l_speed = l_runresults.get(i_vid).get("trajectory").get(l_step) #.get(tc.VAR_SPEED)
-                    l_maxspeed = l_runresults.get(i_vid).get("trajectory").get(l_step) #.get(tc.VAR_MAXSPEED)
-                    l_runresults.get(i_vid).get("inductionloop")["starttime"] = (l_entrytime, l_speed, l_maxspeed)
+            for i_vid in l_inductionresults.get("pre").get(tc.LAST_STEP_VEHICLE_ID_LIST):
+                if l_inductionresults.get("pre").get(tc.LAST_STEP_VEHICLE_DATA)[0][0] == i_vid:
+                    l_entrytime = l_inductionresults.get("pre").get(tc.LAST_STEP_VEHICLE_DATA)[0][2]
+                    if l_runresults.get(i_vid).get("inductionloop").get("pre") == None:
+                        l_runresults.get(i_vid).get("inductionloop")["pre"] = {"entrytime": l_entrytime, "step" : l_step}
 
-            for i_vid in l_inductionresults.get("exit").get(tc.LAST_STEP_VEHICLE_ID_LIST):
-                if l_inductionresults.get("exit").get(tc.LAST_STEP_VEHICLE_DATA)[0][0] == i_vid:
-                    l_entrytime = l_inductionresults.get("exit").get(tc.LAST_STEP_VEHICLE_DATA)[0][2]
-                    l_speed = l_runresults.get(i_vid).get("trajectory").get(l_step) #.get(tc.VAR_SPEED)
-                    l_maxspeed = l_runresults.get(i_vid).get("trajectory").get(l_step) #.get(tc.VAR_MAXSPEED)
-                    l_runresults.get(i_vid).get("inductionloop")["exittime"] = (l_entrytime, l_speed, l_maxspeed)
+            for i_vid in l_inductionresults.get("post").get(tc.LAST_STEP_VEHICLE_ID_LIST):
+                if l_inductionresults.get("post").get(tc.LAST_STEP_VEHICLE_DATA)[0][0] == i_vid:
+                    l_entrytime = l_inductionresults.get("post").get(tc.LAST_STEP_VEHICLE_DATA)[0][2]
+                    if l_runresults.get(i_vid).get("inductionloop").get("post") == None:
+                        l_runresults.get(i_vid).get("inductionloop")["post"] = {"entrytime": l_entrytime, "step" : l_step}
 
             l_step += 1
 
 
         print("Steps: {}".format(l_step))
-
-        #json.dump(l_vehicles, open(p_scenario+".json", "w"), sort_keys=False, indent=None, separators=(',', ':'))
-        # for i_vid in l_vehicles.iterkeys():
-        #     print(traci.vehicle.getSubscriptionResults(i_vid))
-        # #self._visualisation.plotRunStats(l_vehiclesinstep, l_globaldensity, p_scenario, p_scenario+".png")
-
-        # close the TraCI control loop
-        traci.close()
-        sys.stdout.flush()
-
-        l_sumoprocess.wait()
-        self._visualisation.plotDensity(p_scenario, p_runnumber, l_density)
-        return l_runresults
-
+        return l_results
 

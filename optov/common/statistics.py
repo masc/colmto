@@ -12,9 +12,11 @@ class Statistics(object):
     def __init__(self):
         self._visualisation = Visualisation()
 
-    def pushSUMOResults(self, p_scenario, p_results):
+    def pushSUMOResults(self, p_scenario, p_runconfig, p_results):
         for i_runid, i_runobj in p_results.iteritems():
             self._visualisation.plotAvgGlobalSatisfactionPrePost(p_scenario, i_runid, i_runobj)
+            self._visualisation.plotTraveltimes(p_scenario, p_runconfig, i_runobj)
+
             # for i_vid, i_vobj in i_runobj.iteritems():
             #     l_vtraj = i_vobj.get("trajectory")
             #     self._visualisation.plotRunStats()
@@ -25,5 +27,6 @@ class Statistics(object):
     def _satisfaction(self, p_scenario, p_run, p_results):
         pass
 
-
+    def traveltimes(self, p_scenario, p_run, p_tripinfofile):
+        pass
 

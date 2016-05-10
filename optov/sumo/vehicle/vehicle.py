@@ -8,6 +8,7 @@ class Vehicle(object):
         self._starttime = None
         self._color = None
         self._maxspeed = int(round(random.gauss(p_vtype.get("maxSpeed"), p_speedsigma)))
+        self._trajectory = {}
 
     def getVType(self):
         return self._vtype
@@ -26,6 +27,9 @@ class Vehicle(object):
 
     def getMaxSpeed(self):
         return self._maxspeed
+
+    def getTrajectory(self):
+        return self._trajectory
 
     def provision(self, p_id, p_starttime):
         self._id = p_id if self._id == None else self._id

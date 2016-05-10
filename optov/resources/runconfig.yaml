@@ -8,17 +8,17 @@ naive:
 mip:
   enabled: false
 simtimeinterval: [0, 10800]
-runs: 1
+runs: 100
 vtypedistribution:
   tractor:
     fraction: 0.1
-    speedsigma: 1
+    speedDev: 1
   truck:
     fraction: 0.3
-    speedsigma: 1
+    speedDev: 1
   passenger:
     fraction: 0.5
-    speedsigma: 1
+    speedDev: 1
 starttimedistribution: linear
 nbvehicles:
   enabled: true

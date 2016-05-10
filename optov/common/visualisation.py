@@ -19,6 +19,24 @@ class Visualisation(object):
     def plotDensity(self, p_scenarioname, p_density):
         pass
 
+    def plotTraveltimes(self, p_scenarioname, p_runconfig, p_results):
+        l_nbsteps=0
+        l_nbvehicles = len(p_results)
+        l_traveltimes = []
+        l_initialsorting = p_runconfig.get("initialsorting")
+        for i_vid, i_vehicle in p_results.iteritems():
+            l_nbsteps = max(i_vehicle.get("trajectory").keys())
+            for i_timestep, i_result in i_vehicle.get("trajectory").iteritems():
+                l_traveltimes.append(i_result.get("inductionloop").get("traveltime"))
+        plt.figure(1)
+        plt.title("{}: {} vehicles, {} steps, runs {}, {}".format(p_scenarioname, l_nbvehicles, l_nbsteps))
+        plt.boxplot(l_traveltimes)
+        plt.xlabel("{}".format(l_initialsorting))
+        plt.ylabel("traveltime in seconds")
+        plt.savefig("{}-{}-{}-traveltime.pdf".format(p_scenarioname,l_nbsteps,l_initialsorting))
+        plt.savefig("{}-{}-{}-traveltime.png".format(p_scenarioname,l_nbsteps,l_initialsorting))
+        plt.close()
+
     def plotAvgGlobalSatisfactionPrePost(self, p_scenarioname, p_runnumber, p_vehicles):
         l_nbsteps = 0
         l_nbvehicles = len(p_vehicles)
