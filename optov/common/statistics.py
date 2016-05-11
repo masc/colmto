@@ -36,6 +36,11 @@ class Statistics(object):
                           "worst" : [],
                           "random": []
                           }
+        l_timeloss = { "best" : [],
+                       "worst" : [],
+                       "random": []
+                       }
+
         l_runs = 0
         l_vehicles = 0
         for i_sortingmode, i_scenarioruns in p_scenarioruns.iteritems():
@@ -46,11 +51,19 @@ class Statistics(object):
                 l_vehicles = len(l_ettripinfos)
                 for i_tripinfo in l_ettripinfos:
                     l_traveltimes.get(i_sortingmode).append(float(i_tripinfo.get("duration")))
+                    l_timeloss.get(i_sortingmode).append(float(i_tripinfo.get("timeLoss")))
 
 
-        self._visualisation.boxplot("{}_{}_vehicles_{}runs_one12segment.{}".format(
+        self._visualisation.boxplot("Traveltime-{}_{}_vehicles_{}runs_one12segment.{}".format(
                                         p_scenarioname, l_vehicles, l_runs, "pdf"),
-                                    "{}: {} vehicles, {} runs for each mode, one 1+2 segment".format(
+                                    "{}: Travel time for \n{} vehicles, {} runs for each mode, one 1+2 segment".format(
                                         p_scenarioname, l_vehicles, l_runs),
                                     l_traveltimes)
+
+        self._visualisation.boxplot("TimeLoss-{}_{}_vehicles_{}runs_one12segment.{}".format(
+            p_scenarioname, l_vehicles, l_runs, "pdf"),
+            "{}: Time loss for \n{} vehicles, {} runs for each mode, one 1+2 segment".format(
+                p_scenarioname, l_vehicles, l_runs),
+            l_timeloss)
+
 
