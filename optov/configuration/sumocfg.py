@@ -104,8 +104,8 @@ class SumoConfig(Configuration):
 
         ElementTree.SubElement(l_nodes, "node", attrib={"id": "ramp_exit", "x": str(l_length+l_segmentlength), "y": "0"})
 
-        with open(p_nodefile, "w") as fpnodesxml:
-            fpnodesxml.write(self._prettify(l_nodes))
+        with open(p_nodefile, "w") as f_pnodesxml:
+            f_pnodesxml.write(self._prettify(l_nodes))
 
     def _generateEdgeXML(self, p_scenarioconfig, p_edgefile, p_forcerebuildscenarios=False):
         if os.path.isfile(p_edgefile) and not p_forcerebuildscenarios:
@@ -143,8 +143,8 @@ class SumoConfig(Configuration):
                                                         "numLanes": "1",
                                                         "speed": str(l_maxspeed)})
 
-        with open(p_edgefile, "w") as fpedgexml:
-            fpedgexml.write(self._prettify(l_edges))
+        with open(p_edgefile, "w") as f_pedgexml:
+            f_pedgexml.write(self._prettify(l_edges))
 
     def _generateAdditionalXML(self, p_scenarioconfig, p_run, p_scenarioname, p_additionalfile, p_forcerebuildscenarios):
         if os.path.isfile(p_additionalfile) and not p_forcerebuildscenarios:
@@ -181,8 +181,8 @@ class SumoConfig(Configuration):
                                    "file": os.path.join(self.getConfigDir(),"SUMO", p_scenarioname, str(p_run), "{}.inductionLoop.exit.xml".format(p_scenarioname))
                                })
 
-        with open(p_additionalfile, "w") as fpaddxml:
-            fpaddxml.write(self._prettify(l_additional))
+        with open(p_additionalfile, "w") as f_paddxml:
+            f_paddxml.write(self._prettify(l_additional))
 
     ## create sumo config
     def _generateConfigXML(self, p_configfile, p_netfile, p_routefile, p_additionalfile, p_settingsfile, p_simtimeinterval, p_forcerebuildscenarios=False):
@@ -199,8 +199,8 @@ class SumoConfig(Configuration):
         l_time = ElementTree.SubElement(l_configuration, "time")
         ElementTree.SubElement(l_time, "begin", attrib={"value": str(p_simtimeinterval[0])})
 
-        with open(p_configfile, "w") as fpconfigxml:
-            fpconfigxml.write(self._prettify(l_configuration))
+        with open(p_configfile, "w") as f_pconfigxml:
+            f_pconfigxml.write(self._prettify(l_configuration))
 
     def _generateSettingsXML(self, p_scenarioconfig, p_runcfg, p_settingsfile, p_forcerebuildscenarios=False):
         if os.path.isfile(p_settingsfile) and not p_forcerebuildscenarios:
@@ -213,8 +213,8 @@ class SumoConfig(Configuration):
                                        "zoom": "100"})
         ElementTree.SubElement(l_viewsettings, "delay", attrib={"value": str(p_runcfg.get("sumo").get("gui-delay"))})
 
-        with open(p_settingsfile, "w") as fpconfigxml:
-            fpconfigxml.write(self._prettify(l_viewsettings))
+        with open(p_settingsfile, "w") as f_pconfigxml:
+            f_pconfigxml.write(self._prettify(l_viewsettings))
 
     def _nextTime(self, p_lambda, p_prevstarttime, p_distribution="poisson"):
         if p_distribution=="poisson":
@@ -326,8 +326,8 @@ class SumoConfig(Configuration):
                 "departSpeed": "max",
             })
 
-        with open(p_tripfile, "w") as fptripxml:
-            fptripxml.write(self._prettify(l_trips))
+        with open(p_tripfile, "w") as f_ptripxml:
+            f_ptripxml.write(self._prettify(l_trips))
 
     ## create net xml using netconvert
     def _generateNetXML(self, p_nodefile, p_edgefile, p_netfile, p_forcerebuildscenarios=False):
