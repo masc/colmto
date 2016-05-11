@@ -20,6 +20,8 @@ class SumoConfig(Configuration):
         self._duarouterbinary = p_duarouterbinary
         self._visualisation = p_visualisation
         self._forcerebuildscenarios = p_args.forcerebuildscenarios
+        if self._forcerebuildscenarios:
+            print(" * forcerebuildscenarios set -> rebuilding/overwriting scenarios if already present")
         self._onlyoneotlsegment = p_args.onlyoneotlsegment
 
         if p_args.headless == True:
@@ -30,10 +32,6 @@ class SumoConfig(Configuration):
 
     def get(self, p_key):
         return self.getRunConfig().get("sumo").get(p_key)
-
-    #def generateAllSUMOConfigs(self):
-    #    for name, cfg in self.getScenarioConfig().iteritems():
-    #        self._generateSUMOConfig(name, cfg)
 
     def generateScenario(self, p_scenarioname, p_run):
         l_scenarioconfig = self.getScenarioConfig().get(p_scenarioname)
@@ -66,7 +64,7 @@ class SumoConfig(Configuration):
 
         print(" * checking for SUMO configuration files for scenario {} / run {}".format(p_scenarioname, p_run))
         if len(filter(lambda fname: not os.path.isfile(fname), l_sumocfgfiles)) > 0:
-            print("   incomplete scenario configuration detected -> forcing rebuild")
+            print("   not existing or incomplete scenario configuration detected -> rebuilding")
             self._forcerebuildscenarios = True
 
         self._generateNodeXML(l_scenarioconfig, l_nodefile, self._forcerebuildscenarios)
