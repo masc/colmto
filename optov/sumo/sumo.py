@@ -19,21 +19,29 @@ class Sumo(object):
         self._visualisation = Visualisation()
         self._resultswriter = ResultsWriter()
         self._statistics = Statistics()
+        self._scenarioruns = {} # map scenarios -> runid -> files
         self._sumocfg = SumoConfig(p_args, self._visualisation, checkBinary("netconvert"), checkBinary("duarouter"))
         self._runtime = Runtime(self._sumocfg, self._visualisation,
                                         checkBinary("sumo")
                                             if self._sumocfg.get("headless")
                                             else checkBinary("sumo-gui"))
 
-    def runScenario(self, p_scenario):
-        if self._sumocfg.getScenarioConfig().get(p_scenario) == None:
-            print("/!\ scenario {} not found in configuration".format(p_scenario))
+    def runScenario(self, p_scenarioname):
+        if self._sumocfg.getScenarioConfig().get(p_scenarioname) == None:
+            print("/!\ scenario {} not found in configuration".format(p_scenarioname))
             return
 
-        for i_run in xrange(self._sumocfg.getRunConfig().get("runs")):
-            l_scenario = self._sumocfg.generateScenario(p_scenario, i_run)
-            self._runtime.run(l_scenario)
-            self._statistics.traveltimes(l_scenario)
+        self._scenarioruns[p_scenarioname] = {}
+        for i_initialsorting in self._sumocfg.getRunConfig().get("initialsortings"):
+
+            self._scenarioruns.get(p_scenarioname)[i_initialsorting] = {}
+
+            for i_run in xrange(self._sumocfg.getRunConfig().get("runs")):
+                l_scenario = self._sumocfg.generateScenario(p_scenarioname, i_initialsorting, i_run)
+                self._scenarioruns.get(p_scenarioname).get(i_initialsorting)[i_run] = l_scenario
+                self._runtime.run(l_scenario)
+
+        self._statistics.traveltimes(p_scenarioname, self._scenarioruns.get(p_scenarioname))
 
 
 

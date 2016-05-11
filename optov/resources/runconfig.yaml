@@ -7,19 +7,25 @@ naive:
   enabled: false
 mip:
   enabled: false
-simtimeinterval: [0, 10800]
-runs: 100
+simtimeinterval: [0, 60]
+runs: 1
 vtypedistribution:
   tractor:
-    fraction: 0.1
-    speedDev: 1
+    fraction: 0.2
+    speedDev: 0
+    desiredSpeed: 8.0
+    length: 4.0
   truck:
     fraction: 0.3
-    speedDev: 1
+    speedDev: 0
+    desiredSpeed: 24.0
+    length: 4.0
   passenger:
     fraction: 0.5
-    speedDev: 1
-starttimedistribution: linear
+    speedDev: 0
+    desiredSpeed: 32.0
+    length: 4.0
+starttimedistribution: poisson
 nbvehicles:
   enabled: true
   value: 20
@@ -29,4 +35,4 @@ aadt:
 vehiclespersecond:
   enabled: true
   value: 0.5
-initialsorting: bestcase
+initialsortings: [best, random, worst]

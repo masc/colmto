@@ -72,7 +72,18 @@ class Visualisation(object):
         plt.savefig("{}-{}-{}-Density.png".format(p_scenarioname,p_runnumber,len(p_density)))
         plt.close()
 
+    def boxplot(self, p_filename, p_title, p_data):
+        plt.figure(1)
 
+        l_datakeys = sorted(p_data.keys())
+        l_data = [p_data.get(i_key) for i_key in l_datakeys]
+
+        plt.title(p_title, fontsize=10)
+        plt.xlabel("configuration modes")
+        plt.ylabel("traveltime")
+        plt.boxplot(l_data, vert=True, notch=False, labels=l_datakeys)
+        plt.savefig(p_filename)
+        plt.close()
 
     def plotRunStats(self, p_vehiclecount, p_density, p_scenarioname, p_fname):
         xvc,yvc = zip(*p_vehiclecount)

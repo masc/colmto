@@ -33,7 +33,7 @@ class SumoConfig(Configuration):
     def get(self, p_key):
         return self.getRunConfig().get("sumo").get(p_key)
 
-    def generateScenario(self, p_scenarioname, p_run):
+    def generateScenario(self, p_scenarioname, p_initialsorting, p_run):
         l_scenarioconfig = self.getScenarioConfig().get(p_scenarioname)
 
         l_destinationdir = os.path.join(self.getConfigDir(), "SUMO", p_scenarioname)
@@ -46,36 +46,40 @@ class SumoConfig(Configuration):
 
         l_vtypescfg = self.getVtypesConfig()
 
-        if not os.path.exists(os.path.join(l_destinationdir, str(p_run))):
-            os.mkdir(os.path.join(os.path.join(l_destinationdir, str(p_run))))
+        if not os.path.exists(os.path.join(l_destinationdir, str(p_initialsorting))):
+            os.mkdir(os.path.join(os.path.join(l_destinationdir, str(p_initialsorting))))
+
+        if not os.path.exists(os.path.join(l_destinationdir, str(p_initialsorting), str(p_run))):
+            os.mkdir(os.path.join(os.path.join(l_destinationdir, str(p_initialsorting), str(p_run))))
 
         l_scenariorun = {
             "name": p_scenarioname,
             "run" : p_run
         }
-        l_nodefile = l_scenariorun["nodefile"] = os.path.join(l_destinationdir, str(p_run), "{}.nod.xml".format(p_scenarioname))
-        l_edgefile = l_scenariorun["edgefile"] = os.path.join(l_destinationdir, str(p_run), "{}.edg.xml".format(p_scenarioname))
-        l_netfile = l_scenariorun["netfile"] = os.path.join(l_destinationdir, str(p_run), "{}.net.xml".format(p_scenarioname))
-        l_tripfile = l_scenariorun["tripfile"] = os.path.join(l_destinationdir, str(p_run), "{}.trip.xml".format(p_scenarioname))
-        l_additionalfile = l_scenariorun["additionalfile"] = os.path.join(l_destinationdir, str(p_run), "{}.add.xml".format(p_scenarioname))
-        l_routefile = l_scenariorun["routefile"] = os.path.join(l_destinationdir, str(p_run), "{}.rou.xml".format(p_scenarioname))
-        l_settingsfile = l_scenariorun["settingsfile"] = os.path.join(l_destinationdir, str(p_run), "{}.settings.xml".format(p_scenarioname))
-        l_configfile = l_scenariorun["configfile"] = os.path.join(l_destinationdir, str(p_run), "{}.sumo.cfg".format(p_scenarioname))
-        l_scenariorun["tripinfofile"] = os.path.join(l_destinationdir, str(p_run), "{}.tripinfo-output.xml".format(p_scenarioname))
-        l_scenariorun["fcdfile"] = os.path.join(l_destinationdir, str(p_run), "{}.fcd-output.xml".format(p_scenarioname))
+
+        l_nodefile = l_scenariorun["nodefile"] = os.path.join(l_destinationdir, str(p_initialsorting), str(p_run), "{}.nod.xml".format(p_scenarioname))
+        l_edgefile = l_scenariorun["edgefile"] = os.path.join(l_destinationdir, str(p_initialsorting), str(p_run), "{}.edg.xml".format(p_scenarioname))
+        l_netfile = l_scenariorun["netfile"] = os.path.join(l_destinationdir, str(p_initialsorting), str(p_run), "{}.net.xml".format(p_scenarioname))
+        l_tripfile = l_scenariorun["tripfile"] = os.path.join(l_destinationdir, str(p_initialsorting), str(p_run), "{}.trip.xml".format(p_scenarioname))
+        l_additionalfile = l_scenariorun["additionalfile"] = os.path.join(l_destinationdir, str(p_initialsorting), str(p_run), "{}.add.xml".format(p_scenarioname))
+        l_routefile = l_scenariorun["routefile"] = os.path.join(l_destinationdir, str(p_initialsorting), str(p_run), "{}.rou.xml".format(p_scenarioname))
+        l_settingsfile = l_scenariorun["settingsfile"] = os.path.join(l_destinationdir, str(p_initialsorting), str(p_run), "{}.settings.xml".format(p_scenarioname))
+        l_configfile = l_scenariorun["configfile"] = os.path.join(l_destinationdir, str(p_initialsorting), str(p_run), "{}.sumo.cfg".format(p_scenarioname))
+        l_scenariorun["tripinfofile"] = os.path.join(l_destinationdir, str(p_initialsorting), str(p_run), "{}.tripinfo-output.xml".format(p_scenarioname))
+        l_scenariorun["fcdfile"] = os.path.join(l_destinationdir, str(p_initialsorting), str(p_run), "{}.fcd-output.xml".format(p_scenarioname))
         l_sumocfgfiles = [l_nodefile, l_edgefile, l_netfile, l_tripfile, l_additionalfile, l_routefile, l_settingsfile, l_configfile]
 
-        print(" * checking for SUMO configuration files for scenario {} / run {}".format(p_scenarioname, p_run))
+        print(" * checking for SUMO configuration files for scenario {} / sorting {} / run {}".format(p_scenarioname, p_initialsorting, p_run))
         if len(filter(lambda fname: not os.path.isfile(fname), l_sumocfgfiles)) > 0:
             print("   not existing or incomplete scenario configuration detected -> rebuilding")
             self._forcerebuildscenarios = True
 
         self._generateNodeXML(l_scenarioconfig, l_nodefile, self._forcerebuildscenarios)
         self._generateEdgeXML(l_scenarioconfig, l_edgefile, self._forcerebuildscenarios)
-        self._generateAdditionalXML(l_scenarioconfig, p_run, p_scenarioname, l_additionalfile, self._forcerebuildscenarios)
+        self._generateAdditionalXML(l_scenarioconfig, p_initialsorting, p_run, p_scenarioname, l_additionalfile, self._forcerebuildscenarios)
         self._generateConfigXML(l_configfile, l_netfile, l_routefile, l_additionalfile, l_settingsfile, l_runcfg.get("simtimeinterval"), self._forcerebuildscenarios)
         self._generateSettingsXML(l_scenarioconfig, l_runcfg, l_settingsfile, self._forcerebuildscenarios)
-        self._generateTripXML(l_scenarioconfig, l_runcfg, l_vtypescfg, l_tripfile, self._forcerebuildscenarios)
+        self._generateTripXML(l_scenarioconfig, l_runcfg, p_initialsorting, l_vtypescfg, l_tripfile, self._forcerebuildscenarios)
         self._generateNetXML(l_nodefile, l_edgefile, l_netfile, self._forcerebuildscenarios)
         self._generateRouteXML(l_netfile, l_tripfile, l_routefile, self._forcerebuildscenarios)
 
@@ -146,7 +150,7 @@ class SumoConfig(Configuration):
         with open(p_edgefile, "w") as f_pedgexml:
             f_pedgexml.write(self._prettify(l_edges))
 
-    def _generateAdditionalXML(self, p_scenarioconfig, p_run, p_scenarioname, p_additionalfile, p_forcerebuildscenarios):
+    def _generateAdditionalXML(self, p_scenarioconfig, p_initialsorting, p_run, p_scenarioname, p_additionalfile, p_forcerebuildscenarios):
         if os.path.isfile(p_additionalfile) and not p_forcerebuildscenarios:
             return
 
@@ -167,7 +171,7 @@ class SumoConfig(Configuration):
                                    "friendlyPos": "true",
                                    "splitByType": "true",
                                    "freq" : "1",
-                                   "file": os.path.join(self.getConfigDir(),"SUMO", p_scenarioname, str(p_run), "{}.inductionLoop.start.xml".format(p_scenarioname))
+                                   "file": os.path.join(self.getConfigDir(),"SUMO", p_scenarioname, str(p_initialsorting), str(p_run), "{}.inductionLoop.start.xml".format(p_scenarioname))
                                })
 
         ElementTree.SubElement(l_additional, "inductionLoop",
@@ -178,7 +182,7 @@ class SumoConfig(Configuration):
                                    "friendlyPos": "true",
                                    "splitByType": "true",
                                    "freq" : "1",
-                                   "file": os.path.join(self.getConfigDir(),"SUMO", p_scenarioname, str(p_run), "{}.inductionLoop.exit.xml".format(p_scenarioname))
+                                   "file": os.path.join(self.getConfigDir(),"SUMO", p_scenarioname, str(p_initialsorting), str(p_run), "{}.inductionLoop.exit.xml".format(p_scenarioname))
                                })
 
         with open(p_additionalfile, "w") as f_paddxml:
@@ -250,11 +254,14 @@ class SumoConfig(Configuration):
         # update colors
         for i_vehicle in l_vehicles:
             i_vehicle.setColor(l_colormap.to_rgba(i_vehicle.getMaxSpeed()))
+            print(i_vehicle.getVType())
 
         # sort speeds according to initialsorting flag
-        if p_initialsorting == "bestcase":
+        assert p_initialsorting in ["best", "random", "worst"]
+
+        if p_initialsorting == "best":
             l_vehicles.sort(key=lambda v: v.getMaxSpeed(), reverse=True)
-        elif p_initialsorting == "worstcase":
+        elif p_initialsorting == "worst":
             l_vehicles.sort(key=lambda v: v.getMaxSpeed())
 
         # assign start time and id to each vehicle
@@ -268,7 +275,7 @@ class SumoConfig(Configuration):
 
 
 
-    def _generateTripXML(self, p_scenarioconfig, p_runcfg, p_vtypescfg, p_tripfile, p_forcerebuildscenarios=False):
+    def _generateTripXML(self, p_scenarioconfig, p_runcfg, p_initialsorting, p_vtypescfg, p_tripfile, p_forcerebuildscenarios=False):
         if os.path.isfile(p_tripfile) and not p_forcerebuildscenarios:
             return
 
@@ -291,7 +298,7 @@ class SumoConfig(Configuration):
                                                                  p_scenarioconfig,
                                                                  l_numberofvehicles,
                                                                  l_aadt,
-                                                                 p_runcfg.get("initialsorting"),
+                                                                 p_initialsorting,
                                                                  p_runcfg.get("vtypedistribution")
                                                                  )
 
@@ -306,13 +313,26 @@ class SumoConfig(Configuration):
             l_vattr = dict( map( lambda (k, v): (k, str(v)), filter(
                 lambda (k, v): k in ["vClass","length","width","height","minGap","accel","decel","speedFactor","speedDev"], i_vehicle.getVType().iteritems()
             )))
+
             l_vattr["id"] = str(i_vehicle.getID())
-            l_vattr["type"] = l_vattr.get("vClass")
-            l_vattr["maxSpeed"] = str(i_vehicle.getMaxSpeed())
             l_vattr["color"] = "{},{},{},{}".format(*i_vehicle.getColor())
+            # override parameters speedDev, desiredSpeed, and length if defined in run config
             l_runcfgspeeddev = self.getRunConfig().get("vtypedistribution").get(l_vattr.get("vClass")).get("speedDev")
             if l_runcfgspeeddev != None:
                 l_vattr["speedDev"] = str(l_runcfgspeeddev)
+
+            l_runcfgdesiredspeed = self.getRunConfig().get("vtypedistribution").get(l_vattr.get("vClass")).get("desiredSpeed")
+            l_vattr["maxSpeed"] = str(l_runcfgdesiredspeed) if l_runcfgdesiredspeed != None else str(i_vehicle.getMaxSpeed())
+
+            l_runcfglength = self.getRunConfig().get("vtypedistribution").get(l_vattr.get("vClass")).get("length")
+            if l_runcfglength != None:
+                l_vattr["length"] = str(l_runcfglength)
+
+            # fix tractor vClass to trailer
+            if l_vattr["vClass"] == "tractor":
+                l_vattr["vClass"] = "trailer"
+            l_vattr["type"] = l_vattr.get("vClass")
+
             ElementTree.SubElement(l_trips, "vType", attrib=l_vattr)
 
         # add trips

@@ -4,6 +4,8 @@ from __future__ import division
 import subprocess
 import sys
 import numpy as np
+import xml.etree.ElementTree as ElementTree
+
 from visualisation import Visualisation
 import traci.constants as tc
 
@@ -27,6 +29,28 @@ class Statistics(object):
     def _satisfaction(self, p_scenario, p_run, p_results):
         pass
 
-    def traveltimes(self, p_scenario):
-        print(p_scenario)
+    def traveltimes(self, p_scenarioname, p_scenarioruns):
+        print("* traveltime statistics for scenario {}".format(p_scenarioname))
+
+        l_traveltimes = { "best" : [],
+                          "worst" : [],
+                          "random": []
+                          }
+        l_runs = 0
+        l_vehicles = 0
+        for i_sortingmode, i_scenarioruns in p_scenarioruns.iteritems():
+            l_runs = len(i_scenarioruns)
+            for i_run, i_scenariorun in i_scenarioruns.iteritems():
+                l_ettripinfotree = ElementTree.parse(i_scenariorun.get("tripinfofile"))
+                l_ettripinfos = l_ettripinfotree.getroot()
+                l_vehicles = len(l_ettripinfos)
+                for i_tripinfo in l_ettripinfos:
+                    l_traveltimes.get(i_sortingmode).append(float(i_tripinfo.get("duration")))
+
+
+        self._visualisation.boxplot("{}_{}_vehicles_{}runs_one12segment.{}".format(
+                                        p_scenarioname, l_vehicles, l_runs, "pdf"),
+                                    "{}: {} vehicles, {} runs for each mode, one 1+2 segment".format(
+                                        p_scenarioname, l_vehicles, l_runs),
+                                    l_traveltimes)
 
