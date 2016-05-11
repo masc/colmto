@@ -179,6 +179,7 @@ class SumoConfig(Configuration):
                                    "freq" : "1",
                                    "file": os.path.join(self.getConfigDir(),"SUMO", p_scenarioname, str(p_run), "{}.inductionLoop.exit.xml".format(p_scenarioname))
                                })
+
         with open(p_additionalfile, "w") as fpaddxml:
             fpaddxml.write(self._prettify(l_additional))
 
@@ -196,7 +197,6 @@ class SumoConfig(Configuration):
         ElementTree.SubElement(l_input, "gui-settings-file", attrib={"value": p_settingsfile})
         l_time = ElementTree.SubElement(l_configuration, "time")
         ElementTree.SubElement(l_time, "begin", attrib={"value": str(p_simtimeinterval[0])})
-        ElementTree.SubElement(l_time, "end", attrib={"value": str(p_simtimeinterval[1])})
 
         with open(p_configfile, "w") as fpconfigxml:
             fpconfigxml.write(self._prettify(l_configuration))

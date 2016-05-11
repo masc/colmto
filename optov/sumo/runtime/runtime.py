@@ -28,6 +28,7 @@ class Runtime(object):
              ],
             stdout=sys.stdout,
             stderr=sys.stderr)
+        sys.stdout.flush()
         l_sumoprocess.wait()
 
     def runTraci(self, p_scenario):
