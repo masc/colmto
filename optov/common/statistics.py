@@ -27,6 +27,6 @@ class Statistics(object):
     def _satisfaction(self, p_scenario, p_run, p_results):
         pass
 
-    def traveltimes(self, p_scenario, p_run, p_tripinfofile):
-        pass
+    def traveltimes(self, p_scenario):
+        print(p_scenario)
 

@@ -33,6 +33,7 @@ class Sumo(object):
         for i_run in xrange(self._sumocfg.getRunConfig().get("runs")):
             l_scenario = self._sumocfg.generateScenario(p_scenario, i_run)
             self._runtime.run(l_scenario)
+            self._statistics.traveltimes(l_scenario)
 
 
 

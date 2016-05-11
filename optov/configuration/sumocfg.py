@@ -49,7 +49,10 @@ class SumoConfig(Configuration):
         if not os.path.exists(os.path.join(l_destinationdir, str(p_run))):
             os.mkdir(os.path.join(os.path.join(l_destinationdir, str(p_run))))
 
-        l_scenariorun = { "name": p_scenarioname }
+        l_scenariorun = {
+            "name": p_scenarioname,
+            "run" : p_run
+        }
         l_nodefile = l_scenariorun["nodefile"] = os.path.join(l_destinationdir, str(p_run), "{}.nod.xml".format(p_scenarioname))
         l_edgefile = l_scenariorun["edgefile"] = os.path.join(l_destinationdir, str(p_run), "{}.edg.xml".format(p_scenarioname))
         l_netfile = l_scenariorun["netfile"] = os.path.join(l_destinationdir, str(p_run), "{}.net.xml".format(p_scenarioname))
