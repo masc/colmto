@@ -254,7 +254,6 @@ class SumoConfig(Configuration):
         # update colors
         for i_vehicle in l_vehicles:
             i_vehicle.setColor(l_colormap.to_rgba(i_vehicle.getMaxSpeed()))
-            print(i_vehicle.getVType())
 
         # sort speeds according to initialsorting flag
         assert p_initialsorting in ["best", "random", "worst"]
