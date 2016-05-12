@@ -20,6 +20,10 @@ class SumoConfig(Configuration):
         self._duarouterbinary = p_duarouterbinary
         self._visualisation = p_visualisation
         self._forcerebuildscenarios = p_args.forcerebuildscenarios
+        self._sumoconfigdir = os.path.join(self.getConfigDir(), "SUMO")
+        if not os.path.exists(self._sumoconfigdir):
+            os.mkdir(self._sumoconfigdir)
+
         if self._forcerebuildscenarios:
             print(" * forcerebuildscenarios set -> rebuilding/overwriting scenarios if already present")
         self._onlyoneotlsegment = p_args.onlyoneotlsegment
@@ -29,6 +33,8 @@ class SumoConfig(Configuration):
         if p_args.gui == True:
             self.getRunConfig().get("sumo")["headless"] = False
 
+    def getSUMOConfigDir(self):
+        return self._sumoconfigdir
 
     def get(self, p_key):
         return self.getRunConfig().get("sumo").get(p_key)
@@ -36,9 +42,7 @@ class SumoConfig(Configuration):
     def generateScenario(self, p_scenarioname, p_initialsorting, p_run):
         l_scenarioconfig = self.getScenarioConfig().get(p_scenarioname)
 
-        l_destinationdir = os.path.join(self.getConfigDir(), "SUMO", p_scenarioname)
-        if not os.path.exists(os.path.join(self.getConfigDir(), "SUMO")):
-            os.mkdir(os.path.join(self.getConfigDir(), "SUMO"))
+        l_destinationdir = os.path.join(self.getSUMOConfigDir(), p_scenarioname)
         if not os.path.exists(os.path.join(l_destinationdir)):
             os.mkdir(l_destinationdir)
 
@@ -171,7 +175,7 @@ class SumoConfig(Configuration):
                                    "friendlyPos": "true",
                                    "splitByType": "true",
                                    "freq" : "1",
-                                   "file": os.path.join(self.getConfigDir(),"SUMO", p_scenarioname, str(p_initialsorting), str(p_run), "{}.inductionLoop.start.xml".format(p_scenarioname))
+                                   "file": os.path.join(self.getSUMOConfigDir(), p_scenarioname, str(p_initialsorting), str(p_run), "{}.inductionLoop.start.xml".format(p_scenarioname))
                                })
 
         ElementTree.SubElement(l_additional, "inductionLoop",
@@ -182,7 +186,7 @@ class SumoConfig(Configuration):
                                    "friendlyPos": "true",
                                    "splitByType": "true",
                                    "freq" : "1",
-                                   "file": os.path.join(self.getConfigDir(),"SUMO", p_scenarioname, str(p_initialsorting), str(p_run), "{}.inductionLoop.exit.xml".format(p_scenarioname))
+                                   "file": os.path.join(self.getSUMOConfigDir(), p_scenarioname, str(p_initialsorting), str(p_run), "{}.inductionLoop.exit.xml".format(p_scenarioname))
                                })
 
         with open(p_additionalfile, "w") as f_paddxml:

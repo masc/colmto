@@ -1,9 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import print_function
 
-import traci
-import sumolib
-
 from configuration.sumocfg import SumoConfig
 from sumolib import checkBinary
 
@@ -12,6 +9,7 @@ from common.visualisation import Visualisation
 from common.resultswriter import ResultsWriter
 from common.statistics import Statistics
 
+import os
 
 class Sumo(object):
 
@@ -40,7 +38,8 @@ class Sumo(object):
                 l_scenario = self._sumocfg.generateScenario(p_scenarioname, i_initialsorting, i_run)
                 self._scenarioruns.get(p_scenarioname).get(i_initialsorting)[i_run] = l_scenario
                 self._runtime.run(l_scenario)
-
+        # dump scenarioruns to json file
+        self._resultswriter.writeJson(self._scenarioruns.get(p_scenarioname), os.path.join(self._sumocfg.getSUMOConfigDir(), "runs-{}.json".format(p_scenarioname)))
         self._statistics.traveltimes(p_scenarioname, self._scenarioruns.get(p_scenarioname))
 
 
