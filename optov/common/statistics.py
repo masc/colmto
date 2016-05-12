@@ -48,13 +48,7 @@ class Statistics(object):
                 for i_tripinfo in l_ettripinfos:
                     l_traveltimes.get(i_sortingmode).append(float(i_tripinfo.get("duration")))
 
-
-        self._visualisation.boxplot("Traveltime-{}_{}_vehicles_{}runs_one21segment.{}".format(p_scenarioname, l_vehicles, l_runs, "pdf"),
-                                    l_traveltimes,
-                                    "{}: Travel time for \n{} vehicles, {} runs for each mode, one 2+1 segment".format(p_scenarioname, l_vehicles, l_runs),
-                                    "configuration modes (initial sorting)",
-                                    "traveltime in seconds"
-                                    )
+        return { "data": l_traveltimes, "nbvehicles": l_vehicles, "nbruns": l_runs }
 
 
     def timeloss(self, p_scenarioname, p_scenarioruns):
@@ -76,9 +70,4 @@ class Statistics(object):
                 for i_tripinfo in l_ettripinfos:
                     l_timeloss.get(i_sortingmode).append(float(i_tripinfo.get("timeLoss")))
 
-        self._visualisation.boxplot("TimeLoss-{}_{}_vehicles_{}runs_one21segment.{}".format(p_scenarioname, l_vehicles, l_runs, "pdf"),
-                                    l_timeloss,
-                                    "{}: Time loss for \n{} vehicles, {} runs for each mode, one 2+1 segment".format(p_scenarioname, l_vehicles, l_runs),
-                                    "configuration modes (initial sorting)",
-                                    "time loss in seconds"
-                                    )
+        return { "data": l_timeloss, "nbvehicles": l_vehicles, "nbruns": l_runs }
