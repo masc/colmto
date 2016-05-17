@@ -41,7 +41,7 @@ class Sumo(object):
         # dump scenarioruns to json file
         self._resultswriter.writeJson(self._scenarioruns.get(p_scenarioname), os.path.join(self._sumocfg.getSUMOConfigDir(), "runs-{}.json".format(p_scenarioname)))
         l_travelstats = self._statistics.traveltimes(p_scenarioname, self._scenarioruns.get(p_scenarioname))
-        l_timestats = self._statistics.traveltimes(p_scenarioname, self._scenarioruns.get(p_scenarioname))
+        l_timestats = self._statistics.timeloss(p_scenarioname, self._scenarioruns.get(p_scenarioname))
         self._visualisation.boxplot(os.path.join(self._sumocfg.getSUMOConfigDir(), "Traveltime-{}_{}_vehicles_{}runs_one21segment.{}".format(p_scenarioname, l_travelstats.get("nbvehicles"), l_travelstats.get("nbruns"), "pdf")),
                                     l_travelstats.get("data"),
                                     "{}: Travel time for \n{} vehicles, {} runs for each mode, one 2+1 segment".format(p_scenarioname, l_travelstats.get("nbvehicles"), l_travelstats.get("nbruns")),
