@@ -1,13 +1,9 @@
 # -*- coding: utf-8 -*-
 from __future__ import print_function
 from __future__ import division
-import subprocess
-import sys
-import numpy as np
-import xml.etree.ElementTree as ElementTree
 
+import xml.etree.ElementTree as ElementTree
 from visualisation import Visualisation
-import traci.constants as tc
 
 class Statistics(object):
 
@@ -49,7 +45,6 @@ class Statistics(object):
                     l_traveltimes.get(i_sortingmode).append(float(i_tripinfo.get("duration")))
 
         return { "data": l_traveltimes, "nbvehicles": l_vehicles, "nbruns": l_runs }
-
 
     def timeloss(self, p_scenarioname, p_scenarioruns):
         print("* time loss statistics for scenario {}".format(p_scenarioname))

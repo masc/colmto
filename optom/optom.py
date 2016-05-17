@@ -18,7 +18,7 @@ class Optom(object):
             shutil.copy("resources/runconfig.yaml",os.path.join(l_configdir, u"runconfig.yaml"))
         if not os.path.isfile(os.path.join(l_configdir, u"vtypesconfig.yaml")):
             shutil.copy("resources/vtypesconfig.yaml",os.path.join(l_configdir, u"vtypesconfig.yaml"))
-        if not os.path.isfile(os.path.join(l_configdir, u"scenarioconfig.json")):
+        if not os.path.isfile(os.path.join(l_configdir, u"scenarioconfig.yaml")):
             shutil.copy("resources/scenarioconfig.yaml",os.path.join(l_configdir, u"scenarioconfig.yaml"))
 
         l_parser = argparse.ArgumentParser(description="Process parameters for optom")
