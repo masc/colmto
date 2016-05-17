@@ -39,10 +39,7 @@ class ResultsWriter(object):
         self._writeJson(p_object, p_filename, p_sort_keys=True, p_indent=None, p_separators=(',', ':'))
 
     def writeJson(self, p_object, p_filename, p_sort_keys=True, p_indent=4, p_separators=(', ', ' : ')):
-        if p_filename.endswith(".gz"):
-            fp = gzip.GzipFile(p_filename, 'w')
-        else:
-            fp = open(p_filename, mode="w")
+        fp = gzip.GzipFile(p_filename, 'w') if p_filename.endswith(".gz") else open(p_filename, mode="w")
 
         print(" * writing {}".format(p_filename))
         json.dump(p_object, fp, sort_keys=p_sort_keys, indent=p_indent, separators=p_separators)
@@ -50,12 +47,9 @@ class ResultsWriter(object):
         print("   done")
 
     def writeYAML(self, p_object, p_filename, p_default_flow_style=False):
-        if p_filename.endswith(".gz"):
-            fp = gzip.GzipFile(p_filename, 'w')
-        else:
-            fp = open(p_filename, mode="w")
+        fp = gzip.GzipFile(p_filename, 'w') if p_filename.endswith(".gz") else open(p_filename, mode="w")
 
-        print(" * writing {}".format(p_filename))
+        print(" * writing {} using".format(p_filename))
         yaml.dump(p_object, fp, Dumper=SafeDumper, default_flow_style=p_default_flow_style)
         fp.close()
         print("   done")
@@ -76,10 +70,7 @@ class ResultsWriter(object):
         if l_file and type(l_file) is h5py._hl.files.File:
 
             # create group if it doesn't exist
-            if p_path in l_file:
-                l_group = l_file[p_path]
-            else:
-                l_group = l_file.create_group(p_path)
+            l_group = l_file[p_path] if p_path in l_file else l_file.create_group(p_path)
 
             # add datasets for each element of p_objectdict, if they already exist by name, overwrite them
             for i_objname,i_objvalue in p_objectdict.items():
