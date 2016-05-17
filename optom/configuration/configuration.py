@@ -4,6 +4,10 @@ from __future__ import division
 
 import os
 import yaml
+try:
+    from yaml import CSafeLoader as SafeLoader, CSafeDumper as SafeDumper
+except ImportError:
+    from yaml import SafeLoader, SafeDumper
 
 class Configuration(object):
 
@@ -27,16 +31,13 @@ class Configuration(object):
                     raise BaseException("vtype configuration {} is not a file".format(p_args.vtypesconfig))
 
         self._configdir = p_args.configdir
-        self._runconfig = yaml.safe_load(open(p_args.runconfig))
-        self._scenarioconfig = yaml.safe_load(open(p_args.scenarioconfig))
-        self._vtypesconfig = yaml.safe_load(open(p_args.vtypesconfig))
-
-
-
+        self._runconfig = yaml.load(open(p_args.runconfig), Loader=SafeLoader)
+        self._scenarioconfig = yaml.load(open(p_args.scenarioconfig), Loader=SafeLoader)
+        self._vtypesconfig = yaml.load(open(p_args.vtypesconfig), Loader=SafeLoader)
 
     def write(self, p_config, p_location):
         fp = open(p_location, "w")
-        yaml.safe_dump(p_config, fp)
+        yaml.dump(p_config, fp, Dumper=SafeDumper, default_flow_style=False)
         fp.close()
 
     def getRunConfig(self):
