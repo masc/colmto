@@ -6,12 +6,12 @@ import os
 import shutil
 from sumo.sumo import Sumo
 
-class Optov(object):
+class Optom(object):
 
     def __init__(self):
-        l_configdir = os.path.expanduser(u"~/.optov")
+        l_configdir = os.path.expanduser(u"~/.optom")
 
-        # place default config in ~/.optov if there exists none
+        # place default config in ~/.optom if there exists none
         if not os.path.exists(l_configdir):
             os.mkdir(l_configdir)
         if not os.path.isfile(os.path.join(l_configdir, u"runconfig.yaml")):
@@ -21,7 +21,7 @@ class Optov(object):
         if not os.path.isfile(os.path.join(l_configdir, u"scenarioconfig.json")):
             shutil.copy("resources/scenarioconfig.yaml",os.path.join(l_configdir, u"scenarioconfig.yaml"))
 
-        l_parser = argparse.ArgumentParser(description="Process parameters for optov")
+        l_parser = argparse.ArgumentParser(description="Process parameters for optom")
         l_parser.add_argument("--runconfig", dest="runconfig", type=str, default=os.path.join(l_configdir, u"runconfig.yaml"))
         l_parser.add_argument("--scenarioconfig", dest="scenarioconfig", type=str, default=os.path.join(l_configdir, u"scenarioconfig.yaml"))
         l_parser.add_argument("--vtypesconfig", dest="vtypesconfig", type=str, default=os.path.join(l_configdir, u"vtypesconfig.yaml"))
@@ -49,4 +49,4 @@ class Optov(object):
 
 
 if __name__ == "__main__":
-    optov = Optov()
+    optom = Optom()

@@ -1,11 +1,11 @@
 *.*
 !buildout.cfg
-!optov.iml
+!optom.iml
 !.gitignore
-!optov/MANIFEST.in
-!optov/README.rst
-!optov/setup.cfg
-!optov/resources/*.yaml
+!optom/MANIFEST.in
+!optom/README.rst
+!optom/setup.cfg
+!optom/resources/*.yaml
 !*.txt
 !*.py
 !*.md

@@ -1,6 +1,6 @@
 from gurobipy import *
 
-from optov.optov.sumo.vehicle.vehicle import Vehicle
+from optom.optov.sumo.vehicle.vehicle import Vehicle
 
 
 class World(object):

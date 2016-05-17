@@ -1,5 +1,5 @@
 '''
-optov: Overtaking Optimization
+OPTOM: Optimisation of Overtaking Manoevres
 
 Note that "python setup.py test" invokes pytest on the package. With appropriately
 configured setup.cfg, this will check both xxx_test modules and docstrings.
@@ -26,7 +26,7 @@ class PyTest(TestCommand):
 
 version = "0.1"
 
-setup(name="optov",
+setup(name="optom",
       version=version,
       description="Overtaking Optimization",
       long_description=open("README.rst").read(),
@@ -50,6 +50,6 @@ setup(name="optov",
       # TODO: List executable scripts, provided by the package (this is just an example)
       entry_points={
         'console_scripts': 
-            ['optov=optov:main']
+            ['optom=optom:main']
       }
 )
