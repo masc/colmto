@@ -39,8 +39,11 @@ class Sumo(object):
                 l_scenario = self._sumocfg.generateScenario(p_scenarioname, i_initialsorting, i_run)
                 self._scenarioruns.get(p_scenarioname).get(i_initialsorting)[i_run] = l_scenario
                 self._runtime.run(l_scenario)
+
         # dump scenarioruns to yaml file
         self._resultswriter.writeYAML(self._scenarioruns.get(p_scenarioname), os.path.join(self._sumocfg.getSUMOConfigDir(), "runs-{}.yaml.gz".format(p_scenarioname)))
+
+        # do statistics
         l_travelstats = self._statistics.traveltimes(p_scenarioname, self._scenarioruns.get(p_scenarioname))
         l_timestats = self._statistics.timeloss(p_scenarioname, self._scenarioruns.get(p_scenarioname))
         self._visualisation.boxplot(os.path.join(self._sumocfg.getSUMOConfigDir(), "Traveltime-{}_{}_vehicles_{}runs_one21segment.{}".format(p_scenarioname, l_travelstats.get("nbvehicles"), l_travelstats.get("nbruns"), "pdf")),

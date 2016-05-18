@@ -28,17 +28,6 @@ class SumoConfig(Configuration):
             print(" * forcerebuildscenarios set -> rebuilding/overwriting scenarios if already present")
         self._onlyoneotlsegment = p_args.onlyoneotlsegment
 
-        self._overrideCfgFlags(p_args)
-
-    def _overrideCfgFlags(self, p_args):
-        if p_args.headless == True:
-            self.getRunConfig().get("sumo")["headless"] = True
-        if p_args.gui == True:
-            self.getRunConfig().get("sumo")["headless"] = False
-        if p_args.runs != None:
-            self.getRunConfig()["runs"] = p_args.runs
-        if p_args.scenarios != None:
-            self.getRunConfig()["scenarios"] = p_args.scenarios if p_args.scenarios != ["all"] else self.getScenarioConfig().keys()
 
     def getSUMOConfigDir(self):
         return self._sumoconfigdir

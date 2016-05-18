@@ -35,6 +35,18 @@ class Configuration(object):
         self._scenarioconfig = yaml.load(open(p_args.scenarioconfig), Loader=SafeLoader)
         self._vtypesconfig = yaml.load(open(p_args.vtypesconfig), Loader=SafeLoader)
 
+        self._overrideCfgFlags(p_args)
+
+    def _overrideCfgFlags(self, p_args):
+        if p_args.headless == True:
+            self.getRunConfig().get("sumo")["headless"] = True
+        if p_args.gui == True:
+            self.getRunConfig().get("sumo")["headless"] = False
+        if p_args.runs != None:
+            self.getRunConfig()["runs"] = p_args.runs
+        if p_args.scenarios != None:
+            self.getRunConfig()["scenarios"] = p_args.scenarios if p_args.scenarios != ["all"] else self.getScenarioConfig().keys()
+
     def write(self, p_config, p_location):
         fp = open(p_location, "w")
         yaml.dump(p_config, fp, Dumper=SafeDumper, default_flow_style=False)

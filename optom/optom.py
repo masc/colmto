@@ -43,8 +43,9 @@ class Optom(object):
         l_sumogroup.add_argument("--only-one-otl-segment", dest="onlyoneotlsegment", default=False, action='store_true', help="Generate SUMO scenarios with only on OTL segment")
         l_args = l_parser.parse_args()
 
+        l_sumo = Sumo(l_args)
+
         if l_args.runsumo:
-            l_sumo = Sumo(l_args)
             l_sumo.runScenarios()
 
 
