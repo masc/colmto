@@ -24,10 +24,18 @@
 from __future__ import print_function
 from __future__ import division
 
-import json
+try:
+    from cjson import encode as jsondumps
+    from cjson import decode as jsonloads
+except ImportError:
+    from json import loads as jsonloads
+    from json import dumps as jsondumps
+
 import gzip
 import h5py
 import yaml
+import json
+
 try:
     from yaml import CSafeLoader as SafeLoader, CSafeDumper as SafeDumper
 except ImportError:
@@ -35,20 +43,21 @@ except ImportError:
 
 class ResultsWriter(object):
 
-    def writeJsonCompact(self, p_object, p_filename):
-        self._writeJson(p_object, p_filename, p_sort_keys=True, p_indent=None, p_separators=(',', ':'))
-
-    def writeJson(self, p_object, p_filename, p_sort_keys=True, p_indent=4, p_separators=(', ', ' : ')):
-        fp = gzip.GzipFile(p_filename, 'w') if p_filename.endswith(".gz") else open(p_filename, mode="w")
-
+    def writeJsonPretty(self, p_object, p_filename):
         print(" * writing {}".format(p_filename))
-        json.dump(p_object, fp, sort_keys=p_sort_keys, indent=p_indent, separators=p_separators)
+        fp = gzip.GzipFile(p_filename, 'w') if p_filename.endswith(".gz") else open(p_filename, mode="w")
+        json.dump(p_object, fp, sort_keys=True, indent=4, separators=(', ', ' : '))
         fp.close()
+        print("   done")
+
+    def writeJson(self, p_object, p_filename):
+        print(" * writing {}".format(p_filename))
+        with gzip.GzipFile(p_filename, 'w') if p_filename.endswith(".gz") else open(p_filename, mode="w") as fp:
+            fp.write(jsondumps(p_object))
         print("   done")
 
     def writeYAML(self, p_object, p_filename, p_default_flow_style=False):
         fp = gzip.GzipFile(p_filename, 'w') if p_filename.endswith(".gz") else open(p_filename, mode="w")
-
         print(" * writing {}".format(p_filename))
         yaml.dump(p_object, fp, Dumper=SafeDumper, default_flow_style=p_default_flow_style)
         fp.close()

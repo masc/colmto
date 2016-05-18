@@ -37,11 +37,11 @@ class Sumo(object):
 
             for i_run in xrange(self._sumocfg.getRunConfig().get("runs")):
                 l_scenario = self._sumocfg.generateScenario(p_scenarioname, i_initialsorting, i_run)
-                self._scenarioruns.get(p_scenarioname).get(i_initialsorting)[i_run] = l_scenario
+                self._scenarioruns.get(p_scenarioname).get(i_initialsorting)[str(i_run)] = l_scenario
                 self._runtime.run(l_scenario)
 
-        # dump scenarioruns to yaml file
-        self._resultswriter.writeYAML(self._scenarioruns.get(p_scenarioname), os.path.join(self._sumocfg.getSUMOConfigDir(), "runs-{}.yaml.gz".format(p_scenarioname)))
+        # dump scenarioruns to json.gz file
+        self._resultswriter.writeJson(self._scenarioruns.get(p_scenarioname), os.path.join(self._sumocfg.getSUMOConfigDir(), "runs-{}.json.gz".format(p_scenarioname)))
 
         # do statistics
         l_travelstats = self._statistics.traveltimes(p_scenarioname, self._scenarioruns.get(p_scenarioname))
@@ -52,7 +52,7 @@ class Sumo(object):
             "traveltimes": l_travelstats,
             "timeloss" : l_timestats
         }
-        self._resultswriter.writeYAML(l_statisticaldata, os.path.join(self._sumocfg.getSUMOConfigDir(), "results-{}.yaml.gz".format(p_scenarioname)))
+        self._resultswriter.writeJson(l_statisticaldata, os.path.join(self._sumocfg.getSUMOConfigDir(), "results-{}.json.gz".format(p_scenarioname)))
 
         self._visualisation.boxplot(os.path.join(self._sumocfg.getSUMOConfigDir(), "Traveltime-{}_{}_vehicles_{}runs_one21segment.{}".format(p_scenarioname, l_travelstats.get("nbvehicles"), l_travelstats.get("nbruns"), "pdf")),
                                     l_travelstats.get("data"),
