@@ -44,23 +44,24 @@ class Sumo(object):
         self._resultswriter.writeYAML(self._scenarioruns.get(p_scenarioname), os.path.join(self._sumocfg.getSUMOConfigDir(), "runs-{}.yaml.gz".format(p_scenarioname)))
 
         # do statistics
+        l_travelstats = self._statistics.traveltimes(p_scenarioname, self._scenarioruns.get(p_scenarioname))
+        l_timestats = self._statistics.timeloss(p_scenarioname, self._scenarioruns.get(p_scenarioname))
+
+        # dump statistic results to yaml file
         l_statisticaldata = {
-            "traveltimes": self._statistics.traveltimes(p_scenarioname, self._scenarioruns.get(p_scenarioname)),
-            "timeloss" : self._statistics.timeloss(p_scenarioname, self._scenarioruns.get(p_scenarioname))
+            "traveltimes": l_travelstats,
+            "timeloss" : l_timestats
         }
-
-
-        # dump statistical data to yaml file
-        self._resultswriter.writeYAML(l_statisticaldata, os.path.join(self._sumocfg.getSUMOConfigDir(), "statisticaldata-{}.yaml.gz".format(p_scenarioname)))
+        self._resultswriter.writeYAML(l_statisticaldata, os.path.join(self._sumocfg.getSUMOConfigDir(), "results-{}.yaml.gz".format(p_scenarioname)))
 
         self._visualisation.boxplot(os.path.join(self._sumocfg.getSUMOConfigDir(), "Traveltime-{}_{}_vehicles_{}runs_one21segment.{}".format(p_scenarioname, l_travelstats.get("nbvehicles"), l_travelstats.get("nbruns"), "pdf")),
-                                    l_statisticaldata.get("traveltimes").get("data"),
+                                    l_travelstats.get("data"),
                                     "{}: Travel time for \n{} vehicles, {} runs for each mode, one 2+1 segment".format(p_scenarioname, l_travelstats.get("nbvehicles"), l_travelstats.get("nbruns")),
                                     "configuration modes (initial sorting)",
                                     "traveltime in seconds"
                                     )
         self._visualisation.boxplot(os.path.join(self._sumocfg.getSUMOConfigDir(), "TimeLoss-{}_{}_vehicles_{}runs_one21segment.{}".format(p_scenarioname, l_timestats.get("nbvehicles"), l_timestats.get("nbruns"), "pdf")),
-                                    l_statisticaldata.get("timeloss").get("data"),
+                                    l_timestats.get("data"),
                                     "{}: Time loss for \n{} vehicles, {} runs for each mode, one 2+1 segment".format(p_scenarioname, l_timestats.get("nbvehicles"), l_timestats.get("nbruns")),
                                     "configuration modes (initial sorting)",
                                     "time loss in seconds"
