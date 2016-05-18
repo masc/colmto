@@ -49,7 +49,7 @@ class ResultsWriter(object):
     def writeYAML(self, p_object, p_filename, p_default_flow_style=False):
         fp = gzip.GzipFile(p_filename, 'w') if p_filename.endswith(".gz") else open(p_filename, mode="w")
 
-        print(" * writing {} using".format(p_filename))
+        print(" * writing {}".format(p_filename))
         yaml.dump(p_object, fp, Dumper=SafeDumper, default_flow_style=p_default_flow_style)
         fp.close()
         print("   done")
