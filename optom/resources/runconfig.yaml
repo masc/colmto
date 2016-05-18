@@ -9,6 +9,7 @@ mip:
   enabled: false
 simtimeinterval: [0, 60]
 runs: 1
+scenarios: [BW-B292-Aglasterhausen-Obrigheim, BW-B31n-Stockach-Ueberlingen, BW-B33-Gengenbach-Biberach]
 vtypedistribution:
   tractor:
     fraction: 0.2

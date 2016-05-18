@@ -24,7 +24,8 @@ class Sumo(object):
                                             if self._sumocfg.get("headless")
                                             else checkBinary("sumo-gui"))
 
-    def runScenario(self, p_scenarioname):
+
+    def _runScenario(self, p_scenarioname):
         if self._sumocfg.getScenarioConfig().get(p_scenarioname) == None:
             print("/!\ scenario {} not found in configuration".format(p_scenarioname))
             return
@@ -56,9 +57,6 @@ class Sumo(object):
                                     )
 
 
-    def runScenarios(self, p_scenarios=tuple()):
-        for i_scenario in p_scenarios:
-            self.runScenario(i_scenario)
-
-    def runAllScenarios(self):
-        self.runScenarios(self._sumocfg.getScenarioConfig().keys())
+    def runScenarios(self):
+        for i_scenarioname in self._sumocfg.getRunConfig().get("scenarios"):
+            self._runScenario(i_scenarioname)

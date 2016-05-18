@@ -26,8 +26,8 @@ class Optom(object):
         l_parser.add_argument("--scenarioconfig", dest="scenarioconfig", type=str, default=os.path.join(l_configdir, u"scenarioconfig.yaml"))
         l_parser.add_argument("--vtypesconfig", dest="vtypesconfig", type=str, default=os.path.join(l_configdir, u"vtypesconfig.yaml"))
         l_parser.add_argument("--configdir", dest="configdir", type=str, default=l_configdir)
-        l_parser.add_argument("--scenario", dest="scenario", type=str, default="all")
-        l_parser.add_argument("--runs", dest="runs", type=int, default=1)
+        l_parser.add_argument("--scenarios", dest="scenarios", type=str, default=None, nargs='*')
+        l_parser.add_argument("--runs", dest="runs", type=int, default=None)
         l_parser.add_argument("--bunches", dest="bunches", type=int, default=1)
 
         l_mutexgrouprunchoice = l_parser.add_mutually_exclusive_group(required=False)
@@ -45,7 +45,7 @@ class Optom(object):
 
         if l_args.runsumo:
             l_sumo = Sumo(l_args)
-            l_sumo.runAllScenarios() if l_args.scenario == "all" else l_sumo.runScenario(l_args.scenario)
+            l_sumo.runScenarios()
 
 
 if __name__ == "__main__":
