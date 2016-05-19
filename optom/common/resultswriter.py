@@ -25,11 +25,9 @@ from __future__ import print_function
 from __future__ import division
 
 try:
-    from cjson import encode as jsondumps
-    from cjson import decode as jsonloads
+    from cjson import encode as jsondumps, decode as jsonloads
 except ImportError:
-    from json import loads as jsonloads
-    from json import dumps as jsondumps
+    from json import loads as jsonloads, dumps as jsondumps
 
 import gzip
 import h5py
