@@ -1,4 +1,4 @@
-Baseline-100km-OTL:
+Baseline-10km-OTL:
   description:
     from: BaselineStart
     road: Baseline
@@ -6,7 +6,7 @@ Baseline-100km-OTL:
     to: BaselineEnd
   parameters:
     aadt: 43200
-    length: 300000
+    length: 30000
     maxSpeed: 33.333333333333336
     switches: 2
     type: GT
