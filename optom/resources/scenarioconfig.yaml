@@ -1,3 +1,15 @@
+Baseline-10km-OTL:
+  description:
+    from: BaselineStart
+    road: Baseline
+    state: Baseline
+    to: BaselineEnd
+  parameters:
+    aadt: 43200
+    length: 30000
+    maxSpeed: 33.333333333333336
+    switches: 2
+    type: GT
 BW-B292-Aglasterhausen-Obrigheim:
   description:
     from: Aglasterhausen

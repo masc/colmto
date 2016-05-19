@@ -35,10 +35,36 @@ class SumoConfig(Configuration):
     def get(self, p_key):
         return self.getRunConfig().get("sumo").get(p_key)
 
-    def generateScenario(self, p_scenarioname, p_initialsorting, p_run):
-        l_scenarioconfig = self.getScenarioConfig().get(p_scenarioname)
-
+    def generateScenario(self, p_scenarioname):
         l_destinationdir = os.path.join(self.getSUMOConfigDir(), p_scenarioname)
+        if not os.path.exists(os.path.join(l_destinationdir)):
+            os.mkdir(l_destinationdir)
+
+        l_scenarioconfig = self.getScenarioConfig().get(p_scenarioname)
+        l_runcfg = self.getRunConfig()
+
+        l_scenarioruns = {
+            "scenarioname": p_scenarioname,
+            "runs": {}
+        }
+
+        l_nodefile = l_scenarioruns["nodefile"] = os.path.join(l_destinationdir, "{}.nod.xml".format(p_scenarioname))
+        l_edgefile = l_scenarioruns["edgefile"] = os.path.join(l_destinationdir, "{}.edg.xml".format(p_scenarioname))
+        l_netfile = l_scenarioruns["netfile"] = os.path.join(l_destinationdir, "{}.net.xml".format(p_scenarioname))
+        l_settingsfile = l_scenarioruns["settingsfile"] = os.path.join(l_destinationdir, "{}.settings.xml".format(p_scenarioname))
+
+        self._generateNodeXML(l_scenarioconfig, l_nodefile, self._forcerebuildscenarios)
+        self._generateEdgeXML(l_scenarioconfig, l_edgefile, self._forcerebuildscenarios)
+        self._generateSettingsXML(l_scenarioconfig, l_runcfg, l_settingsfile, self._forcerebuildscenarios)
+        self._generateNetXML(l_nodefile, l_edgefile, l_netfile, self._forcerebuildscenarios)
+
+        return l_scenarioruns
+
+    def generateRun(self, p_scenarioruns, p_initialsorting, p_run):
+        l_scenarioname = p_scenarioruns.get("scenarioname")
+        l_scenarioconfig = self.getScenarioConfig().get(l_scenarioname)
+
+        l_destinationdir = os.path.join(self.getSUMOConfigDir(), p_scenarioruns.get("scenarioname"))
         if not os.path.exists(os.path.join(l_destinationdir)):
             os.mkdir(l_destinationdir)
 
@@ -52,38 +78,39 @@ class SumoConfig(Configuration):
         if not os.path.exists(os.path.join(l_destinationdir, str(p_initialsorting), str(p_run))):
             os.mkdir(os.path.join(os.path.join(l_destinationdir, str(p_initialsorting), str(p_run))))
 
-        l_scenariorun = {
-            "name": p_scenarioname,
-            "run" : p_run
-        }
+        print(" * generating SUMO run configuration for scenario {} / sorting {} / run {}".format(l_scenarioname, p_initialsorting, p_run))
+        if p_scenarioruns.get("runs").get(p_initialsorting) is None:
+            p_scenarioruns.get("runs")[p_initialsorting] = {}
+        p_scenarioruns.get("runs").get(p_initialsorting)[p_run] = {}
+        l_scenariorun = p_scenarioruns.get("runs").get(p_initialsorting).get(p_run)
 
-        l_nodefile = l_scenariorun["nodefile"] = os.path.join(l_destinationdir, str(p_initialsorting), str(p_run), "{}.nod.xml".format(p_scenarioname))
-        l_edgefile = l_scenariorun["edgefile"] = os.path.join(l_destinationdir, str(p_initialsorting), str(p_run), "{}.edg.xml".format(p_scenarioname))
-        l_netfile = l_scenariorun["netfile"] = os.path.join(l_destinationdir, str(p_initialsorting), str(p_run), "{}.net.xml".format(p_scenarioname))
-        l_tripfile = l_scenariorun["tripfile"] = os.path.join(l_destinationdir, str(p_initialsorting), str(p_run), "{}.trip.xml".format(p_scenarioname))
-        l_additionalfile = l_scenariorun["additionalfile"] = os.path.join(l_destinationdir, str(p_initialsorting), str(p_run), "{}.add.xml".format(p_scenarioname))
-        l_routefile = l_scenariorun["routefile"] = os.path.join(l_destinationdir, str(p_initialsorting), str(p_run), "{}.rou.xml".format(p_scenarioname))
-        l_settingsfile = l_scenariorun["settingsfile"] = os.path.join(l_destinationdir, str(p_initialsorting), str(p_run), "{}.settings.xml".format(p_scenarioname))
-        l_configfile = l_scenariorun["configfile"] = os.path.join(l_destinationdir, str(p_initialsorting), str(p_run), "{}.sumo.cfg".format(p_scenarioname))
-        l_scenariorun["tripinfofile"] = os.path.join(l_destinationdir, str(p_initialsorting), str(p_run), "{}.tripinfo-output.xml".format(p_scenarioname))
-        l_scenariorun["fcdfile"] = os.path.join(l_destinationdir, str(p_initialsorting), str(p_run), "{}.fcd-output.xml".format(p_scenarioname))
-        l_sumocfgfiles = [l_nodefile, l_edgefile, l_netfile, l_tripfile, l_additionalfile, l_routefile, l_settingsfile, l_configfile]
+        l_netfile = p_scenarioruns.get("netfile")
+        l_settingsfile = p_scenarioruns.get("settingsfile")
 
-        print(" * checking for SUMO configuration files for scenario {} / sorting {} / run {}".format(p_scenarioname, p_initialsorting, p_run))
-        if len(filter(lambda fname: not os.path.isfile(fname), l_sumocfgfiles)) > 0:
+        l_additionalfile = l_scenariorun["additionalfile"] = os.path.join(l_destinationdir, str(p_initialsorting), str(p_run), "{}.add.xml".format(l_scenarioname))
+        l_tripfile = l_scenariorun["tripfile"] = os.path.join(l_destinationdir, str(p_initialsorting), str(p_run), "{}.trip.xml".format(l_scenarioname))
+        l_routefile = l_scenariorun["routefile"] = os.path.join(l_destinationdir, str(p_initialsorting), str(p_run), "{}.rou.xml".format(l_scenarioname))
+        l_configfile = l_scenariorun["configfile"] = os.path.join(l_destinationdir, str(p_initialsorting), str(p_run), "{}.sumo.cfg".format(l_scenarioname))
+        l_tripinfofile = l_scenariorun["tripinfofile"] = os.path.join(l_destinationdir, str(p_initialsorting), str(p_run), "{}.tripinfo-output.xml".format(l_scenarioname))
+        l_fcdfile = l_scenariorun["fcdfile"] = os.path.join(l_destinationdir, str(p_initialsorting), str(p_run), "{}.fcd-output.xml".format(l_scenarioname))
+
+        l_runcfgfiles = [l_tripfile, l_additionalfile, l_routefile, l_configfile]
+
+        if len(filter(lambda fname: not os.path.isfile(fname), l_runcfgfiles)) > 0:
             print("   not existing or incomplete scenario configuration detected -> rebuilding")
             self._forcerebuildscenarios = True
 
-        self._generateNodeXML(l_scenarioconfig, l_nodefile, self._forcerebuildscenarios)
-        self._generateEdgeXML(l_scenarioconfig, l_edgefile, self._forcerebuildscenarios)
-        self._generateAdditionalXML(l_scenarioconfig, p_initialsorting, p_run, p_scenarioname, l_additionalfile, self._forcerebuildscenarios)
+        self._generateAdditionalXML(l_scenarioconfig, p_initialsorting, p_run, l_scenarioname, l_additionalfile, self._forcerebuildscenarios)
         self._generateConfigXML(l_configfile, l_netfile, l_routefile, l_additionalfile, l_settingsfile, l_runcfg.get("simtimeinterval"), self._forcerebuildscenarios)
-        self._generateSettingsXML(l_scenarioconfig, l_runcfg, l_settingsfile, self._forcerebuildscenarios)
         self._generateTripXML(l_scenarioconfig, l_runcfg, p_initialsorting, l_vtypescfg, l_tripfile, self._forcerebuildscenarios)
-        self._generateNetXML(l_nodefile, l_edgefile, l_netfile, self._forcerebuildscenarios)
         self._generateRouteXML(l_netfile, l_tripfile, l_routefile, self._forcerebuildscenarios)
 
-        return l_scenariorun
+        return {
+            "configfile": l_configfile,
+            "tripinfofile": l_tripinfofile,
+            "fcdfile": l_fcdfile,
+            "settingsfile": l_settingsfile
+        }
 
     ## Return a pretty-printed XML string for the Element (https://pymotw.com/2/xml/etree/ElementTree/create.html)
     def _prettify(self, p_element):

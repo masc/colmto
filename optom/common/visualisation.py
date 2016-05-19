@@ -79,8 +79,8 @@ class Visualisation(object):
         l_data = [p_data.get(i_key) for i_key in l_datakeys]
 
         plt.title(p_title, fontsize=12)
-        plt.xlabel(p_xlabel)
-        plt.ylabel(p_ylabel)
+        plt.xlabel(p_xlabel, fontsize=10)
+        plt.ylabel(p_ylabel, fontsize=10)
         plt.boxplot(l_data, vert=True, notch=False, labels=l_datakeys)
         plt.savefig(p_filename)
         plt.close()
