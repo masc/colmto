@@ -1,9 +1,11 @@
 # -*- coding: utf-8 -*-
 from __future__ import print_function
+from __future__ import division
 
-from configuration.sumocfg import SumoConfig
+import logging
 from sumolib import checkBinary
 
+from configuration.sumocfg import SumoConfig
 from runtime.runtime import Runtime
 from common.visualisation import Visualisation
 from common.resultswriter import ResultsWriter
@@ -14,20 +16,34 @@ import os
 class Sumo(object):
 
     def __init__(self, p_args):
+        self._log = logging.getLogger(__name__)
+        self._log.setLevel(p_args.loglevel)
+
+        # create a file handler
+        handler = logging.FileHandler(p_args.logfile)
+        handler.setLevel(p_args.loglevel)
+
+        # create a logging format
+        formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+        handler.setFormatter(formatter)
+
+        # add the handlers to the logger
+        self._log.addHandler(handler)
+
         self._visualisation = Visualisation()
-        self._resultswriter = ResultsWriter()
-        self._statistics = Statistics()
-        self._allscenarioruns = {} # map scenarios -> runid -> files
         self._sumocfg = SumoConfig(p_args, self._visualisation, checkBinary("netconvert"), checkBinary("duarouter"))
-        self._runtime = Runtime(self._sumocfg, self._visualisation,
-                                        checkBinary("sumo")
-                                            if self._sumocfg.get("headless")
-                                            else checkBinary("sumo-gui"))
+        self._resultswriter = ResultsWriter(p_args)
+        self._statistics = Statistics(p_args)
+        self._allscenarioruns = {} # map scenarios -> runid -> files
+        self._runtime = Runtime(p_args, self._sumocfg, self._visualisation,
+                                checkBinary("sumo")
+                                if self._sumocfg.get("headless")
+                                else checkBinary("sumo-gui"))
 
 
     def _runScenario(self, p_scenarioname):
         if self._sumocfg.getScenarioConfig().get(p_scenarioname) == None:
-            print("/!\ scenario {} not found in configuration".format(p_scenarioname))
+            self._log.error("/!\ scenario {} not found in configuration".format(p_scenarioname))
             return
 
         self._allscenarioruns[p_scenarioname] = l_scenarioruns = self._sumocfg.generateScenario(p_scenarioname)
@@ -51,23 +67,23 @@ class Sumo(object):
         self._resultswriter.writeYAML(l_stats, os.path.join(self._sumocfg.getSUMOConfigDir(), "results-{}.yaml.gz".format(p_scenarioname)))
         l_vtypedistribution = self._sumocfg.getRunConfig().get("vtypedistribution")
         l_vtypedistribution = ", ".join(["{}: ${}$".format(vtype, l_vtypedistribution.get(vtype).get("fraction")) for vtype in l_vtypedistribution])
-
+        l_ttscenarioname = "".join(["\\texttt{",p_scenarioname,"}"])
         self._visualisation.boxplot(os.path.join(self._sumocfg.getSUMOConfigDir(), "Traveltime-{}_{}_vehicles_{}runs_one21segment.{}".format(p_scenarioname, l_stats.get("nbvehicles"), l_stats.get("nbruns"), "pdf")),
                                     l_stats.get("data").get("duration"),
-                                    "{}:\nTravel time for ${}$ vehicles, ${}$ runs for each mode ({}), one 2+1 segment,\nvtype distribution: {}".format(p_scenarioname, l_stats.get("nbvehicles"), l_stats.get("nbruns"), ", ".join(l_initialsortings), l_vtypedistribution),
-                                    "initial ordering of vehicles\n(maximum speed)",
+                                    "{}:\nTravel time for ${}$ vehicles, ${}$ runs for each mode ({}), one 2+1 segment,\nvtype distribution: {}".format(l_ttscenarioname, l_stats.get("nbvehicles"), l_stats.get("nbruns"), ", ".join(l_initialsortings), l_vtypedistribution),
+                                    "initial ordering of vehicles (maximum speed)",
                                     "travel time in seconds"
                                     )
         self._visualisation.boxplot(os.path.join(self._sumocfg.getSUMOConfigDir(), "TimeLoss-{}_{}_vehicles_{}runs_one21segment.{}".format(p_scenarioname, l_stats.get("nbvehicles"), l_stats.get("nbruns"), "pdf")),
                                     l_stats.get("data").get("timeLoss"),
-                                    "{}:\nTime loss for ${}$ vehicles, ${}$ runs for each mode ({}), one 2+1 segment,\nvtype distribution: {}".format(p_scenarioname, l_stats.get("nbvehicles"), l_stats.get("nbruns"), ", ".join(l_initialsortings), l_vtypedistribution),
-                                    "initial ordering of vehicles\n(maximum speed)",
+                                    "{}:\nTime loss for ${}$ vehicles, ${}$ runs for each mode ({}), one 2+1 segment,\nvtype distribution: {}".format(l_ttscenarioname, l_stats.get("nbvehicles"), l_stats.get("nbruns"), ", ".join(l_initialsortings), l_vtypedistribution),
+                                    "initial ordering of vehicles (maximum speed)",
                                     "time loss in seconds"
                                     )
         self._visualisation.boxplot(os.path.join(self._sumocfg.getSUMOConfigDir(), "RelativeTimeLoss-{}_{}_vehicles_{}runs_one21segment.{}".format(p_scenarioname, l_stats.get("nbvehicles"), l_stats.get("nbruns"), "pdf")),
                                     l_stats.get("data").get("relativeLoss"),
-                                    "{}:\nRelative time loss for ${}$ vehicles, ${}$ runs for each mode ({}), one 2+1 segment,\nvtype distribution: {}".format(p_scenarioname, l_stats.get("nbvehicles"), l_stats.get("nbruns"), ", ".join(l_initialsortings), l_vtypedistribution),
-                                    "initial ordering of vehicles\n(maximum speed)",
+                                    "{}:\nRelative time loss for ${}$ vehicles, ${}$ runs for each mode ({}), one 2+1 segment,\nvtype distribution: {}".format(l_ttscenarioname, l_stats.get("nbvehicles"), l_stats.get("nbruns"), ", ".join(l_initialsortings), l_vtypedistribution),
+                                    "initial ordering of vehicles (maximum speed)",
                                     "relative time loss in percent ($\\frac{\\mathrm{Traveltime}}{\\mathrm{Traveltime}-\\mathrm{Timeloss}}*100$)"
                                     )
 

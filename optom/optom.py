@@ -4,6 +4,7 @@ from __future__ import print_function
 import argparse
 import os
 import shutil
+import logging
 from sumo.sumo import Sumo
 
 class Optom(object):
@@ -28,6 +29,8 @@ class Optom(object):
         l_parser.add_argument("--configdir", dest="configdir", type=str, default=l_configdir)
         l_parser.add_argument("--scenarios", dest="scenarios", type=str, default=None, nargs='*')
         l_parser.add_argument("--runs", dest="runs", type=int, default=None)
+        l_parser.add_argument("--logfile", dest="logfile", type=str, default=os.path.join(l_configdir, u"optom.log"))
+        l_parser.add_argument("--loglevel", dest="loglevel", type=int, default=logging.INFO)
 
         l_mutexgrouprunchoice = l_parser.add_mutually_exclusive_group(required=False)
         l_mutexgrouprunchoice.add_argument("--sumo", dest="runsumo", default=False, action='store_true', help="run SUMO simulation")

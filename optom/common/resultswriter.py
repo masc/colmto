@@ -24,42 +24,59 @@
 from __future__ import print_function
 from __future__ import division
 
-try:
-    from cjson import encode as jsondumps, decode as jsonloads
-except ImportError:
-    from json import loads as jsonloads, dumps as jsondumps
-
 import gzip
 import h5py
 import yaml
 import json
+import logging
+
+try:
+    from cjson import encode as jsondumps, decode as jsonloads
+except ImportError:
+    from json import loads as jsonloads, dumps as jsondumps
 
 try:
     from yaml import CSafeLoader as SafeLoader, CSafeDumper as SafeDumper
 except ImportError:
     from yaml import SafeLoader, SafeDumper
 
+
 class ResultsWriter(object):
 
+    def __init__(self, p_args):
+        self._log = logging.getLogger(__name__)
+        self._log.setLevel(p_args.loglevel)
+
+        # create a file handler
+        handler = logging.FileHandler(p_args.logfile)
+        handler.setLevel(p_args.loglevel)
+
+        # create a logging format
+        formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+        handler.setFormatter(formatter)
+
+        # add the handlers to the logger
+        self._log.addHandler(handler)
+
     def writeJsonPretty(self, p_object, p_filename):
-        print(" * writing {}".format(p_filename))
+        self._log.info(" * writing {}".format(p_filename))
         fp = gzip.GzipFile(p_filename, 'w') if p_filename.endswith(".gz") else open(p_filename, mode="w")
         json.dump(p_object, fp, sort_keys=True, indent=4, separators=(', ', ' : '))
         fp.close()
-        print("   done")
+        self._log.info("   done")
 
     def writeJson(self, p_object, p_filename):
-        print(" * writing {}".format(p_filename))
+        self._log.info(" * writing {}".format(p_filename))
         with gzip.GzipFile(p_filename, 'w') if p_filename.endswith(".gz") else open(p_filename, mode="w") as fp:
             fp.write(jsondumps(p_object))
-        print("   done")
+        self._log.info("   done")
 
     def writeYAML(self, p_object, p_filename, p_default_flow_style=False):
         fp = gzip.GzipFile(p_filename, 'w') if p_filename.endswith(".gz") else open(p_filename, mode="w")
-        print(" * writing {}".format(p_filename))
+        self._log.info(" * writing {}".format(p_filename))
         yaml.dump(p_object, fp, Dumper=SafeDumper, default_flow_style=p_default_flow_style)
         fp.close()
-        print("   done")
+        self._log.info("   done")
 
     ## Write an object to a specific path into an open file, identified by fileid
     #  @param self The object pointer

@@ -2,39 +2,53 @@
 from __future__ import print_function
 from __future__ import division
 
+import logging
+
 try:
     from lxml import etree
-    print("running with lxml.etree")
+    print("{} running with lxml.etree".format(__name__))
 except ImportError:
     try:
         # Python 2.5
         import xml.etree.cElementTree as etree
-        print("running with cElementTree on Python 2.5+")
+        print("{} running with cElementTree on Python 2.5+".format(__name__))
     except ImportError:
         try:
             # Python 2.5
             import xml.etree.ElementTree as etree
-            print("running with ElementTree on Python 2.5+")
+            print("{} running with ElementTree on Python 2.5+".format(__name__))
         except ImportError:
             try:
                 # normal cElementTree install
                 import cElementTree as etree
-                print("running with cElementTree")
+                print("{} running with cElementTree".format(__name__))
             except ImportError:
                 try:
                     # normal ElementTree install
                     import elementtree.ElementTree as etree
-                    print("running with ElementTree")
+                    print("{} running with ElementTree".format(__name__))
                 except ImportError:
-                    print("Failed to import ElementTree from any known place")
-
+                    print("{} Failed to import ElementTree from any known place".format(__name__))
 
 from visualisation import Visualisation
 
 class Statistics(object):
 
-    def __init__(self):
+    def __init__(self, p_args):
         self._visualisation = Visualisation()
+        self._log = logging.getLogger(__name__)
+        self._log.setLevel(p_args.loglevel)
+
+        # create a file handler
+        handler = logging.FileHandler(p_args.logfile)
+        handler.setLevel(p_args.loglevel)
+
+        # create a logging format
+        formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+        handler.setFormatter(formatter)
+
+        # add the handlers to the logger
+        self._log.addHandler(handler)
 
     def pushSUMOResults(self, p_scenario, p_runconfig, p_results):
         for i_runid, i_runobj in p_results.iteritems():
@@ -54,7 +68,7 @@ class Statistics(object):
 
 
     def computeSUMOResults(self, p_scenarioname, p_scenarioruns, p_queries=[]):
-        print("* traveltime statistics for scenario {}".format(p_scenarioname))
+        self._log.info("* traveltime statistics for scenario {}".format(p_scenarioname))
 
         l_data = dict([(q, {}) for q in p_queries])
         l_data["relativeLoss"] = {}

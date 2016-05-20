@@ -12,7 +12,7 @@ class Visualisation(object):
 
     def __init__(self):
         rc("text", usetex=True)
-        rc("font", **{"family": "sans-serif", "sans-serif": ["Helvetica"], "size" :8})
+        rc("font", **{"family": "sans-serif", "sans-serif": ["Helvetica"], "size" :10})
         rc("text.latex", preamble=r"\usepackage{cmbright}")
         rc("mathtext", fontset="stixsans")
 
@@ -85,10 +85,10 @@ class Visualisation(object):
 
         plt.grid(axis='y')
         plt.title(p_title, fontsize=12)
-        plt.xlabel(p_xlabel, fontsize=10)
-        plt.ylabel(p_ylabel, fontsize=10)
+        plt.xlabel(p_xlabel, fontsize=12)
+        plt.ylabel(p_ylabel, fontsize=12)
         plt.boxplot(l_data, vert=True, notch=False, labels=l_datakeys)
-        plt.savefig(p_filename)
+        plt.savefig(p_filename, bbox_inches="tight")
         plt.close()
 
     def plotRunStats(self, p_vehiclecount, p_density, p_scenarioname, p_fname):

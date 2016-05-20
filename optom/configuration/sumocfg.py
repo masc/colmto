@@ -7,33 +7,32 @@ import random
 import subprocess
 try:
     from lxml import etree
-    print("running with lxml.etree")
+    print("{} running with lxml.etree".format(__name__))
 except ImportError:
     try:
         # Python 2.5
         import xml.etree.cElementTree as etree
-        print("running with cElementTree on Python 2.5+")
+        print("{} running with cElementTree on Python 2.5+".format(__name__))
     except ImportError:
         try:
             # Python 2.5
             import xml.etree.ElementTree as etree
-            print("running with ElementTree on Python 2.5+")
+            print("{} running with ElementTree on Python 2.5+".format(__name__))
         except ImportError:
             try:
                 # normal cElementTree install
                 import cElementTree as etree
-                print("running with cElementTree")
+                print("{} running with cElementTree".format(__name__))
             except ImportError:
                 try:
                     # normal ElementTree install
                     import elementtree.ElementTree as etree
-                    print("running with ElementTree")
+                    print("{} running with ElementTree".format(__name__))
                 except ImportError:
-                    print("Failed to import ElementTree from any known place")
+                    print("{} Failed to import ElementTree from any known place".format(__name__))
 
-from xml.dom import minidom
 import itertools
-
+import logging
 from configuration import Configuration
 from sumo.vehicle.vehicle import Vehicle
 
@@ -41,16 +40,32 @@ class SumoConfig(Configuration):
 
     def __init__(self, p_args, p_visualisation, p_netconvertbinary, p_duarouterbinary):
         super(SumoConfig, self).__init__(p_args)
+
+        self._log = logging.getLogger(__name__)
+        self._log.setLevel(p_args.loglevel)
+
+        # create a file handler
+        handler = logging.FileHandler(p_args.logfile)
+        handler.setLevel(p_args.loglevel)
+
+        # create a logging format
+        formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+        handler.setFormatter(formatter)
+
+        # add the handlers to the logger
+        self._log.addHandler(handler)
+
         self._netconvertbinary = p_netconvertbinary
         self._duarouterbinary = p_duarouterbinary
         self._visualisation = p_visualisation
         self._forcerebuildscenarios = p_args.forcerebuildscenarios
         self._sumoconfigdir = os.path.join(self.getConfigDir(), "SUMO")
+
         if not os.path.exists(self._sumoconfigdir):
             os.mkdir(self._sumoconfigdir)
 
         if self._forcerebuildscenarios:
-            print(" * forcerebuildscenarios set -> rebuilding/overwriting scenarios if already present")
+            self._log.warning(" * forcerebuildscenarios set -> rebuilding/overwriting scenarios if already present")
         self._onlyoneotlsegment = p_args.onlyoneotlsegment
 
 
@@ -103,7 +118,7 @@ class SumoConfig(Configuration):
         if not os.path.exists(os.path.join(l_destinationdir, str(p_initialsorting), str(p_run))):
             os.mkdir(os.path.join(os.path.join(l_destinationdir, str(p_initialsorting), str(p_run))))
 
-        print(" * generating SUMO run configuration for scenario {} / sorting {} / run {}".format(l_scenarioname, p_initialsorting, p_run))
+        self._log.info(" * generating SUMO run configuration for scenario {} / sorting {} / run {}".format(l_scenarioname, p_initialsorting, p_run))
         if p_scenarioruns.get("runs").get(p_initialsorting) is None:
             p_scenarioruns.get("runs")[p_initialsorting] = {}
         p_scenarioruns.get("runs").get(p_initialsorting)[p_run] = {}
@@ -122,7 +137,7 @@ class SumoConfig(Configuration):
         l_runcfgfiles = [l_tripfile, l_additionalfile, l_routefile, l_configfile]
 
         if len(filter(lambda fname: not os.path.isfile(fname), l_runcfgfiles)) > 0:
-            print("   not existing or incomplete scenario configuration detected -> rebuilding")
+            self._log.warn("   not existing or incomplete scenario configuration detected -> rebuilding")
             self._forcerebuildscenarios = True
 
         self._generateAdditionalXML(l_scenarioconfig, p_initialsorting, p_run, l_scenarioname, l_additionalfile, self._forcerebuildscenarios)
@@ -277,7 +292,7 @@ class SumoConfig(Configuration):
             return p_prevstarttime
 
     def _createFixedInitialVehicleDistribution(self, p_vtypescfg, p_runcfg, p_scenarioconfig, p_nbvehicles, p_aadt, p_initialsorting, p_vtypedistribution):
-        print("create fixed initial vehicle distribution with {}".format(p_vtypedistribution))
+        self._log.info("create fixed initial vehicle distribution with {}".format(p_vtypedistribution))
         l_vtypedistribution = list(itertools.chain.from_iterable(
             map(
                 lambda (k,v): [k] * int(round(100 * v.get("fraction"))),
@@ -334,7 +349,7 @@ class SumoConfig(Configuration):
         l_numberofvehicles = int(round(l_aadt / (24*60*60) * (l_timeend - l_timebegin))) \
             if not p_runcfg.get("nbvehicles").get("enabled") else p_runcfg.get("nbvehicles").get("value")
 
-        print("Scenario's AADT of {} vehicles/average annual day => {} vehicles for {} simulation seconds".format(
+        self._log.info("Scenario's AADT of {} vehicles/average annual day => {} vehicles for {} simulation seconds".format(
             l_aadt, l_numberofvehicles, (l_timeend - l_timebegin)
         ))
 
