@@ -5,13 +5,16 @@ from __future__ import division
 import matplotlib.colors as colors
 import matplotlib.cm as cm
 import matplotlib.pyplot as plt
-import traci.constants as tc
-import math
-import numpy as np
-from matplotlib.pyplot import gca
-from matplotlib import font_manager
+from matplotlib import rc
+
 
 class Visualisation(object):
+
+    def __init__(self):
+        rc("text", usetex=True)
+        rc("font", **{"family": "sans-serif", "sans-serif": ["Helvetica"], "size" :8})
+        rc("text.latex", preamble=r"\usepackage{cmbright}")
+        rc("mathtext", fontset="stixsans")
 
     def getColormap(self, p_values, p_cmap):
         l_jet=plt.get_cmap(p_cmap)
@@ -77,14 +80,10 @@ class Visualisation(object):
     def boxplot(self, p_filename, p_data, p_title="", p_xlabel="", p_ylabel=""):
         plt.figure(1)
 
-        #a = gca()
-        #fontProperties = {'weight' : 'normal', 'size' : 8}
-        #a.set_xticklabels(a.get_xticks(), fontProperties)
-        #a.set_yticklabels(a.get_yticks(), fontProperties)
-
         l_datakeys = sorted(p_data.keys())
         l_data = [p_data.get(i_key) for i_key in l_datakeys]
 
+        plt.grid(axis='y')
         plt.title(p_title, fontsize=12)
         plt.xlabel(p_xlabel, fontsize=10)
         plt.ylabel(p_ylabel, fontsize=10)
