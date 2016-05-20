@@ -4,6 +4,7 @@ from __future__ import division
 import subprocess
 import sys
 import logging
+import cStringIO
 
 class Runtime(object):
 
@@ -35,8 +36,8 @@ class Runtime(object):
              "--gui-settings-file", p_scenario.get("settingsfile"),
              "--no-step-log"
              ],
-            stdout=sys.stdout,
-            stderr=sys.stderr) # TODO: stdout/err to logger info/error
-        sys.stdout.flush()
+            stdout=None,
+            stderr=None,
+            bufsize=-1)
         l_sumoprocess.wait()
 
