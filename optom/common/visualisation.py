@@ -77,9 +77,10 @@ class Visualisation(object):
     def boxplot(self, p_filename, p_data, p_title="", p_xlabel="", p_ylabel=""):
         plt.figure(1)
 
-        l_gca = gca()
-        l_gca.set_xticklabels(l_gca.get_xticks(), {"size": 8})
-        l_gca.set_yticklabels(l_gca.get_yticks(), {"size": 8})
+        #a = gca()
+        #fontProperties = {'weight' : 'normal', 'size' : 8}
+        #a.set_xticklabels(a.get_xticks(), fontProperties)
+        #a.set_yticklabels(a.get_yticks(), fontProperties)
 
         l_datakeys = sorted(p_data.keys())
         l_data = [p_data.get(i_key) for i_key in l_datakeys]

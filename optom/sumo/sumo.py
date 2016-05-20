@@ -61,6 +61,12 @@ class Sumo(object):
                                     "initial ordering of vehicles\n(maximum speed)",
                                     "time loss in seconds"
                                     )
+        self._visualisation.boxplot(os.path.join(self._sumocfg.getSUMOConfigDir(), "RelativeTimeLoss-{}_{}_vehicles_{}runs_one21segment.{}".format(p_scenarioname, l_stats.get("nbvehicles"), l_stats.get("nbruns"), "pdf")),
+                                    l_stats.get("data").get("relativeLoss"),
+                                    "{}: Relative time loss for \n{} vehicles, {} runs for each mode, one 2+1 segment".format(p_scenarioname, l_stats.get("nbvehicles"), l_stats.get("nbruns")),
+                                    "initial ordering of vehicles\n(maximum speed)",
+                                    "relative time loss in percent (TL/(TT-TL)*100)"
+                                    )
 
 
     def runScenarios(self):

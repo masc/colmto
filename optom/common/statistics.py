@@ -57,6 +57,7 @@ class Statistics(object):
         print("* traveltime statistics for scenario {}".format(p_scenarioname))
 
         l_data = dict([(q, {}) for q in p_queries])
+        l_data["relativeLoss"] = {}
         l_runs = 0
         l_vehicles = 0
 
@@ -83,6 +84,15 @@ class Statistics(object):
                         if l_data.get(i_query).get(l_label) is None:
                             l_data.get(i_query)[l_label] = []
                         l_data.get(i_query).get(l_label).append(float(i_tripinfo.get(i_query)))
+                    # hack for relative time loss
+                    l_traveltime = float(i_tripinfo.get("duration"))
+                    l_timeloss = float(i_tripinfo.get("timeLoss"))
+                    l_topt = l_traveltime - l_timeloss
+                    l_relativeloss = l_timeloss / l_topt * 100.
+                    if l_data.get("relativeLoss").get(l_label) is None:
+                        l_data.get("relativeLoss")[l_label] = []
+                    l_data.get("relativeLoss").get(l_label).append(l_relativeloss)
+
 
         return {
             "data": l_data,
