@@ -32,8 +32,8 @@ class Vehicle(object):
         return self._trajectory
 
     def provision(self, p_id, p_starttime):
-        self._id = p_id if self._id == None else self._id
-        self._starttime = p_starttime if self._starttime == None else self._starttime
+        self._id = p_id if self._id is None else self._id
+        self._starttime = p_starttime if self._starttime is None else self._starttime
 
     def __str__(self):
         return "{}({})".format(self._id, self._vtype.get("vClass"))

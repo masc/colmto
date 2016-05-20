@@ -12,13 +12,13 @@ except ImportError:
 class Configuration(object):
 
     def __init__(self, p_args):
-        if p_args.runconfig == None:
+        if p_args.runconfig is None:
             raise BaseException("run configuration flag is None")
 
-        if p_args.scenarioconfig == None:
+        if p_args.scenarioconfig is None:
             raise BaseException("scenario configuration flag is None")
 
-        if p_args.vtypesconfig == None:
+        if p_args.vtypesconfig is None:
             raise BaseException("vtype configuration flag is None")
 
         if not os.path.isfile(p_args.runconfig):

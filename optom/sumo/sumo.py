@@ -42,7 +42,7 @@ class Sumo(object):
 
 
     def _runScenario(self, p_scenarioname):
-        if self._sumocfg.getScenarioConfig().get(p_scenarioname) == None:
+        if self._sumocfg.getScenarioConfig().get(p_scenarioname) is None:
             self._log.error("/!\ scenario {} not found in configuration".format(p_scenarioname))
             return
 
@@ -54,8 +54,8 @@ class Sumo(object):
             l_scenarioruns.get("runs")[i_initialsorting] = {}
 
             for i_run in xrange(self._sumocfg.getRunConfig().get("runs")):
-                l_run = self._sumocfg.generateRun(l_scenarioruns, i_initialsorting, i_run)
-                self._runtime.run(l_run)
+                l_runcfg = self._sumocfg.generateRun(l_scenarioruns, i_initialsorting, i_run)
+                self._runtime.run(l_runcfg, p_scenarioname, i_run)
 
         # dump scenarioruns to yaml.gz file
         self._resultswriter.writeYAML(l_scenarioruns, os.path.join(self._sumocfg.rundir, "runs-{}.yaml.gz".format(p_scenarioname)))

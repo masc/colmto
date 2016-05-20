@@ -70,7 +70,7 @@ class SumoConfig(Configuration):
 
 
         if self._forcerebuildscenarios:
-            self._log.warning(" * forcerebuildscenarios set -> rebuilding/overwriting scenarios if already present")
+            self._log.debug(" * forcerebuildscenarios set -> rebuilding/overwriting scenarios if already present")
         self._onlyoneotlsegment = p_args.onlyoneotlsegment
 
 
@@ -127,7 +127,7 @@ class SumoConfig(Configuration):
         if not os.path.exists(os.path.join(l_destinationdir, str(p_initialsorting), str(p_run))):
             os.mkdir(os.path.join(os.path.join(l_destinationdir, str(p_initialsorting), str(p_run))))
 
-        self._log.info(" * generating SUMO run configuration for scenario {} / sorting {} / run {}".format(l_scenarioname, p_initialsorting, p_run))
+        self._log.debug(" * generating SUMO run configuration for scenario {} / sorting {} / run {}".format(l_scenarioname, p_initialsorting, p_run))
         if p_scenarioruns.get("runs").get(p_initialsorting) is None:
             p_scenarioruns.get("runs")[p_initialsorting] = {}
         p_scenarioruns.get("runs").get(p_initialsorting)[p_run] = {}
@@ -146,7 +146,7 @@ class SumoConfig(Configuration):
         l_runcfgfiles = [l_tripfile, l_additionalfile, l_routefile, l_configfile]
 
         if len(filter(lambda fname: not os.path.isfile(fname), l_runcfgfiles)) > 0:
-            self._log.warn("   not existing or incomplete scenario configuration detected -> rebuilding")
+            self._log.warn("Not existing or incomplete scenario configuration detected -> rebuilding")
             self._forcerebuildscenarios = True
 
         self._generateAdditionalXML(l_scenarioconfig, p_initialsorting, p_run, l_scenarioname, l_additionalfile, self._forcerebuildscenarios)
@@ -301,7 +301,7 @@ class SumoConfig(Configuration):
             return p_prevstarttime
 
     def _createFixedInitialVehicleDistribution(self, p_vtypescfg, p_runcfg, p_scenarioconfig, p_nbvehicles, p_aadt, p_initialsorting, p_vtypedistribution):
-        self._log.info("create fixed initial vehicle distribution with {}".format(p_vtypedistribution))
+        self._log.debug("create fixed initial vehicle distribution with {}".format(p_vtypedistribution))
         l_vtypedistribution = list(itertools.chain.from_iterable(
             map(
                 lambda (k,v): [k] * int(round(100 * v.get("fraction"))),
@@ -358,7 +358,7 @@ class SumoConfig(Configuration):
         l_numberofvehicles = int(round(l_aadt / (24*60*60) * (l_timeend - l_timebegin))) \
             if not p_runcfg.get("nbvehicles").get("enabled") else p_runcfg.get("nbvehicles").get("value")
 
-        self._log.info("Scenario's AADT of {} vehicles/average annual day => {} vehicles for {} simulation seconds".format(
+        self._log.debug("Scenario's AADT of {} vehicles/average annual day => {} vehicles for {} simulation seconds".format(
             l_aadt, l_numberofvehicles, (l_timeend - l_timebegin)
         ))
 
