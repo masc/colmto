@@ -5,7 +5,32 @@ from __future__ import print_function
 import os
 import random
 import subprocess
-import xml.etree.ElementTree as ElementTree
+try:
+    from lxml import etree
+    print("running with lxml.etree")
+except ImportError:
+    try:
+        # Python 2.5
+        import xml.etree.cElementTree as etree
+        print("running with cElementTree on Python 2.5+")
+    except ImportError:
+        try:
+            # Python 2.5
+            import xml.etree.ElementTree as etree
+            print("running with ElementTree on Python 2.5+")
+        except ImportError:
+            try:
+                # normal cElementTree install
+                import cElementTree as etree
+                print("running with cElementTree")
+            except ImportError:
+                try:
+                    # normal ElementTree install
+                    import elementtree.ElementTree as etree
+                    print("running with ElementTree")
+                except ImportError:
+                    print("Failed to import ElementTree from any known place")
+
 from xml.dom import minidom
 import itertools
 
@@ -112,10 +137,6 @@ class SumoConfig(Configuration):
             "settingsfile": l_settingsfile
         }
 
-    ## Return a pretty-printed XML string for the Element (https://pymotw.com/2/xml/etree/ElementTree/create.html)
-    def _prettify(self, p_element):
-        return minidom.parseString(ElementTree.tostring(p_element)).toprettyxml(indent="  ")
-
     def _generateNodeXML(self, p_scenarioconfig, p_nodefile, p_forcerebuildscenarios=False):
         if os.path.isfile(p_nodefile) and not p_forcerebuildscenarios:
             return
@@ -128,15 +149,15 @@ class SumoConfig(Configuration):
         if self._onlyoneotlsegment:
             l_length = 2*l_segmentlength # two times segment length
 
-        l_nodes = ElementTree.Element("nodes")
-        ElementTree.SubElement(l_nodes, "node", attrib={"id": "2_1_start", "x": "0", "y": "0"})
-        ElementTree.SubElement(l_nodes, "node", attrib={"id": "2_1_end", "x": str(l_length), "y": "0"})
+        l_nodes = etree.Element("nodes")
+        etree.SubElement(l_nodes, "node", attrib={"id": "2_1_start", "x": "0", "y": "0"})
+        etree.SubElement(l_nodes, "node", attrib={"id": "2_1_end", "x": str(l_length), "y": "0"})
         # dummy node for easier from-to routing
 
-        ElementTree.SubElement(l_nodes, "node", attrib={"id": "ramp_exit", "x": str(l_length+l_segmentlength), "y": "0"})
+        etree.SubElement(l_nodes, "node", attrib={"id": "ramp_exit", "x": str(l_length+l_segmentlength), "y": "0"})
 
         with open(p_nodefile, "w") as f_pnodesxml:
-            f_pnodesxml.write(self._prettify(l_nodes))
+            f_pnodesxml.write(etree.tostring(l_nodes, pretty_print=True))
 
     def _generateEdgeXML(self, p_scenarioconfig, p_edgefile, p_forcerebuildscenarios=False):
         if os.path.isfile(p_edgefile) and not p_forcerebuildscenarios:
@@ -151,8 +172,8 @@ class SumoConfig(Configuration):
         l_segmentlength = l_length / ( l_nbswitches + 1 )
 
         # create edges xml
-        l_edges = ElementTree.Element("edges")
-        l_21edge = ElementTree.SubElement(l_edges, "edge", attrib={"id": "2_1_segment",
+        l_edges = etree.Element("edges")
+        l_21edge = etree.SubElement(l_edges, "edge", attrib={"id": "2_1_segment",
                                                                    "from" : "2_1_start",
                                                                    "to": "2_1_end",
                                                                    "numLanes": "2",
@@ -162,20 +183,20 @@ class SumoConfig(Configuration):
         l_addotllane = False
         for i_segmentpos in xrange(0,int(l_length),int(l_segmentlength)) \
                 if not self._onlyoneotlsegment else xrange(0,int(2*l_segmentlength),int(l_segmentlength)):
-            ElementTree.SubElement(l_21edge, "split", attrib={"pos": str(i_segmentpos),
+            etree.SubElement(l_21edge, "split", attrib={"pos": str(i_segmentpos),
                                                               "lanes": "0 1" if l_addotllane else "0",
                                                               "speed": str(l_maxspeed)})
             l_addotllane ^= True
 
         # dummy edge
-        ElementTree.SubElement(l_edges, "edge", attrib={"id": "2_1_end-ramp_exit",
+        etree.SubElement(l_edges, "edge", attrib={"id": "2_1_end-ramp_exit",
                                                         "from" : "2_1_end",
                                                         "to": "ramp_exit",
                                                         "numLanes": "1",
                                                         "speed": str(l_maxspeed)})
 
         with open(p_edgefile, "w") as f_pedgexml:
-            f_pedgexml.write(self._prettify(l_edges))
+            f_pedgexml.write(etree.tostring(l_edges, pretty_print=True))
 
     def _generateAdditionalXML(self, p_scenarioconfig, p_initialsorting, p_run, p_scenarioname, p_additionalfile, p_forcerebuildscenarios):
         if os.path.isfile(p_additionalfile) and not p_forcerebuildscenarios:
@@ -187,10 +208,10 @@ class SumoConfig(Configuration):
         # assume even distributed otl segment lengths
         l_segmentlength = l_length / ( l_nbswitches + 1 )
 
-        l_additional = ElementTree.Element("additional")
+        l_additional = etree.Element("additional")
         # place induction loop right before the first split (i.e. end of starting edge)
         #     <inductionLoop id="myLoop1" lane="foo_0" pos="42" freq="900" file="out.xml"/>
-        ElementTree.SubElement(l_additional, "inductionLoop",
+        etree.SubElement(l_additional, "inductionLoop",
                                attrib={
                                    "id": "pre",
                                    "lane": "2_1_segment_0",
@@ -201,7 +222,7 @@ class SumoConfig(Configuration):
                                    "file": os.path.join(self.getSUMOConfigDir(), p_scenarioname, str(p_initialsorting), str(p_run), "{}.inductionLoop.start.xml".format(p_scenarioname))
                                })
 
-        ElementTree.SubElement(l_additional, "inductionLoop",
+        etree.SubElement(l_additional, "inductionLoop",
                                attrib={
                                    "id": "post",
                                    "lane": "2_1_end-ramp_exit_0",
@@ -213,7 +234,7 @@ class SumoConfig(Configuration):
                                })
 
         with open(p_additionalfile, "w") as f_paddxml:
-            f_paddxml.write(self._prettify(l_additional))
+            f_paddxml.write(etree.tostring(l_additional, pretty_print=True))
 
     ## create sumo config
     def _generateConfigXML(self, p_configfile, p_netfile, p_routefile, p_additionalfile, p_settingsfile, p_simtimeinterval, p_forcerebuildscenarios=False):
@@ -221,31 +242,31 @@ class SumoConfig(Configuration):
             return
         assert type(p_simtimeinterval) == list and len(p_simtimeinterval) == 2
 
-        l_configuration = ElementTree.Element("configuration")
-        l_input = ElementTree.SubElement(l_configuration, "input")
-        ElementTree.SubElement(l_input, "net-file", attrib={"value": p_netfile})
-        ElementTree.SubElement(l_input, "route-files", attrib={"value": p_routefile})
-        ElementTree.SubElement(l_input, "additional-files", attrib={"value": p_additionalfile})
-        ElementTree.SubElement(l_input, "gui-settings-file", attrib={"value": p_settingsfile})
-        l_time = ElementTree.SubElement(l_configuration, "time")
-        ElementTree.SubElement(l_time, "begin", attrib={"value": str(p_simtimeinterval[0])})
+        l_configuration = etree.Element("configuration")
+        l_input = etree.SubElement(l_configuration, "input")
+        etree.SubElement(l_input, "net-file", attrib={"value": p_netfile})
+        etree.SubElement(l_input, "route-files", attrib={"value": p_routefile})
+        etree.SubElement(l_input, "additional-files", attrib={"value": p_additionalfile})
+        etree.SubElement(l_input, "gui-settings-file", attrib={"value": p_settingsfile})
+        l_time = etree.SubElement(l_configuration, "time")
+        etree.SubElement(l_time, "begin", attrib={"value": str(p_simtimeinterval[0])})
 
         with open(p_configfile, "w") as f_pconfigxml:
-            f_pconfigxml.write(self._prettify(l_configuration))
+            f_pconfigxml.write(etree.tostring(l_configuration, pretty_print=True))
 
     def _generateSettingsXML(self, p_scenarioconfig, p_runcfg, p_settingsfile, p_forcerebuildscenarios=False):
         if os.path.isfile(p_settingsfile) and not p_forcerebuildscenarios:
             return
 
-        l_viewsettings = ElementTree.Element("viewsettings")
-        ElementTree.SubElement(l_viewsettings, "viewport",
+        l_viewsettings = etree.Element("viewsettings")
+        etree.SubElement(l_viewsettings, "viewport",
                                attrib={"x": str(p_scenarioconfig.get("parameters").get("length") / 2),
                                        "y": "0",
                                        "zoom": "100"})
-        ElementTree.SubElement(l_viewsettings, "delay", attrib={"value": str(p_runcfg.get("sumo").get("gui-delay"))})
+        etree.SubElement(l_viewsettings, "delay", attrib={"value": str(p_runcfg.get("sumo").get("gui-delay"))})
 
         with open(p_settingsfile, "w") as f_pconfigxml:
-            f_pconfigxml.write(self._prettify(l_viewsettings))
+            f_pconfigxml.write(etree.tostring(l_viewsettings, pretty_print=True))
 
     def _nextTime(self, p_lambda, p_prevstarttime, p_distribution="poisson"):
         if p_distribution=="poisson":
@@ -328,7 +349,7 @@ class SumoConfig(Configuration):
 
 
         # xml
-        l_trips = ElementTree.Element("trips")
+        l_trips = etree.Element("trips")
 
         # create a sumo vtype for each vehicle
         for i_vehicle in l_vehicles:
@@ -357,11 +378,11 @@ class SumoConfig(Configuration):
                 l_vattr["vClass"] = "trailer"
             l_vattr["type"] = l_vattr.get("vClass")
 
-            ElementTree.SubElement(l_trips, "vType", attrib=l_vattr)
+            etree.SubElement(l_trips, "vType", attrib=l_vattr)
 
         # add trips
         for i_vehicle in l_vehicles:
-            ElementTree.SubElement(l_trips, "trip", attrib={
+            etree.SubElement(l_trips, "trip", attrib={
                 "id": i_vehicle.getID(),
                 "depart": str(i_vehicle.getStartTime()),
                 "from": "2_1_segment",
@@ -371,7 +392,7 @@ class SumoConfig(Configuration):
             })
 
         with open(p_tripfile, "w") as f_ptripxml:
-            f_ptripxml.write(self._prettify(l_trips))
+            f_ptripxml.write(etree.tostring(l_trips, pretty_print=True))
 
     ## create net xml using netconvert
     def _generateNetXML(self, p_nodefile, p_edgefile, p_netfile, p_forcerebuildscenarios=False):
