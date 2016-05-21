@@ -5,6 +5,7 @@ from __future__ import print_function
 import os
 import random
 import subprocess
+
 try:
     from lxml import etree
     print("{} running with lxml.etree".format(__name__))
@@ -34,7 +35,7 @@ except ImportError:
 import itertools
 import logging
 from configuration import Configuration
-from sumo.vehicle.vehicle import Vehicle
+from environment.vehicle import Vehicle
 
 class SumoConfig(Configuration):
 
@@ -60,14 +61,18 @@ class SumoConfig(Configuration):
         self._visualisation = p_visualisation
         self._forcerebuildscenarios = p_args.forcerebuildscenarios
         self._sumoconfigdir = os.path.join(self.getConfigDir(), "SUMO")
-        self._rundir = os.path.join(self._sumoconfigdir, p_args.runprefix)
+        self._runsdir = os.path.join(self._sumoconfigdir, p_args.runprefix, "runs")
+        self._resultsdir = os.path.join(p_args.resultsdir, "SUMO", p_args.runprefix, "results") \
+            if p_args.resultsdir == self.getConfigDir() else p_args.resultsdir
 
         if not os.path.exists(self._sumoconfigdir):
-            os.mkdir(self._sumoconfigdir)
+            os.makedirs(self._sumoconfigdir)
 
-        if not os.path.exists(self._rundir):
-            os.mkdir(self._rundir)
+        if not os.path.exists(self._runsdir):
+            os.makedirs(self._runsdir)
 
+        if not os.path.exists(self._resultsdir):
+            os.makedirs(self._resultsdir)
 
         if self._forcerebuildscenarios:
             self._log.debug(" * forcerebuildscenarios set -> rebuilding/overwriting scenarios if already present")
@@ -78,14 +83,18 @@ class SumoConfig(Configuration):
         return self._sumoconfigdir
 
     @property
-    def rundir(self):
-        return self._rundir
+    def runsdir(self):
+        return self._runsdir
+
+    @property
+    def resultsdir(self):
+        return self._resultsdir
 
     def get(self, p_key):
         return self.getRunConfig().get("sumo").get(p_key)
 
     def generateScenario(self, p_scenarioname):
-        l_destinationdir = os.path.join(self._rundir, p_scenarioname)
+        l_destinationdir = os.path.join(self._runsdir, p_scenarioname)
         if not os.path.exists(os.path.join(l_destinationdir)):
             os.mkdir(l_destinationdir)
 
@@ -113,7 +122,7 @@ class SumoConfig(Configuration):
         l_scenarioname = p_scenarioruns.get("scenarioname")
         l_scenarioconfig = self.getScenarioConfig().get(l_scenarioname)
 
-        l_destinationdir = os.path.join(self._rundir, p_scenarioruns.get("scenarioname"))
+        l_destinationdir = os.path.join(self._runsdir, p_scenarioruns.get("scenarioname"))
         if not os.path.exists(os.path.join(l_destinationdir)):
             os.mkdir(l_destinationdir)
 
@@ -243,7 +252,7 @@ class SumoConfig(Configuration):
                                    "friendlyPos": "true",
                                    "splitByType": "true",
                                    "freq" : "1",
-                                   "file": os.path.join(self._rundir, p_scenarioname, str(p_initialsorting), str(p_run), "{}.inductionLoop.start.xml".format(p_scenarioname))
+                                   "file": os.path.join(self._runsdir, p_scenarioname, str(p_initialsorting), str(p_run), "{}.inductionLoop.start.xml".format(p_scenarioname))
                                })
 
         etree.SubElement(l_additional, "inductionLoop",
@@ -254,7 +263,7 @@ class SumoConfig(Configuration):
                                    "friendlyPos": "true",
                                    "splitByType": "true",
                                    "freq" : "1",
-                                   "file": os.path.join(self._rundir, p_scenarioname, str(p_initialsorting), str(p_run), "{}.inductionLoop.exit.xml".format(p_scenarioname))
+                                   "file": os.path.join(self._runsdir, p_scenarioname, str(p_initialsorting), str(p_run), "{}.inductionLoop.exit.xml".format(p_scenarioname))
                                })
 
         with open(p_additionalfile, "w") as f_paddxml:
@@ -423,19 +432,29 @@ class SumoConfig(Configuration):
         if os.path.isfile(p_netfile) and not p_forcerebuildscenarios:
             return
 
-        l_netconvertprocess = subprocess.Popen([self._netconvertbinary,
-                                               "--node-files={}".format(p_nodefile),
-                                               "--edge-files={}".format(p_edgefile),
-                                               "--output-file={}".format(p_netfile)])
-        l_netconvertprocess.wait()
+        l_netconvertprocess = subprocess.check_output(
+            [
+                self._netconvertbinary,
+                "--node-files={}".format(p_nodefile),
+                "--edge-files={}".format(p_edgefile),
+                "--output-file={}".format(p_netfile)
+            ],
+            stderr=subprocess.STDOUT
+        )
+        self._log.debug(l_netconvertprocess)
 
     def _generateRouteXML(self, p_netfile, p_tripfile, p_routefile, p_forcerebuildscenarios=False):
         if os.path.isfile(p_routefile) and not p_forcerebuildscenarios:
             return
 
-        l_duarouterprocess = subprocess.Popen([self._duarouterbinary,
-                                                "-n", p_netfile,
-                                                "-t", p_tripfile,
-                                                "-o", p_routefile])
-        l_duarouterprocess.wait()
+        l_duarouterprocess = subprocess.check_output(
+            [
+                self._duarouterbinary,
+                "-n", p_netfile,
+                "-t", p_tripfile,
+                "-o", p_routefile
+            ],
+            stderr=subprocess.STDOUT
+        )
+        self._log.debug(l_duarouterprocess)
 
