@@ -2,8 +2,6 @@
 from __future__ import print_function
 from __future__ import division
 
-import logging
-
 try:
     from lxml import etree
     print("{} running with lxml.etree".format(__name__))
