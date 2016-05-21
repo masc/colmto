@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import logging
+import logging.handlers
 
 
 def logger(p_args, p_name):
@@ -7,7 +8,7 @@ def logger(p_args, p_name):
     l_log.setLevel(p_args.loglevel)
 
     # create a file handler
-    l_handler = logging.FileHandler(p_args.logfile)
+    l_handler = logging.handlers.RotatingFileHandler(p_args.logfile, maxBytes=100*1024*1024, backupCount=16)
     l_handler.setLevel(p_args.loglevel)
 
     # create a logging format
