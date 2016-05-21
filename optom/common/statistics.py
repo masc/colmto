@@ -30,42 +30,13 @@ except ImportError:
                 except ImportError:
                     print("{} Failed to import ElementTree from any known place".format(__name__))
 
-from visualisation import Visualisation
+import log
+
 
 class Statistics(object):
 
     def __init__(self, p_args):
-        self._visualisation = Visualisation()
-        self._log = logging.getLogger(__name__)
-        self._log.setLevel(p_args.loglevel)
-
-        # create a file handler
-        handler = logging.FileHandler(p_args.logfile)
-        handler.setLevel(p_args.loglevel)
-
-        # create a logging format
-        formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-        handler.setFormatter(formatter)
-
-        # add the handlers to the logger
-        self._log.addHandler(handler)
-
-    def pushSUMOResults(self, p_scenario, p_runconfig, p_results):
-        for i_runid, i_runobj in p_results.iteritems():
-            self._visualisation.plotAvgGlobalSatisfactionPrePost(p_scenario, i_runid, i_runobj)
-            self._visualisation.plotTraveltimes(p_scenario, p_runconfig, i_runobj)
-
-            # for i_vid, i_vobj in i_runobj.iteritems():
-            #     l_vtraj = i_vobj.get("trajectory")
-            #     self._visualisation.plotRunStats()
-
-    def _density(self, p_scenario, p_run, p_results):
-        pass
-
-    def _satisfaction(self, p_scenario, p_run, p_results):
-        pass
-
-
+        self._log = log.logger(p_args, __name__)
 
     def computeSUMOResults(self, p_scenarioname, p_scenarioruns, p_queries=[]):
         self._log.info("* traveltime statistics for scenario {}".format(p_scenarioname))

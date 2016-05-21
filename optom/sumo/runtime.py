@@ -2,11 +2,7 @@
 from __future__ import print_function
 from __future__ import division
 import subprocess
-import sys
-import os
-import logging
-import cStringIO
-
+from common import log
 
 class Runtime(object):
 
@@ -14,20 +10,7 @@ class Runtime(object):
         self._sumoconfig = p_sumoconfig
         self._visualisation = p_visualisation
         self._sumobinary = p_sumobinary
-
-        self._log = logging.getLogger(__name__)
-        self._log.setLevel(p_args.loglevel)
-
-        # create a file handler
-        handler = logging.FileHandler(p_args.logfile)
-        handler.setLevel(p_args.loglevel)
-
-        # create a logging format
-        formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-        handler.setFormatter(formatter)
-
-        # add the handlers to the logger
-        self._log.addHandler(handler)
+        self._log = log.logger(p_args, __name__)
 
     def run(self, p_runcfg, p_scenarioname, p_runnumber):
         self._log.info("Running scenario {}: run {}".format(p_scenarioname, p_runnumber))

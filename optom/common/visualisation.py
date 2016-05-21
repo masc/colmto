@@ -6,11 +6,13 @@ import matplotlib.colors as colors
 import matplotlib.cm as cm
 import matplotlib.pyplot as plt
 from matplotlib import rc
+import log
 
 
 class Visualisation(object):
 
-    def __init__(self):
+    def __init__(self, p_args):
+        self._log = log.logger(p_args, __name__)
         rc("text", usetex=True)
         rc("font", **{"family": "sans-serif", "sans-serif": ["Helvetica"], "size" :10})
         rc("text.latex", preamble=r"\usepackage{cmbright}")

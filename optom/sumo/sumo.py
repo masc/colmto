@@ -8,28 +8,18 @@ from sumolib import checkBinary
 from common.resultswriter import ResultsWriter
 from common.statistics import Statistics
 from common.visualisation import Visualisation
+from common import log
 from configuration.sumocfg import SumoConfig
 from runtime import Runtime
+
 
 
 class Sumo(object):
 
     def __init__(self, p_args):
-        self._log = logging.getLogger(__name__)
-        self._log.setLevel(p_args.loglevel)
+        self._log = log.logger(p_args, __name__)
 
-        # create a file handler
-        handler = logging.FileHandler(p_args.logfile)
-        handler.setLevel(p_args.loglevel)
-
-        # create a logging format
-        formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-        handler.setFormatter(formatter)
-
-        # add the handlers to the logger
-        self._log.addHandler(handler)
-
-        self._visualisation = Visualisation()
+        self._visualisation = Visualisation(p_args)
         self._sumocfg = SumoConfig(p_args, self._visualisation, checkBinary("netconvert"), checkBinary("duarouter"))
         self._resultswriter = ResultsWriter(p_args)
         self._statistics = Statistics(p_args)

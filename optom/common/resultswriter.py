@@ -28,7 +28,6 @@ import gzip
 import h5py
 import yaml
 import json
-import logging
 
 try:
     from cjson import encode as jsondumps, decode as jsonloads
@@ -40,23 +39,13 @@ try:
 except ImportError:
     from yaml import SafeLoader, SafeDumper
 
+import log
+
 
 class ResultsWriter(object):
 
     def __init__(self, p_args):
-        self._log = logging.getLogger(__name__)
-        self._log.setLevel(p_args.loglevel)
-
-        # create a file handler
-        handler = logging.FileHandler(p_args.logfile)
-        handler.setLevel(p_args.loglevel)
-
-        # create a logging format
-        formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-        handler.setFormatter(formatter)
-
-        # add the handlers to the logger
-        self._log.addHandler(handler)
+        self._log = log.logger(p_args, __name__)
 
     def writeJsonPretty(self, p_object, p_filename):
         self._log.info(" * writing {}".format(p_filename))

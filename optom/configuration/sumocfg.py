@@ -33,7 +33,7 @@ except ImportError:
                     print("{} Failed to import ElementTree from any known place".format(__name__))
 
 import itertools
-import logging
+from common import log
 from configuration import Configuration
 from environment.vehicle import Vehicle
 
@@ -42,19 +42,7 @@ class SumoConfig(Configuration):
     def __init__(self, p_args, p_visualisation, p_netconvertbinary, p_duarouterbinary):
         super(SumoConfig, self).__init__(p_args)
 
-        self._log = logging.getLogger(__name__)
-        self._log.setLevel(p_args.loglevel)
-
-        # create a file handler
-        handler = logging.FileHandler(p_args.logfile)
-        handler.setLevel(p_args.loglevel)
-
-        # create a logging format
-        formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-        handler.setFormatter(formatter)
-
-        # add the handlers to the logger
-        self._log.addHandler(handler)
+        self._log = log.logger(p_args, __name__)
 
         self._netconvertbinary = p_netconvertbinary
         self._duarouterbinary = p_duarouterbinary

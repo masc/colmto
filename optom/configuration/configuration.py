@@ -9,9 +9,14 @@ try:
 except ImportError:
     from yaml import SafeLoader, SafeDumper
 
+from common import log
+
+
 class Configuration(object):
 
     def __init__(self, p_args):
+        self._log = log.logger(p_args, __name__)
+
         if p_args.runconfig is None:
             raise BaseException("run configuration flag is None")
 
