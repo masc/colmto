@@ -27,7 +27,6 @@ class Sumo(object):
                                 if self._sumocfg.get("headless")
                                 else checkBinary("sumo-gui"))
 
-
     def _runScenario(self, p_scenarioname):
         if self._sumocfg.scenarioconfig.get(p_scenarioname) is None:
             self._log.error("/!\ scenario {} not found in configuration".format(p_scenarioname))
@@ -76,7 +75,6 @@ class Sumo(object):
                               "initial ordering of vehicles (maximum speed)",
                               "relative time loss in percent ($\\frac{\\mathrm{Traveltime}}{\\mathrm{Traveltime}-\\mathrm{Timeloss}}*100$)"
                               )
-
 
     def runScenarios(self):
         for i_scenarioname in self._sumocfg.runconfig.get("scenarios"):
