@@ -6,9 +6,8 @@ from common import log
 
 class Runtime(object):
 
-    def __init__(self, p_args, p_sumoconfig, p_visualisation, p_sumobinary):
+    def __init__(self, p_args, p_sumoconfig, p_sumobinary):
         self._sumoconfig = p_sumoconfig
-        self._visualisation = p_visualisation
         self._sumobinary = p_sumobinary
         self._log = log.logger(p_args, __name__)
 

@@ -10,25 +10,32 @@ class Vehicle(object):
         self._maxspeed = int(round(random.gauss(p_vtype.get("maxSpeed"), p_speedsigma)))
         self._trajectory = {}
 
-    def getVType(self):
+    @property
+    def vtype(self):
         return self._vtype
 
-    def getID(self):
+    @property
+    def id(self):
         return self._id
 
-    def getColor(self):
+    @property
+    def color(self):
         return self._color
 
-    def setColor(self, p_color):
+    @color.setter
+    def color(self, p_color):
         self._color = p_color
 
-    def getStartTime(self):
+    @property
+    def starttime(self):
         return self._starttime
 
-    def getMaxSpeed(self):
+    @property
+    def maxspeed(self):
         return self._maxspeed
 
-    def getTrajectory(self):
+    @property
+    def trajectory(self):
         return self._trajectory
 
     def provision(self, p_id, p_starttime):

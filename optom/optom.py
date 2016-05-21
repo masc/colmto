@@ -52,6 +52,5 @@ class Optom(object):
             l_sumo = Sumo(l_args)
             l_sumo.runScenarios()
 
-
 if __name__ == "__main__":
     optom = Optom()

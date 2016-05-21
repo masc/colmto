@@ -5,6 +5,7 @@ from __future__ import print_function
 import os
 import random
 import subprocess
+from common import log
 
 try:
     from lxml import etree
@@ -33,25 +34,25 @@ except ImportError:
                     print("{} Failed to import ElementTree from any known place".format(__name__))
 
 import itertools
-from common import log
 from configuration import Configuration
 from environment.vehicle import Vehicle
+from common import visualisation
+
 
 class SumoConfig(Configuration):
 
-    def __init__(self, p_args, p_visualisation, p_netconvertbinary, p_duarouterbinary):
+    def __init__(self, p_args, p_netconvertbinary, p_duarouterbinary):
         super(SumoConfig, self).__init__(p_args)
 
         self._log = log.logger(p_args, __name__)
 
         self._netconvertbinary = p_netconvertbinary
         self._duarouterbinary = p_duarouterbinary
-        self._visualisation = p_visualisation
         self._forcerebuildscenarios = p_args.forcerebuildscenarios
-        self._sumoconfigdir = os.path.join(self.getConfigDir(), "SUMO")
+        self._sumoconfigdir = os.path.join(self.configdir, "SUMO")
         self._runsdir = os.path.join(self._sumoconfigdir, p_args.runprefix, "runs")
         self._resultsdir = os.path.join(p_args.resultsdir, "SUMO", p_args.runprefix, "results") \
-            if p_args.resultsdir == self.getConfigDir() else p_args.resultsdir
+            if p_args.resultsdir == self.configdir else p_args.resultsdir
 
         if not os.path.exists(self._sumoconfigdir):
             os.makedirs(self._sumoconfigdir)
@@ -66,8 +67,8 @@ class SumoConfig(Configuration):
             self._log.debug(" * forcerebuildscenarios set -> rebuilding/overwriting scenarios if already present")
         self._onlyoneotlsegment = p_args.onlyoneotlsegment
 
-
-    def getSUMOConfigDir(self):
+    @property
+    def sumoconfigdir(self):
         return self._sumoconfigdir
 
     @property
@@ -79,15 +80,15 @@ class SumoConfig(Configuration):
         return self._resultsdir
 
     def get(self, p_key):
-        return self.getRunConfig().get("sumo").get(p_key)
+        return self.runconfig.get("sumo").get(p_key)
 
     def generateScenario(self, p_scenarioname):
         l_destinationdir = os.path.join(self._runsdir, p_scenarioname)
         if not os.path.exists(os.path.join(l_destinationdir)):
             os.mkdir(l_destinationdir)
 
-        l_scenarioconfig = self.getScenarioConfig().get(p_scenarioname)
-        l_runcfg = self.getRunConfig()
+        l_scenarioconfig = self.scenarioconfig.get(p_scenarioname)
+        l_runcfg = self.runconfig
 
         l_scenarioruns = {
             "scenarioname": p_scenarioname,
@@ -108,15 +109,13 @@ class SumoConfig(Configuration):
 
     def generateRun(self, p_scenarioruns, p_initialsorting, p_run):
         l_scenarioname = p_scenarioruns.get("scenarioname")
-        l_scenarioconfig = self.getScenarioConfig().get(l_scenarioname)
+        l_scenarioconfig = self.scenarioconfig.get(l_scenarioname)
 
         l_destinationdir = os.path.join(self._runsdir, p_scenarioruns.get("scenarioname"))
         if not os.path.exists(os.path.join(l_destinationdir)):
             os.mkdir(l_destinationdir)
 
-        l_runcfg = self.getRunConfig()
-
-        l_vtypescfg = self.getVtypesConfig()
+        l_runcfg = self.runconfig
 
         if not os.path.exists(os.path.join(l_destinationdir, str(p_initialsorting))):
             os.mkdir(os.path.join(os.path.join(l_destinationdir, str(p_initialsorting))))
@@ -148,7 +147,7 @@ class SumoConfig(Configuration):
 
         self._generateAdditionalXML(l_scenarioconfig, p_initialsorting, p_run, l_scenarioname, l_additionalfile, self._forcerebuildscenarios)
         self._generateConfigXML(l_configfile, l_netfile, l_routefile, l_additionalfile, l_settingsfile, l_runcfg.get("simtimeinterval"), self._forcerebuildscenarios)
-        self._generateTripXML(l_scenarioconfig, l_runcfg, p_initialsorting, l_vtypescfg, l_tripfile, self._forcerebuildscenarios)
+        self._generateTripXML(l_scenarioconfig, l_runcfg, p_initialsorting, l_tripfile, self._forcerebuildscenarios)
         self._generateRouteXML(l_netfile, l_tripfile, l_routefile, self._forcerebuildscenarios)
 
         return {
@@ -297,7 +296,7 @@ class SumoConfig(Configuration):
         else:
             return p_prevstarttime
 
-    def _createFixedInitialVehicleDistribution(self, p_vtypescfg, p_runcfg, p_scenarioconfig, p_nbvehicles, p_aadt, p_initialsorting, p_vtypedistribution):
+    def _createFixedInitialVehicleDistribution(self, p_runcfg, p_scenarioconfig, p_nbvehicles, p_aadt, p_initialsorting, p_vtypedistribution):
         self._log.debug("create fixed initial vehicle distribution with {}".format(p_vtypedistribution))
         l_vtypedistribution = list(itertools.chain.from_iterable(
             map(
@@ -310,38 +309,38 @@ class SumoConfig(Configuration):
             if not p_runcfg.get("vehiclespersecond").get("enabled") else p_runcfg.get("vehiclespersecond").get("value")
 
         l_vehicles = map(
-            lambda vtype: Vehicle(p_vtypescfg.get(vtype), p_vtypedistribution.get(vtype).get("speedDev")),
+            lambda vtype: Vehicle(self.vtypesconfig.get(vtype), p_vtypedistribution.get(vtype).get("speedDev")),
             [random.choice(l_vtypedistribution) for i in xrange(p_nbvehicles)]
         )
 
         # generate color map for vehicle max speeds
-        l_colormap = self._visualisation.getColormap(
+        l_colormap = visualisation.colormap(
             xrange(int(round(p_scenarioconfig.get("parameters").get("maxSpeed")))),
             'jet_r'
         )
 
         # update colors
         for i_vehicle in l_vehicles:
-            i_vehicle.setColor(l_colormap.to_rgba(i_vehicle.getMaxSpeed()))
+            i_vehicle.color = l_colormap.to_rgba(i_vehicle.maxspeed)
 
         # sort speeds according to initialsorting flag
         assert p_initialsorting in ["best", "random", "worst"]
 
         if p_initialsorting == "best":
-            l_vehicles.sort(key=lambda v: v.getMaxSpeed(), reverse=True)
+            l_vehicles.sort(key=lambda v: v.maxspeed, reverse=True)
         elif p_initialsorting == "worst":
-            l_vehicles.sort(key=lambda v: v.getMaxSpeed())
+            l_vehicles.sort(key=lambda v: v.maxspeed)
 
         # assign start time and id to each vehicle
         for i,i_vehicle in enumerate(l_vehicles):
             i_vehicle.provision("vehicle{}".format(i),
                                 self._nextTime(l_vehps,
-                                               l_vehicles[i-1].getStartTime() if i > 0 else 0,
+                                               l_vehicles[i-1].starttime if i > 0 else 0,
                                                p_runcfg.get("starttimedistribution")))
 
         return l_vehicles
 
-    def _generateTripXML(self, p_scenarioconfig, p_runcfg, p_initialsorting, p_vtypescfg, p_tripfile, p_forcerebuildscenarios=False):
+    def _generateTripXML(self, p_scenarioconfig, p_runcfg, p_initialsorting, p_tripfile, p_forcerebuildscenarios=False):
         if os.path.isfile(p_tripfile) and not p_forcerebuildscenarios:
             return
 
@@ -359,8 +358,7 @@ class SumoConfig(Configuration):
             l_aadt, l_numberofvehicles, (l_timeend - l_timebegin)
         ))
 
-        l_vehicles = self._createFixedInitialVehicleDistribution(p_vtypescfg,
-                                                                 p_runcfg,
+        l_vehicles = self._createFixedInitialVehicleDistribution(p_runcfg,
                                                                  p_scenarioconfig,
                                                                  l_numberofvehicles,
                                                                  l_aadt,
@@ -377,20 +375,20 @@ class SumoConfig(Configuration):
 
             # filter for relevant attributes
             l_vattr = dict( map( lambda (k, v): (k, str(v)), filter(
-                lambda (k, v): k in ["vClass","length","width","height","minGap","accel","decel","speedFactor","speedDev"], i_vehicle.getVType().iteritems()
+                lambda (k, v): k in ["vClass","length","width","height","minGap","accel","decel","speedFactor","speedDev"], i_vehicle.vtype.iteritems()
             )))
 
-            l_vattr["id"] = str(i_vehicle.getID())
-            l_vattr["color"] = "{},{},{},{}".format(*i_vehicle.getColor())
+            l_vattr["id"] = str(i_vehicle.id)
+            l_vattr["color"] = "{},{},{},{}".format(*i_vehicle.color)
             # override parameters speedDev, desiredSpeed, and length if defined in run config
-            l_runcfgspeeddev = self.getRunConfig().get("vtypedistribution").get(l_vattr.get("vClass")).get("speedDev")
+            l_runcfgspeeddev = self.runconfig.get("vtypedistribution").get(l_vattr.get("vClass")).get("speedDev")
             if l_runcfgspeeddev != None:
                 l_vattr["speedDev"] = str(l_runcfgspeeddev)
 
-            l_runcfgdesiredspeed = self.getRunConfig().get("vtypedistribution").get(l_vattr.get("vClass")).get("desiredSpeed")
+            l_runcfgdesiredspeed = self.runconfig.get("vtypedistribution").get(l_vattr.get("vClass")).get("desiredSpeed")
             l_vattr["maxSpeed"] = str(l_runcfgdesiredspeed) if l_runcfgdesiredspeed != None else str(i_vehicle.getMaxSpeed())
 
-            l_runcfglength = self.getRunConfig().get("vtypedistribution").get(l_vattr.get("vClass")).get("length")
+            l_runcfglength = self.runconfig.get("vtypedistribution").get(l_vattr.get("vClass")).get("length")
             if l_runcfglength != None:
                 l_vattr["length"] = str(l_runcfglength)
 
@@ -404,11 +402,11 @@ class SumoConfig(Configuration):
         # add trips
         for i_vehicle in l_vehicles:
             etree.SubElement(l_trips, "trip", attrib={
-                "id": i_vehicle.getID(),
-                "depart": str(i_vehicle.getStartTime()),
+                "id": i_vehicle.id,
+                "depart": str(i_vehicle.starttime),
                 "from": "2_1_segment",
                 "to": "2_1_end-ramp_exit",
-                "type": i_vehicle.getID(),
+                "type": i_vehicle.id,
                 "departSpeed": "max",
             })
 

@@ -2,12 +2,12 @@
 from __future__ import print_function
 from __future__ import division
 
-import os
-import yaml
 try:
     from yaml import CSafeLoader as SafeLoader, CSafeDumper as SafeDumper
 except ImportError:
     from yaml import SafeLoader, SafeDumper
+import yaml
+import os
 
 from common import log
 
@@ -43,30 +43,34 @@ class Configuration(object):
         self._overrideCfgFlags(p_args)
 
     def _overrideCfgFlags(self, p_args):
-        if p_args.headless == True:
-            self.getRunConfig().get("sumo")["headless"] = True
-        if p_args.gui == True:
-            self.getRunConfig().get("sumo")["headless"] = False
-        if p_args.runs != None:
-            self.getRunConfig()["runs"] = p_args.runs
-        if p_args.scenarios != None:
-            self.getRunConfig()["scenarios"] = p_args.scenarios if p_args.scenarios != ["all"] else self.getScenarioConfig().keys()
+        if p_args.headless:
+            self._runconfig.get("sumo")["headless"] = True
+        if p_args.gui:
+            self._runconfig.get("sumo")["headless"] = False
+        if p_args.runs is not None:
+            self._runconfig["runs"] = p_args.runs
+        if p_args.scenarios is not None:
+            self._runconfig["scenarios"] = p_args.scenarios if p_args.scenarios != ["all"] else self._scenarioconfig.keys()
 
     def write(self, p_config, p_location):
         fp = open(p_location, "w")
         yaml.dump(p_config, fp, Dumper=SafeDumper, default_flow_style=False)
         fp.close()
 
-    def getRunConfig(self):
+    @property
+    def runconfig(self):
         return self._runconfig
 
-    def getScenarioConfig(self):
+    @property
+    def scenarioconfig(self):
         return self._scenarioconfig
 
-    def getVtypesConfig(self):
+    @property
+    def vtypesconfig(self):
         return self._vtypesconfig
 
-    def getConfigDir(self):
+    @property
+    def configdir(self):
         return self._configdir
 
 
