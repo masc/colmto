@@ -12,7 +12,7 @@ class Runtime(object):
         self._log = log.logger(p_args, __name__)
 
     def run(self, p_runcfg, p_scenarioname, p_runnumber):
-        self._log.info("Running scenario {}: run {}".format(p_scenarioname, p_runnumber))
+        self._log.info("Running scenario %s: run %d", p_scenarioname, p_runnumber)
         l_sumoprocess = subprocess.check_output(
             [
                 self._sumobinary,
@@ -26,6 +26,6 @@ class Runtime(object):
             stderr=subprocess.STDOUT,
             bufsize=-1
         )
-        self._log.info("{}: {}".format(self._sumobinary,l_sumoprocess.replace("\n","")))
-        self._log.info("Finished run {}".format(p_runnumber))
+        self._log.info("%s : %s", self._sumobinary, l_sumoprocess.replace("\n",""))
+        self._log.info("Finished run %d", p_runnumber)
 

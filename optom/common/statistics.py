@@ -9,24 +9,24 @@ except ImportError:
     try:
         # Python 2.5
         import xml.etree.cElementTree as etree
-        print("{} running with cElementTree on Python 2.5+".format(__name__))
+        print(__name__, "running with cElementTree on Python 2.5+")
     except ImportError:
         try:
             # Python 2.5
             import xml.etree.ElementTree as etree
-            print("{} running with ElementTree on Python 2.5+".format(__name__))
+            print(__name__, "running with ElementTree on Python 2.5+")
         except ImportError:
             try:
                 # normal cElementTree install
                 import cElementTree as etree
-                print("{} running with cElementTree".format(__name__))
+                print(__name__, "running with cElementTree")
             except ImportError:
                 try:
                     # normal ElementTree install
                     import elementtree.ElementTree as etree
-                    print("{} running with ElementTree".format(__name__))
+                    print(__name__, "running with ElementTree")
                 except ImportError:
-                    print("{} Failed to import ElementTree from any known place".format(__name__))
+                    print(__name__, "Failed to import ElementTree from any known place")
 
 import log
 
@@ -37,7 +37,7 @@ class Statistics(object):
         self._log = log.logger(p_args, __name__)
 
     def computeSUMOResults(self, p_scenarioname, p_scenarioruns, p_queries=[]):
-        self._log.info("* traveltime statistics for scenario {}".format(p_scenarioname))
+        self._log.info("* traveltime statistics for scenario %s", p_scenarioname)
 
         l_data = dict([(q, {}) for q in p_queries])
         l_data["relativeLoss"] = {}

@@ -48,21 +48,21 @@ class ResultsWriter(object):
         self._log = log.logger(p_args, __name__)
 
     def writeJsonPretty(self, p_object, p_filename):
-        self._log.info(" * writing {}".format(p_filename))
+        self._log.info(" * writing %s", p_filename)
         fp = gzip.GzipFile(p_filename, 'w') if p_filename.endswith(".gz") else open(p_filename, mode="w")
         json.dump(p_object, fp, sort_keys=True, indent=4, separators=(', ', ' : '))
         fp.close()
         self._log.info("   done")
 
     def writeJson(self, p_object, p_filename):
-        self._log.info(" * writing {}".format(p_filename))
+        self._log.info(" * writing %s", p_filename)
         with gzip.GzipFile(p_filename, 'w') if p_filename.endswith(".gz") else open(p_filename, mode="w") as fp:
             fp.write(jsondumps(p_object))
         self._log.info("   done")
 
     def writeYAML(self, p_object, p_filename, p_default_flow_style=False):
         fp = gzip.GzipFile(p_filename, 'w') if p_filename.endswith(".gz") else open(p_filename, mode="w")
-        self._log.info(" * writing {}".format(p_filename))
+        self._log.info(" * writing %s", p_filename)
         yaml.dump(p_object, fp, Dumper=SafeDumper, default_flow_style=p_default_flow_style)
         fp.close()
         self._log.info("   done")

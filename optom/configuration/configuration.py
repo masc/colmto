@@ -33,9 +33,10 @@ class Configuration(object):
             raise BaseException("scenario configuration {} is not a file".format(p_args.scenarioconfig))
 
         if not os.path.isfile(p_args.vtypesconfig):
-                    raise BaseException("vtype configuration {} is not a file".format(p_args.vtypesconfig))
+            raise BaseException("vtype configuration {} is not a file".format(p_args.vtypesconfig))
 
         self._configdir = p_args.configdir
+        self._scenariodir = p_args.scenariodir
         self._runconfig = yaml.load(open(p_args.runconfig), Loader=SafeLoader)
         self._scenarioconfig = yaml.load(open(p_args.scenarioconfig), Loader=SafeLoader)
         self._vtypesconfig = yaml.load(open(p_args.vtypesconfig), Loader=SafeLoader)

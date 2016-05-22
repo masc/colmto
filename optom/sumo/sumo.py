@@ -29,7 +29,7 @@ class Sumo(object):
 
     def _runScenario(self, p_scenarioname):
         if self._sumocfg.scenarioconfig.get(p_scenarioname) is None:
-            self._log.error("/!\ scenario {} not found in configuration".format(p_scenarioname))
+            self._log.error("/!\ scenario %s not found in configuration", p_scenarioname)
             return
 
         self._allscenarioruns[p_scenarioname] = l_scenarioruns = self._sumocfg.generateScenario(p_scenarioname)
