@@ -70,10 +70,9 @@ class SumoConfig(Configuration):
         self._netconvertbinary = p_netconvertbinary
         self._duarouterbinary = p_duarouterbinary
         self._forcerebuildscenarios = p_args.forcerebuildscenarios
-        self._sumoconfigdir = os.path.join(p_args.resultsdir, "SUMO")
-        self._runsdir = os.path.join(p_args.resultsdir, "SUMO", self._runprefix, "runs")
-        self._resultsdir = os.path.join(p_args.resultsdir, "SUMO", self._runprefix, "results") \
-            if p_args.resultsdir == self.outputdir else p_args.resultsdir
+        self._sumoconfigdir = os.path.join(self.outputdir, "SUMO")
+        self._runsdir = os.path.join(self.outputdir, "SUMO", self._runprefix, "runs")
+        self._resultsdir = os.path.join(self.outputdir, "SUMO", self._runprefix, "results")
 
         if not os.path.exists(self._sumoconfigdir):
             os.makedirs(self._sumoconfigdir)
@@ -96,7 +95,7 @@ class SumoConfig(Configuration):
                 "scenarioconfig": self.scenarioconfig,
                 "vtypesconfig": self.vtypesconfig
             },
-            os.path.join(p_args.resultsdir, "SUMO", self._runprefix, "configuration.yaml")
+            os.path.join(p_args.outputdir, "SUMO", self._runprefix, "configuration.yaml")
         )
 
     @property
