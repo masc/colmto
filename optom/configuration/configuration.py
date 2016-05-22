@@ -29,6 +29,7 @@ except ImportError:
     from yaml import SafeLoader, SafeDumper
 import yaml
 import os
+import sh
 
 from common import log
 
@@ -37,6 +38,8 @@ class Configuration(object):
 
     def __init__(self, p_args):
         self._log = log.logger(p_args, __name__)
+
+        self._args = p_args
 
         if p_args.runconfig is None:
             raise BaseException("run configuration flag is None")
@@ -61,6 +64,13 @@ class Configuration(object):
         self._runconfig = yaml.load(open(p_args.runconfig), Loader=SafeLoader)
         self._scenarioconfig = yaml.load(open(p_args.scenarioconfig), Loader=SafeLoader)
         self._vtypesconfig = yaml.load(open(p_args.vtypesconfig), Loader=SafeLoader)
+        self._runprefix = p_args.runprefix
+        # store currently running version
+        # inferred from current HEAD if located inside a git project. otherwise set version to "UNKNOWN"
+        try:
+            self._optomversion = str(sh.git.bake("rev-parse")("HEAD")).replace("\n","")
+        except sh.ErrorReturnCode:
+            self._optomversion = "UNKNOWN"
 
         self._overrideCfgFlags(p_args)
 
@@ -74,7 +84,7 @@ class Configuration(object):
         if p_args.scenarios is not None:
             self._runconfig["scenarios"] = p_args.scenarios if p_args.scenarios != ["all"] else self._scenarioconfig.keys()
 
-    def write(self, p_config, p_location):
+    def dumpConfig(self, p_config, p_location):
         fp = open(p_location, "w")
         yaml.dump(p_config, fp, Dumper=SafeDumper, default_flow_style=False)
         fp.close()

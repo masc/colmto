@@ -70,9 +70,9 @@ class SumoConfig(Configuration):
         self._netconvertbinary = p_netconvertbinary
         self._duarouterbinary = p_duarouterbinary
         self._forcerebuildscenarios = p_args.forcerebuildscenarios
-        self._sumoconfigdir = os.path.join(self.configdir, "SUMO")
-        self._runsdir = os.path.join(self._scenariodir, p_args.runprefix, "runs")
-        self._resultsdir = os.path.join(p_args.resultsdir, "SUMO", p_args.runprefix, "results") \
+        self._sumoconfigdir = os.path.join(p_args.resultsdir, "SUMO")
+        self._runsdir = os.path.join(p_args.resultsdir, "SUMO", self._runprefix, "runs")
+        self._resultsdir = os.path.join(p_args.resultsdir, "SUMO", self._runprefix, "results") \
             if p_args.resultsdir == self.configdir else p_args.resultsdir
 
         if not os.path.exists(self._sumoconfigdir):
@@ -87,6 +87,17 @@ class SumoConfig(Configuration):
         if self._forcerebuildscenarios:
             self._log.debug("--force-rebuild-scenarios set -> rebuilding/overwriting scenarios if already present")
         self._onlyoneotlsegment = p_args.onlyoneotlsegment
+
+        # dump configuration
+        self.dumpConfig(
+            {
+                "optomversion": self._optomversion,
+                "runconfig": self.runconfig,
+                "scenarioconfig": self.scenarioconfig,
+                "vtypesconfig": self.vtypesconfig
+            },
+            os.path.join(p_args.resultsdir, "SUMO", self._runprefix, "configuration.yaml")
+        )
 
     @property
     def sumoconfigdir(self):
