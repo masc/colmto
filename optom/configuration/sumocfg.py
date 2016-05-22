@@ -73,7 +73,7 @@ class SumoConfig(Configuration):
         self._sumoconfigdir = os.path.join(p_args.resultsdir, "SUMO")
         self._runsdir = os.path.join(p_args.resultsdir, "SUMO", self._runprefix, "runs")
         self._resultsdir = os.path.join(p_args.resultsdir, "SUMO", self._runprefix, "results") \
-            if p_args.resultsdir == self.configdir else p_args.resultsdir
+            if p_args.resultsdir == self.outputdir else p_args.resultsdir
 
         if not os.path.exists(self._sumoconfigdir):
             os.makedirs(self._sumoconfigdir)

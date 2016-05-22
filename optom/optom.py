@@ -47,7 +47,7 @@ class Optom(object):
         l_parser.add_argument("--runconfig", dest="runconfig", type=str, default=os.path.join(l_configdir, u"runconfig.yaml"))
         l_parser.add_argument("--scenarioconfig", dest="scenarioconfig", type=str, default=os.path.join(l_configdir, u"scenarioconfig.yaml"))
         l_parser.add_argument("--vtypesconfig", dest="vtypesconfig", type=str, default=os.path.join(l_configdir, u"vtypesconfig.yaml"))
-        l_parser.add_argument("--configdir", dest="configdir", type=str, default=l_configdir)
+        l_parser.add_argument("--output-dir", dest="outputdir", type=str, default=l_configdir)
         l_parser.add_argument("--output-scenario-dir", dest="scenariodir", type=str, default=l_configdir, help="target directory scenario files will be written to")
         l_parser.add_argument("--output-results-dir", dest="resultsdir", type=str, default=l_configdir, help="target directory results will be written to")
         l_parser.add_argument("--scenarios", dest="scenarios", type=str, default=None, nargs="*")

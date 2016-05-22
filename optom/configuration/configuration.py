@@ -59,7 +59,7 @@ class Configuration(object):
         if not os.path.isfile(p_args.vtypesconfig):
             raise BaseException("vtype configuration {} is not a file".format(p_args.vtypesconfig))
 
-        self._configdir = p_args.configdir
+        self._outputdir = p_args.outputdir
         self._scenariodir = p_args.scenariodir
         self._runconfig = yaml.load(open(p_args.runconfig), Loader=SafeLoader)
         self._scenarioconfig = yaml.load(open(p_args.scenarioconfig), Loader=SafeLoader)
@@ -102,7 +102,7 @@ class Configuration(object):
         return self._vtypesconfig
 
     @property
-    def configdir(self):
-        return self._configdir
+    def outputdir(self):
+        return self._outputdir
 
 
