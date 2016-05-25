@@ -40,7 +40,7 @@ class Sumo(object):
         self._log = log.logger(__name__, p_args.loglevel, p_args.logfile)
 
         self._sumocfg = SumoConfig(p_args, checkBinary("netconvert"), checkBinary("duarouter"))
-        self._resultswriter = Writer(p_args)
+        self._writer = Writer(p_args)
         self._statistics = Statistics(p_args)
         self._allscenarioruns = {} # map scenarios -> runid -> files
         self._runtime = Runtime(p_args, self._sumocfg,
@@ -65,13 +65,13 @@ class Sumo(object):
                 self._runtime.run(l_runcfg, p_scenarioname, i_run)
 
         # dump scenarioruns to yaml.gz file
-        self._resultswriter.writeYAML(l_scenarioruns, os.path.join(self._sumocfg.runsdir, "runs-{}.yaml.gz".format(p_scenarioname)))
+        self._writer.writeYAML(l_scenarioruns, os.path.join(self._sumocfg.runsdir, "runs-{}.yaml.gz".format(p_scenarioname)))
 
         # do statistics
         l_stats = self._statistics.computeSUMOResults(p_scenarioname, l_scenarioruns, p_queries=["duration","timeLoss"])
 
         # dump statistic results to yaml.gz file
-        self._resultswriter.writeYAML(l_stats, os.path.join(self._sumocfg.resultsdir, "results-{}.yaml.gz".format(p_scenarioname)))
+        self._writer.writeYAML(l_stats, os.path.join(self._sumocfg.resultsdir, "results-{}.yaml.gz".format(p_scenarioname)))
         l_vtypedistribution = self._sumocfg.runconfig.get("vtypedistribution")
         l_vtypedistribution = ", ".join(["{}: ${}$".format(vtype, l_vtypedistribution.get(vtype).get("fraction")) for vtype in l_vtypedistribution])
         l_ttscenarioname = "".join(["\\texttt{",p_scenarioname,"}"])
@@ -100,3 +100,10 @@ class Sumo(object):
     def runScenarios(self):
         for i_scenarioname in self._sumocfg.runconfig.get("scenarios"):
             self._runScenario(i_scenarioname)
+
+    def _cleanRuns(self):
+        pass
+
+    # read all xmls from runs (within a mode) and write to $SUMO/$prefix/results-$scenarioname.hdf5
+    def _aggregate_runs(self):
+        pass

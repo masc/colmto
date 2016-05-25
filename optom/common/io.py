@@ -62,7 +62,12 @@ except ImportError:
 
 
 class Reader(object):
-    pass
+    def __init__(self, p_args):
+        self._log = log.logger(__name__, p_args.loglevel, p_args.logfile)
+
+    def read_etree(self, p_fname):
+        self._log.debug("Parsing %s with etree", p_fname)
+        return etree.parse(p_fname)
 
 
 class Writer(object):
@@ -102,6 +107,7 @@ class Writer(object):
             raise TypeError(u"p_objectdict is not dict")
 
         l_file = h5py.File(p_filename, 'a')
+        h5py.File
 
         if l_file and type(l_file) is h5py._hl.files.File:
 
