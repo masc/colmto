@@ -23,11 +23,6 @@
 from __future__ import division
 from __future__ import print_function
 
-import os
-import random
-import subprocess
-from common import log
-
 try:
     from lxml import etree
     print("{} running with lxml.etree".format(__name__))
@@ -55,9 +50,13 @@ except ImportError:
                     print("{} Failed to import ElementTree from any known place".format(__name__))
 
 import itertools
-from configuration import Configuration
-from environment.vehicle import Vehicle
-from common import visualisation
+import os
+import random
+import subprocess
+from optom.common import log
+from optom.configuration.configuration import Configuration
+from optom.environment.vehicle import Vehicle
+from optom.common import visualisation
 
 
 class SumoConfig(Configuration):

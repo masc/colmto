@@ -31,7 +31,7 @@ import yaml
 import os
 import sh
 
-from common import log
+from optom.common import log
 
 
 class Configuration(object):

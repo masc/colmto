@@ -25,11 +25,11 @@ from __future__ import print_function
 
 import os
 from sumolib import checkBinary
-from common.resultswriter import ResultsWriter
-from common.statistics import Statistics
-from common import visualisation
-from common import log
-from configuration.sumocfg import SumoConfig
+from optom.common.resultswriter import ResultsWriter
+from optom.common.statistics import Statistics
+from optom.common import visualisation
+from optom.common import log
+from sumocfg import SumoConfig
 from runtime import Runtime
 
 

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# @package runtime
+# @package s
 # @cond LICENSE
 # ######################################################################################
 # # LGPL License                                                                       #
@@ -20,34 +20,7 @@
 # # along with this program. If not, see http://www.gnu.org/licenses/                  #
 # ######################################################################################
 # @endcond
-from __future__ import print_function
-from __future__ import division
-import subprocess
-from optom.common import log
+import optom.optom as optom
 
-
-class Runtime(object):
-
-    def __init__(self, p_args, p_sumoconfig, p_sumobinary):
-        self._sumoconfig = p_sumoconfig
-        self._sumobinary = p_sumobinary
-        self._log = log.logger(p_args, __name__)
-
-    def run(self, p_runcfg, p_scenarioname, p_runnumber):
-        self._log.info("Running scenario %s: run %d", p_scenarioname, p_runnumber)
-        l_sumoprocess = subprocess.check_output(
-            [
-                self._sumobinary,
-                "-c", p_runcfg.get("configfile"),
-                "--tripinfo-output", p_runcfg.get("tripinfofile"),
-                "--fcd-output", p_runcfg.get("fcdfile"),
-                "--gui-settings-file", p_runcfg.get("settingsfile"),
-                "--time-to-teleport", "-1",
-                "--no-step-log"
-             ],
-            stderr=subprocess.STDOUT,
-            bufsize=-1
-        )
-        self._log.info("%s : %s", self._sumobinary, l_sumoprocess.replace("\n",""))
-        self._log.info("Finished run %d", p_runnumber)
-
+if __name__ == "__main__":
+    optom.Optom()
