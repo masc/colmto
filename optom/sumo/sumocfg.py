@@ -200,11 +200,20 @@ class SumoConfig(Configuration):
             l_length = 2*l_segmentlength # two times segment length
 
         l_nodes = etree.Element("nodes")
-        etree.SubElement(l_nodes, "node", attrib={"id": "2_1_start", "x": "0", "y": "0"})
-        etree.SubElement(l_nodes, "node", attrib={"id": "2_1_end", "x": str(l_length), "y": "0"})
-        # dummy node for easier from-to routing
+        etree.SubElement(l_nodes, "node", attrib={"id": "enter", "x": str(-l_segmentlength), "y": "0"})
+        etree.SubElement(l_nodes, "node", attrib={"id": "21start", "x": "0", "y": "0"})
+        etree.SubElement(l_nodes, "node", attrib={"id": "21end", "x": str(l_length), "y": "0"})
 
-        etree.SubElement(l_nodes, "node", attrib={"id": "ramp_exit", "x": str(l_length+l_segmentlength), "y": "0"})
+        # dummy node for easier from-to routing
+        etree.SubElement(
+            l_nodes,
+            "node",
+            attrib={
+                "id": "exit",
+                "x": str(l_length+0.1 if l_nbswitches % 2 == 1 or self._onlyoneotlsegment else l_length+l_segmentlength),
+                "y": "0"
+            }
+        )
 
         with open(p_nodefile, "w") as f_pnodesxml:
             f_pnodesxml.write(etree.tostring(l_nodes, pretty_print=True))
@@ -223,27 +232,68 @@ class SumoConfig(Configuration):
 
         # create edges xml
         l_edges = etree.Element("edges")
-        l_21edge = etree.SubElement(l_edges, "edge", attrib={"id": "2_1_segment",
-                                                                   "from" : "2_1_start",
-                                                                   "to": "2_1_end",
-                                                                   "numLanes": "2",
-                                                                   "speed": str(l_maxspeed)})
+
+
+        # find slowest vehicle speed to be used as parameter for entering lane
+        l_lowestspeed = min(
+            map(lambda vtype: vtype.get("desiredSpeed"), self.runconfig.get("vtypedistribution").itervalues())
+        )
+
+        # Entering edge with one lane, leading to 2+1 Roadway
+        etree.SubElement(
+            l_edges,
+            "edge",
+            attrib={
+                "id": "enter_21start",
+                "from" : "enter",
+                "to": "21start",
+                "numLanes": "1",
+                "speed": str(l_lowestspeed)
+            }
+        )
+
+        # 2+1 Roadway
+        l_21edge = etree.SubElement(
+            l_edges,
+            "edge",
+            attrib={
+                "id": "21segment",
+                "from" : "21start",
+                "to": "21end",
+                "numLanes": "2",
+                "spreadType": "center",
+                "speed": str(l_maxspeed)
+            }
+        )
 
         # add splits and joins
-        l_addotllane = False
+        l_addotllane = True
         for i_segmentpos in xrange(0,int(l_length),int(l_segmentlength)) \
                 if not self._onlyoneotlsegment else xrange(0,int(2*l_segmentlength),int(l_segmentlength)):
-            etree.SubElement(l_21edge, "split", attrib={"pos": str(i_segmentpos),
-                                                              "lanes": "0 1" if l_addotllane else "0",
-                                                              "speed": str(l_maxspeed)})
+            etree.SubElement(
+                l_21edge,
+                "split",
+                attrib={
+                    "pos": str(i_segmentpos),
+                    "lanes": "0 1" if l_addotllane else "0",
+                    "speed": str(l_maxspeed)
+                }
+            )
             l_addotllane ^= True
 
-        # dummy edge
-        etree.SubElement(l_edges, "edge", attrib={"id": "2_1_end-ramp_exit",
-                                                        "from" : "2_1_end",
-                                                        "to": "ramp_exit",
-                                                        "numLanes": "1",
-                                                        "speed": str(l_maxspeed)})
+        # Exit lane
+        etree.SubElement(
+            l_edges,
+            "edge",
+            attrib={
+                "id": "21end_exit",
+                "from": "21end",
+                "to": "exit",
+                "numLanes": "1",
+                "spreadType": "center",
+                "speed": str(l_maxspeed)
+            }
+        )
 
         with open(p_edgefile, "w") as f_pedgexml:
             f_pedgexml.write(etree.tostring(l_edges, pretty_print=True))
@@ -261,27 +311,33 @@ class SumoConfig(Configuration):
         l_additional = etree.Element("additional")
         # place induction loop right before the first split (i.e. end of starting edge)
         #     <inductionLoop id="myLoop1" lane="foo_0" pos="42" freq="900" file="out.xml"/>
-        etree.SubElement(l_additional, "inductionLoop",
-                               attrib={
-                                   "id": "pre",
-                                   "lane": "2_1_segment_0",
-                                   "pos": str(l_segmentlength-5),
-                                   "friendlyPos": "true",
-                                   "splitByType": "true",
-                                   "freq" : "1",
-                                   "file": os.path.join(self._runsdir, p_scenarioname, str(p_initialsorting), str(p_run), "{}.inductionLoop.start.xml".format(p_scenarioname))
-                               })
+        etree.SubElement(
+            l_additional,
+            "inductionLoop",
+            attrib={
+                "id": "pre",
+                "lane": "enter_21start_0",
+                "pos": str(l_segmentlength-5),
+                "friendlyPos": "true",
+                "splitByType": "true",
+                "freq": "1",
+                "file": os.path.join(self._runsdir, p_scenarioname, str(p_initialsorting), str(p_run), "{}.inductionLoop.start.xml".format(p_scenarioname))
+            }
+        )
 
-        etree.SubElement(l_additional, "inductionLoop",
-                               attrib={
-                                   "id": "post",
-                                   "lane": "2_1_end-ramp_exit_0",
-                                   "pos": str(l_segmentlength-5),
-                                   "friendlyPos": "true",
-                                   "splitByType": "true",
-                                   "freq" : "1",
-                                   "file": os.path.join(self._runsdir, p_scenarioname, str(p_initialsorting), str(p_run), "{}.inductionLoop.exit.xml".format(p_scenarioname))
-                               })
+        etree.SubElement(
+            l_additional,
+            "inductionLoop",
+            attrib={
+                "id": "post",
+                "lane": "21end_exit_0",
+                "pos": str(l_segmentlength-5),
+                "friendlyPos": "true",
+                "splitByType": "true",
+                "freq": "1",
+                "file": os.path.join(self._runsdir, p_scenarioname, str(p_initialsorting), str(p_run), "{}.inductionLoop.exit.xml".format(p_scenarioname))
+            }
+        )
 
         with open(p_additionalfile, "w") as f_paddxml:
             f_paddxml.write(etree.tostring(l_additional, pretty_print=True))
@@ -433,8 +489,8 @@ class SumoConfig(Configuration):
             etree.SubElement(l_trips, "trip", attrib={
                 "id": i_vehicle.id,
                 "depart": str(i_vehicle.starttime),
-                "from": "2_1_segment",
-                "to": "2_1_end-ramp_exit",
+                "from": "enter_21start",
+                "to": "21end_exit",
                 "type": i_vehicle.id,
                 "departSpeed": "max",
             })
