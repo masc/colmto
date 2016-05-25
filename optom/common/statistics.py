@@ -22,43 +22,37 @@
 # @endcond
 from __future__ import print_function
 from __future__ import division
+import log
 
 try:
     from lxml import etree
-    print("{} running with lxml.etree".format(__name__))
 except ImportError:
     try:
         # Python 2.5
         import xml.etree.cElementTree as etree
-        print(__name__, "running with cElementTree on Python 2.5+")
     except ImportError:
         try:
             # Python 2.5
             import xml.etree.ElementTree as etree
-            print(__name__, "running with ElementTree on Python 2.5+")
         except ImportError:
             try:
                 # normal cElementTree install
                 import cElementTree as etree
-                print(__name__, "running with cElementTree")
             except ImportError:
                 try:
                     # normal ElementTree install
                     import elementtree.ElementTree as etree
-                    print(__name__, "running with ElementTree")
                 except ImportError:
-                    print(__name__, "Failed to import ElementTree from any known place")
-
-import log
+                    print("Failed to import ElementTree from any known place")
 
 
 class Statistics(object):
 
     def __init__(self, p_args):
-        self._log = log.logger(p_args, __name__)
+        self._log = log.logger(__name__, p_args.loglevel, p_args.logfile)
 
     def computeSUMOResults(self, p_scenarioname, p_scenarioruns, p_queries=[]):
-        self._log.info("* traveltime statistics for scenario %s", p_scenarioname)
+        self._log.info("Traveltime statistics for scenario %s", p_scenarioname)
 
         l_data = dict([(q, {}) for q in p_queries])
         l_data["relativeLoss"] = {}
@@ -96,7 +90,6 @@ class Statistics(object):
                     if l_data.get("relativeLoss").get(l_label) is None:
                         l_data.get("relativeLoss")[l_label] = []
                     l_data.get("relativeLoss").get(l_label).append(l_relativeloss)
-
 
         return {
             "data": l_data,

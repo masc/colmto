@@ -27,6 +27,8 @@ import os
 import shutil
 import datetime
 from configuration.configuration import Configuration
+from common import log
+
 
 class Optom(object):
 
@@ -69,9 +71,13 @@ class Optom(object):
         l_sumogroup.add_argument("--only-one-otl-segment", dest="onlyoneotlsegment", default=False, action="store_true", help="Generate SUMO scenarios with only on OTL segment")
         l_args = l_parser.parse_args()
 
+        l_log = log.logger(__name__, l_args.loglevel, l_args.logfile)
+        l_log.info("---- Starting OPTOM ----")
         l_configuration = Configuration(l_args)
+        l_log.debug("Initial loading of configuration done")
 
         if l_configuration.runconfig.get("sumo").get("enabled"):
+            l_log.info("---- Starting SUMO ----")
             from sumo.sumo import Sumo
             l_sumo = Sumo(l_args)
             l_sumo.runScenarios()

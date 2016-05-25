@@ -25,7 +25,8 @@ from __future__ import print_function
 
 import os
 from sumolib import checkBinary
-from optom.common.resultswriter import ResultsWriter
+from optom.common.io import Writer
+from optom.common.io import Reader
 from optom.common.statistics import Statistics
 from optom.common import visualisation
 from optom.common import log
@@ -36,10 +37,10 @@ from runtime import Runtime
 class Sumo(object):
 
     def __init__(self, p_args):
-        self._log = log.logger(p_args, __name__)
+        self._log = log.logger(__name__, p_args.loglevel, p_args.logfile)
 
         self._sumocfg = SumoConfig(p_args, checkBinary("netconvert"), checkBinary("duarouter"))
-        self._resultswriter = ResultsWriter(p_args)
+        self._resultswriter = Writer(p_args)
         self._statistics = Statistics(p_args)
         self._allscenarioruns = {} # map scenarios -> runid -> files
         self._runtime = Runtime(p_args, self._sumocfg,

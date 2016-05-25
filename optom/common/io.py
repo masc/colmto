@@ -23,7 +23,7 @@
 
 from __future__ import print_function
 from __future__ import division
-
+import log
 import gzip
 import h5py
 import yaml
@@ -39,13 +39,36 @@ try:
 except ImportError:
     from yaml import SafeLoader, SafeDumper
 
-import log
+try:
+    from lxml import etree
+except ImportError:
+    try:
+        # Python 2.5
+        import xml.etree.cElementTree as etree
+    except ImportError:
+        try:
+            # Python 2.5
+            import xml.etree.ElementTree as etree
+        except ImportError:
+            try:
+                # normal cElementTree install
+                import cElementTree as etree
+            except ImportError:
+                try:
+                    # normal ElementTree install
+                    import elementtree.ElementTree as etree
+                except ImportError:
+                    print("Failed to import ElementTree from any known place")
 
 
-class ResultsWriter(object):
+class Reader(object):
+    pass
+
+
+class Writer(object):
 
     def __init__(self, p_args):
-        self._log = log.logger(p_args, __name__)
+        self._log = log.logger(__name__, p_args.loglevel, p_args.logfile)
 
     def writeJsonPretty(self, p_object, p_filename):
         self._log.info(" * writing %s", p_filename)

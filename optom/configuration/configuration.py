@@ -37,7 +37,7 @@ from optom.common import log
 class Configuration(object):
 
     def __init__(self, p_args):
-        self._log = log.logger(p_args, __name__)
+        self._log = log.logger(__name__, p_args.loglevel, p_args.logfile)
 
         self._args = p_args
 

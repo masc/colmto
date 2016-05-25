@@ -23,37 +23,33 @@
 from __future__ import division
 from __future__ import print_function
 
+from optom.common import log
+
 try:
     from lxml import etree
-    print("{} running with lxml.etree".format(__name__))
 except ImportError:
     try:
         # Python 2.5
         import xml.etree.cElementTree as etree
-        print("{} running with cElementTree on Python 2.5+".format(__name__))
     except ImportError:
         try:
             # Python 2.5
             import xml.etree.ElementTree as etree
-            print("{} running with ElementTree on Python 2.5+".format(__name__))
         except ImportError:
             try:
                 # normal cElementTree install
                 import cElementTree as etree
-                print("{} running with cElementTree".format(__name__))
             except ImportError:
                 try:
                     # normal ElementTree install
                     import elementtree.ElementTree as etree
-                    print("{} running with ElementTree".format(__name__))
                 except ImportError:
-                    print("{} Failed to import ElementTree from any known place".format(__name__))
+                    print("Failed to import ElementTree from any known place")
 
 import itertools
 import os
 import random
 import subprocess
-from optom.common import log
 from optom.configuration.configuration import Configuration
 from optom.environment.vehicle import Vehicle
 from optom.common import visualisation
@@ -64,7 +60,7 @@ class SumoConfig(Configuration):
     def __init__(self, p_args, p_netconvertbinary, p_duarouterbinary):
         super(SumoConfig, self).__init__(p_args)
 
-        self._log = log.logger(p_args, __name__)
+        self._log = log.logger(__name__, p_args.loglevel, p_args.logfile)
 
         self._netconvertbinary = p_netconvertbinary
         self._duarouterbinary = p_duarouterbinary
