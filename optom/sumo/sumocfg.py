@@ -53,7 +53,7 @@ import subprocess
 from optom.configuration.configuration import Configuration
 from optom.environment.vehicle import Vehicle
 from optom.common import visualisation
-
+from optom.common.io import Writer
 
 class SumoConfig(Configuration):
 
@@ -61,7 +61,7 @@ class SumoConfig(Configuration):
         super(SumoConfig, self).__init__(p_args)
 
         self._log = log.logger(__name__, p_args.loglevel, p_args.logfile)
-
+        self._writer = Writer(p_args)
         self._netconvertbinary = p_netconvertbinary
         self._duarouterbinary = p_duarouterbinary
         self._forcerebuildscenarios = p_args.forcerebuildscenarios
@@ -83,7 +83,7 @@ class SumoConfig(Configuration):
         self._onlyoneotlsegment = p_args.onlyoneotlsegment
 
         # dump configuration
-        self.dumpConfig(
+        self._writer.writeYAML(
             {
                 "optomversion": self._optomversion,
                 "runconfig": self.runconfig,

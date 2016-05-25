@@ -84,11 +84,6 @@ class Configuration(object):
         if p_args.scenarios is not None:
             self._runconfig["scenarios"] = p_args.scenarios if p_args.scenarios != ["all"] else self._scenarioconfig.keys()
 
-    def dumpConfig(self, p_config, p_location):
-        fp = open(p_location, "w")
-        yaml.dump(p_config, fp, Dumper=SafeDumper, default_flow_style=False)
-        fp.close()
-
     @property
     def runconfig(self):
         return self._runconfig
