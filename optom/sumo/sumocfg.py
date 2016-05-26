@@ -150,20 +150,16 @@ class SumoConfig(Configuration):
             os.mkdir(os.path.join(os.path.join(l_destinationdir, str(p_initialsorting), str(p_run))))
 
         self._log.debug("Generating SUMO run configuration for scenario %s / sorting %s / run %d", l_scenarioname, p_initialsorting, p_run)
-        if p_scenarioruns.get("runs").get(p_initialsorting) is None:
-            p_scenarioruns.get("runs")[p_initialsorting] = {}
-        p_scenarioruns.get("runs").get(p_initialsorting)[p_run] = {}
-        l_scenariorun = p_scenarioruns.get("runs").get(p_initialsorting).get(p_run)
 
         l_netfile = p_scenarioruns.get("netfile")
         l_settingsfile = p_scenarioruns.get("settingsfile")
 
-        l_additionalfile = l_scenariorun["additionalfile"] = os.path.join(l_destinationdir, str(p_initialsorting), str(p_run), "{}.add.xml".format(l_scenarioname))
-        l_tripfile = l_scenariorun["tripfile"] = os.path.join(l_destinationdir, str(p_initialsorting), str(p_run), "{}.trip.xml".format(l_scenarioname))
-        l_routefile = l_scenariorun["routefile"] = os.path.join(l_destinationdir, str(p_initialsorting), str(p_run), "{}.rou.xml".format(l_scenarioname))
-        l_configfile = l_scenariorun["configfile"] = os.path.join(l_destinationdir, str(p_initialsorting), str(p_run), "{}.sumo.cfg".format(l_scenarioname))
-        l_tripinfofile = l_scenariorun["tripinfofile"] = os.path.join(l_destinationdir, str(p_initialsorting), str(p_run), "{}.tripinfo-output.xml".format(l_scenarioname))
-        l_fcdfile = l_scenariorun["fcdfile"] = os.path.join(l_destinationdir, str(p_initialsorting), str(p_run), "{}.fcd-output.xml".format(l_scenarioname))
+        l_additionalfile = os.path.join(l_destinationdir, str(p_initialsorting), str(p_run), "{}.add.xml".format(l_scenarioname))
+        l_tripfile = os.path.join(l_destinationdir, str(p_initialsorting), str(p_run), "{}.trip.xml".format(l_scenarioname))
+        l_routefile = os.path.join(l_destinationdir, str(p_initialsorting), str(p_run), "{}.rou.xml".format(l_scenarioname))
+        l_configfile = os.path.join(l_destinationdir, str(p_initialsorting), str(p_run), "{}.sumo.cfg".format(l_scenarioname))
+        l_tripinfofile = os.path.join(l_destinationdir, str(p_initialsorting), str(p_run), "{}.tripinfo-output.xml".format(l_scenarioname))
+        l_fcdfile = os.path.join(l_destinationdir, str(p_initialsorting), str(p_run), "{}.fcd-output.xml".format(l_scenarioname))
 
         l_runcfgfiles = [l_tripfile, l_additionalfile, l_routefile, l_configfile]
 
@@ -177,10 +173,13 @@ class SumoConfig(Configuration):
         self._generateRouteXML(l_netfile, l_tripfile, l_routefile, self._forcerebuildscenarios)
 
         return {
-            "configfile": l_configfile,
+            "settingsfile": l_settingsfile,
+            "additionalfile": l_additionalfile,
+            "tripfile": l_tripfile,
+            "routefile": l_routefile,
             "tripinfofile": l_tripinfofile,
-            "fcdfile": l_fcdfile,
-            "settingsfile": l_settingsfile
+            "configfile": l_configfile,
+            "fcdfile": l_fcdfile
         }
 
     def _generateNodeXML(self, p_scenarioconfig, p_nodefile, p_forcerebuildscenarios=False):

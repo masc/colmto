@@ -61,10 +61,13 @@ class Sumo(object):
             l_scenarioruns.get("runs")[i_initialsorting] = {}
 
             for i_run in xrange(self._sumocfg.runconfig.get("runs")):
-                l_runcfg = self._sumocfg.generateRun(l_scenarioruns, i_initialsorting, i_run)
+                l_scenarioruns.get("runs").get(i_initialsorting)[i_run] = l_runcfg = self._sumocfg.generateRun(l_scenarioruns, i_initialsorting, i_run)
                 self._runtime.run(l_runcfg, p_scenarioname, i_run)
 
-        # dump scenarioruns to yaml.gz file
+            # aggregate results of all runs of a run configuration to $prefix's hdf5 and clean up xml mess SUMO produced
+
+
+        # dump scenario run cfg to yaml.gz file
         self._writer.writeYAML(l_scenarioruns, os.path.join(self._sumocfg.runsdir, "runs-{}.yaml.gz".format(p_scenarioname)))
 
         # do statistics
@@ -104,6 +107,6 @@ class Sumo(object):
     def _cleanRuns(self):
         pass
 
-    # read all xmls from runs (within a mode) and write to $SUMO/$prefix/results-$scenarioname.hdf5
+    # read all xmls from runs (within a mode) and write to $SUMO/$prefix/results-$prefix.hdf5
     def _aggregate_runs(self):
         pass
