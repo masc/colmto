@@ -301,7 +301,7 @@ class SumoConfig(Configuration):
         l_length = p_scenarioconfig.get("parameters").get("length")
         l_nbswitches = p_scenarioconfig.get("parameters").get("switches")
         # assume even distributed otl segment lengths
-        l_segmentlength = l_length / ( l_nbswitches + 1 )
+        l_segmentlength = l_length / (l_nbswitches + 1)
 
         l_additional = etree.Element("additional")
         # place induction loop right before the first split (i.e. end of starting edge)
@@ -310,21 +310,37 @@ class SumoConfig(Configuration):
             l_additional,
             "inductionLoop",
             attrib={
-                "id": "pre",
+                "id": "pre21",
                 "lane": "enter_21start_0",
                 "pos": str(l_segmentlength-5),
                 "friendlyPos": "true",
                 "splitByType": "true",
                 "freq": "1",
-                "file": os.path.join(self._runsdir, p_scenarioname, str(p_initialsorting), str(p_run), "{}.inductionLoop.start.xml".format(p_scenarioname))
+                "file": os.path.join(self._runsdir, p_scenarioname, str(p_initialsorting), str(p_run), "{}.inductionLoop.pre21.xml".format(p_scenarioname))
             }
         )
 
+        # induction loop at the beginning of last one-lane segment
         etree.SubElement(
             l_additional,
             "inductionLoop",
             attrib={
-                "id": "post",
+                "id": "post21",
+                "lane": "21segment_0",
+                "pos": str(l_length-l_segmentlength+5),
+                "friendlyPos": "true",
+                "splitByType": "true",
+                "freq": "1",
+                "file": os.path.join(self._runsdir, p_scenarioname, str(p_initialsorting), str(p_run), "{}.inductionLoop.post21.xml".format(p_scenarioname))
+            }
+        )
+
+        # induction loop at the end of exit lane
+        etree.SubElement(
+            l_additional,
+            "inductionLoop",
+            attrib={
+                "id": "exit",
                 "lane": "21end_exit_0",
                 "pos": str(l_segmentlength-5),
                 "friendlyPos": "true",
@@ -438,13 +454,14 @@ class SumoConfig(Configuration):
         self._log.debug("Scenario's AADT of %d vehicles/average annual day => %d vehicles for %d simulation seconds",
                         l_aadt, l_numberofvehicles, (l_timeend - l_timebegin))
 
-        l_vehicles = self._createFixedInitialVehicleDistribution(p_runcfg,
-                                                                 p_scenarioconfig,
-                                                                 l_numberofvehicles,
-                                                                 l_aadt,
-                                                                 p_initialsorting,
-                                                                 p_runcfg.get("vtypedistribution")
-                                                                 )
+        l_vehicles = self._createFixedInitialVehicleDistribution(
+            p_runcfg,
+            p_scenarioconfig,
+            l_numberofvehicles,
+            l_aadt,
+            p_initialsorting,
+            p_runcfg.get("vtypedistribution")
+        )
 
 
         # xml

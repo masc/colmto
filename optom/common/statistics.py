@@ -23,7 +23,8 @@
 from __future__ import print_function
 from __future__ import division
 import log
-
+from io import Writer
+import os
 try:
     from lxml import etree
 except ImportError:
@@ -50,8 +51,9 @@ class Statistics(object):
 
     def __init__(self, p_args):
         self._log = log.logger(__name__, p_args.loglevel, p_args.logfile)
+        self._writer = Writer(p_args)
 
-    def computeSUMOResults(self, p_scenarioname, p_scenarioruns, p_queries=[]):
+    def compute_sumo_results(self, p_scenarioname, p_scenarioruns, p_queries=[]):
         self._log.info("Traveltime statistics for scenario %s", p_scenarioname)
 
         l_data = dict([(q, {}) for q in p_queries])

@@ -100,4 +100,8 @@ class Configuration(object):
     def outputdir(self):
         return self._outputdir
 
+    @property
+    def runprefix(self):
+        return self._runprefix
+
 

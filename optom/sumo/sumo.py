@@ -64,17 +64,15 @@ class Sumo(object):
                 l_scenarioruns.get("runs").get(i_initialsorting)[i_run] = l_runcfg = self._sumocfg.generateRun(l_scenarioruns, i_initialsorting, i_run)
                 self._runtime.run(l_runcfg, p_scenarioname, i_run)
 
-            # aggregate results of all runs of a run configuration to $prefix's hdf5 and clean up xml mess SUMO produced
 
+        # do statistics
+        l_stats = self._statistics.compute_sumo_results(p_scenarioname, l_scenarioruns, p_queries=["duration", "timeLoss"])
 
         # dump scenario run cfg to yaml.gz file
         self._writer.writeYAML(l_scenarioruns, os.path.join(self._sumocfg.runsdir, "runs-{}.yaml.gz".format(p_scenarioname)))
-
-        # do statistics
-        l_stats = self._statistics.computeSUMOResults(p_scenarioname, l_scenarioruns, p_queries=["duration","timeLoss"])
-
-        # dump statistic results to yaml.gz file
+        # dump statistic results to yaml.gz/json.gz file
         self._writer.writeYAML(l_stats, os.path.join(self._sumocfg.resultsdir, "results-{}.yaml.gz".format(p_scenarioname)))
+
         l_vtypedistribution = self._sumocfg.runconfig.get("vtypedistribution")
         l_vtypedistribution = ", ".join(["{}: ${}$".format(vtype, l_vtypedistribution.get(vtype).get("fraction")) for vtype in l_vtypedistribution])
         l_ttscenarioname = "".join(["\\texttt{",p_scenarioname,"}"])
@@ -107,6 +105,4 @@ class Sumo(object):
     def _cleanRuns(self):
         pass
 
-    # read all xmls from runs (within a mode) and write to $SUMO/$prefix/results-$prefix.hdf5
-    def _aggregate_runs(self):
-        pass
+
