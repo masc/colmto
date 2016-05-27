@@ -82,7 +82,7 @@ def read_iloop_files(p_iloopfiles):
             [(i_vehicle.attrib.get("type"), dict([(k, yaml.load(v, Loader=SafeLoader)) for (k, v) in i_vehicle.attrib.iteritems()])) for i_vehicle in etree.XSLT(s_iloop_template)(l_root).iter("vehicle")]
         )
     # safety checks: do we have all vehicles?
-    print([(k,len(v)) for (k,v) in l_return.iteritems()])
+    assert len(set([len(v) for v in l_return.itervalues()])) == 1
     return l_return
 
 
@@ -382,7 +382,7 @@ class SumoConfig(Configuration):
             attrib={
                 "id": "exit",
                 "lane": "21segment.{}_0".format(self._lastsegmentpos) if l_nbswitches % 2 == 1 or self._onlyoneotlsegment else "21end_exit_0",
-                "pos": str(int(l_segmentlength)),
+                "pos": str(int(l_segmentlength-5)),
                 "friendlyPos": "true",
                 "splitByType": "true",
                 "freq": "1",
