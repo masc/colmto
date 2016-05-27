@@ -579,7 +579,10 @@ class SumoConfig(Configuration):
             for i_vehicle in l_vehicles:
                 if l_iloopdata.get(i_vehicle.get("type")) is None:
                     l_iloopdata[i_vehicle.get("type")] = {}
-                l_iloopdata.get(i_vehicle.get("type"))[i_loopid] = yaml.load(i_vehicle.get("begin"), Loader=SafeLoader)
+                l_iloopdata.get(i_vehicle.get("type"))[i_loopid] = {
+                    "time": yaml.load(i_vehicle.get("begin"), Loader=SafeLoader),
+                    "segmentlength": 0
+                }
 
         # create deltas in logical ordering, i.e. ---> d1 ---> d2 ---> d3 => delta(d1,d2), delta(d1,d3), delta(d2,d3)
         # i.e. 2-length tuples, in sorted order, no repeated elements. we assume this works as we use a numerical prefix
@@ -588,7 +591,8 @@ class SumoConfig(Configuration):
         for i_vehicle, i_iloopdata in l_iloopdata.iteritems():
             l_deltas[i_vehicle] = {}
             for i_pair in itertools.combinations(sorted(p_iloopfiles.iterkeys()), 2):
-                    l_deltas.get(i_vehicle)["{}-{}".format(*i_pair)] = i_iloopdata.get(i_pair[1])-i_iloopdata.get(i_pair[0])
+                    l_deltas.get(i_vehicle)["{} to {}".format(i_pair[0][2:],i_pair[1][2:])] \
+                        = i_iloopdata.get(i_pair[1]).get("time")-i_iloopdata.get(i_pair[0]).get("time")
         return l_deltas
 
 

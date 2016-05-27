@@ -53,7 +53,9 @@ class Statistics(object):
         self._log = log.logger(__name__, p_args.loglevel, p_args.logfile)
         self._writer = Writer(p_args)
 
-    def compute_sumo_results(self, p_scenarioname, p_scenarioruns, p_iloopresults):
+    def compute_sumo_results(self, p_scenarioname, p_scenarioruns, p_iloopresults, p_deltas=("1_pre21-2_post21",
+                                                                                             "1_pre21-3_exit",
+                                                                                             "2_post21-3_exit")):
         self._log.info("Traveltime statistics for scenario %s", p_scenarioname)
 
         l_data = {
@@ -81,9 +83,22 @@ class Statistics(object):
                     l_vmaxspeed = l_trips.get(i_vid).get("maxSpeed")
                     l_label = "{}\n({} m/s)".format(i_sortingmode, str(int(float(l_vmaxspeed))).zfill(2))
 
-                    if l_data.get("traveltime").get(l_label) is None:
-                        l_data.get("traveltime")[l_label] = []
-                    l_data.get("traveltime").get(l_label).append(p_iloopresults.get(i_sortingmode).get(i_run).get(i_vid).get("1_pre21-3_exit"))
+                    for i_delta in p_deltas:
+                        if l_data.get("traveltime").get(i_delta) is None:
+                            l_data.get("traveltime")[i_delta] = {}
+                        if l_data.get("traveltime").get(i_delta).get(l_label) is None:
+                            l_data.get("traveltime").get(i_delta)[l_label] = []
+                        l_data.get("traveltime").get(i_delta).get(l_label).append(
+                            p_iloopresults.get(i_sortingmode).get(i_run).get(i_vid).get(i_delta)
+                        )
+                        if l_data.get("timeloss").get(i_delta) is None:
+                            l_data.get("timeloss")[i_delta] = {}
+                        if l_data.get("timeloss").get(i_delta).get(l_label) is None:
+                            l_data.get("timeloss").get(i_delta)[l_label] = []
+                        l_data.get("timeloss").get(i_delta).get(l_label).append(
+                            p_iloopresults.get(i_sortingmode).get(i_run).get(i_vid).get(i_delta)
+                        )
+
 
         return {
             "data": l_data,
