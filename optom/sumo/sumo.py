@@ -57,22 +57,24 @@ class Sumo(object):
         self._allscenarioruns[p_scenarioname] = l_scenarioruns = self._sumocfg.generateScenario(p_scenarioname)
         l_initialsortings = self._sumocfg.runconfig.get("initialsortings")
 
+        l_iloopresults = {}
+
         for i_initialsorting in l_initialsortings:
-
+            l_iloopresults[i_initialsorting] = {}
             l_scenarioruns.get("runs")[i_initialsorting] = {}
-
             for i_run in xrange(self._sumocfg.runconfig.get("runs")):
                 l_scenarioruns.get("runs").get(i_initialsorting)[i_run] = l_runcfg = self._sumocfg.generateRun(l_scenarioruns, i_initialsorting, i_run)
                 self._runtime.run(l_runcfg, p_scenarioname, i_run)
-                self._log.info("Converting induction loop XMLs with etree.XSLT")
-                self._writer.writeYAML(
-                    sumocfg.read_iloop_files(l_runcfg.get("inductionloopfiles")),
-                    os.path.join(self._sumocfg.runsdir, "iloops-{}.yaml".format(p_scenarioname))
-                )
+                self._log.debug("Converting induction loop XMLs with etree.XSLT")
+                l_iloopresults.get(i_initialsorting)[i_run] = self._sumocfg.aggregate_iloop_files(l_runcfg.get("inductionloopfiles"))
                 self._log.info("Finished run %d", i_run)
 
+        self._writer.writeYAML(
+            l_iloopresults,
+            os.path.join(self._sumocfg.resultsdir, "iloops-{}.yaml.gz".format(p_scenarioname))
+        )
         # do statistics
-        #l_stats = self._statistics.compute_sumo_results(p_scenarioname, l_scenarioruns, p_queries=["duration", "timeLoss"])
+        #l_stats = self._statistics.compute_sumo_results(p_scenarioname, l_scenarioruns, l_iloopresults)
 
         # dump scenario run cfg to yaml.gz file
         self._writer.writeYAML(l_scenarioruns, os.path.join(self._sumocfg.runsdir, "runs-{}.yaml.gz".format(p_scenarioname)))
