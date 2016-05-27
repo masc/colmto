@@ -53,11 +53,15 @@ class Statistics(object):
         self._log = log.logger(__name__, p_args.loglevel, p_args.logfile)
         self._writer = Writer(p_args)
 
-    def compute_sumo_results(self, p_scenarioname, p_scenarioruns, p_queries=[]):
+    def compute_sumo_results(self, p_scenarioname, p_scenarioruns, p_iloopresults):
         self._log.info("Traveltime statistics for scenario %s", p_scenarioname)
 
-        l_data = dict([(q, {}) for q in p_queries])
-        l_data["relativeLoss"] = {}
+        l_data = {
+            "traveltime": {},
+            "timeloss": {},
+            "relativetimeloss": {}
+        }
+
         l_runs = 0
         l_vehicles = 0
 
@@ -70,28 +74,16 @@ class Statistics(object):
                 l_ettrips = l_ettripstree.getroot()
                 l_trips = dict(map(lambda t: (t.attrib.get("id"), t.attrib), l_ettrips.iter("vType")))
 
-                #l_tripinfofname = i_scenariorun.get("tripinfofile")
-                #l_ettripinfotree = etree.parse(l_tripinfofname)
-                #l_ettripinfos = l_ettripinfotree.getroot()
-                #l_vehicles = len(l_ettripinfos)
+                if l_vehicles == 0:
+                    l_vehicles = len(p_iloopresults.get(i_sortingmode).get(i_run))
 
-                for i_tripinfo in l_ettripinfos:
-                    l_vid = i_tripinfo.get("id")
-                    l_vmaxspeed = l_trips.get(l_vid).get("maxSpeed")
+                for i_vid in l_trips:
+                    l_vmaxspeed = l_trips.get(i_vid).get("maxSpeed")
                     l_label = "{}\n({} m/s)".format(i_sortingmode, str(int(float(l_vmaxspeed))).zfill(2))
 
-                    for i_query in p_queries:
-                        if l_data.get(i_query).get(l_label) is None:
-                            l_data.get(i_query)[l_label] = []
-                        l_data.get(i_query).get(l_label).append(float(i_tripinfo.get(i_query)))
-                    # hack for relative time loss
-                    l_traveltime = float(i_tripinfo.get("duration"))
-                    l_timeloss = float(i_tripinfo.get("timeLoss"))
-                    l_topt = l_traveltime - l_timeloss
-                    l_relativeloss = l_timeloss / l_topt * 100.
-                    if l_data.get("relativeLoss").get(l_label) is None:
-                        l_data.get("relativeLoss")[l_label] = []
-                    l_data.get("relativeLoss").get(l_label).append(l_relativeloss)
+                    if l_data.get("traveltime").get(l_label) is None:
+                        l_data.get("traveltime")[l_label] = []
+                    l_data.get("traveltime").get(l_label).append(p_iloopresults.get(i_sortingmode).get(i_run).get(i_vid).get("1_pre21-3_exit"))
 
         return {
             "data": l_data,
