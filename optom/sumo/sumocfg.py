@@ -45,15 +45,46 @@ except ImportError:
                     import elementtree.ElementTree as etree
                 except ImportError:
                     print("Failed to import ElementTree from any known place")
-
+import yaml
+try:
+    from yaml import CSafeLoader as SafeLoader, CSafeDumper as SafeDumper
+except ImportError:
+    from yaml import SafeLoader, SafeDumper
 import itertools
 import os
 import random
 import subprocess
+import ast
 from optom.configuration.configuration import Configuration
 from optom.environment.vehicle import Vehicle
 from optom.common import visualisation
 from optom.common.io import Writer
+
+s_iloop_template = etree.XML("""
+    <xsl:stylesheet version= "1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+    <xsl:template match="/">
+    <detector>
+    <xsl:for-each select="detector/interval/typedInterval">
+    <vehicle>
+    <xsl:copy-of select="@begin|@end|@type"/>
+    </vehicle>
+    </xsl:for-each>
+    </detector>
+    </xsl:template>
+    </xsl:stylesheet>""")
+
+
+def read_iloop_files(p_iloopfiles):
+    l_return = {}
+    for i_id, i_fname in p_iloopfiles.iteritems():
+        l_root = etree.parse(i_fname)
+        l_return[i_id] = dict(
+            [(i_vehicle.attrib.get("type"), dict([(k, yaml.load(v, Loader=SafeLoader)) for (k, v) in i_vehicle.attrib.iteritems()])) for i_vehicle in etree.XSLT(s_iloop_template)(l_root).iter("vehicle")]
+        )
+    # safety checks: do we have all vehicles?
+    print([(k,len(v)) for (k,v) in l_return.iteritems()])
+    return l_return
+
 
 class SumoConfig(Configuration):
 
@@ -158,8 +189,11 @@ class SumoConfig(Configuration):
         l_tripfile = os.path.join(l_destinationdir, str(p_initialsorting), str(p_run), "{}.trip.xml".format(l_scenarioname))
         l_routefile = os.path.join(l_destinationdir, str(p_initialsorting), str(p_run), "{}.rou.xml".format(l_scenarioname))
         l_configfile = os.path.join(l_destinationdir, str(p_initialsorting), str(p_run), "{}.sumo.cfg".format(l_scenarioname))
-        l_tripinfofile = os.path.join(l_destinationdir, str(p_initialsorting), str(p_run), "{}.tripinfo-output.xml".format(l_scenarioname))
-        l_fcdfile = os.path.join(l_destinationdir, str(p_initialsorting), str(p_run), "{}.fcd-output.xml".format(l_scenarioname))
+        #l_tripinfofile = os.path.join(l_destinationdir, str(p_initialsorting), str(p_run), "{}.tripinfo-output.xml".format(l_scenarioname))
+        l_ilooppre21file = os.path.join(self._runsdir, l_scenarioname, str(p_initialsorting), str(p_run), "{}.inductionLoop.pre21.xml".format(l_scenarioname))
+        l_ilooppost21file = os.path.join(self._runsdir, l_scenarioname, str(p_initialsorting), str(p_run), "{}.inductionLoop.post21.xml".format(l_scenarioname))
+        l_iloopexitfile = os.path.join(self._runsdir, l_scenarioname, str(p_initialsorting), str(p_run), "{}.inductionLoop.exit.xml".format(l_scenarioname))
+        #l_fcdfile = os.path.join(l_destinationdir, str(p_initialsorting), str(p_run), "{}.fcd-output.xml".format(l_scenarioname))
 
         l_runcfgfiles = [l_tripfile, l_additionalfile, l_routefile, l_configfile]
 
@@ -167,7 +201,7 @@ class SumoConfig(Configuration):
             self._log.info("Incomplete/non-existing SUMO run configuration for %s, %s, %d -> (re)building", l_scenarioname, p_initialsorting, p_run)
             self._forcerebuildscenarios = True
 
-        self._generateAdditionalXML(l_scenarioconfig, p_initialsorting, p_run, l_scenarioname, l_additionalfile, self._forcerebuildscenarios)
+        self._generateAdditionalXML(l_scenarioconfig, p_initialsorting, p_run, l_scenarioname, l_ilooppre21file, l_ilooppost21file, l_iloopexitfile, l_additionalfile, self._forcerebuildscenarios)
         self._generateConfigXML(l_configfile, l_netfile, l_routefile, l_additionalfile, l_settingsfile, l_runcfg.get("simtimeinterval"), self._forcerebuildscenarios)
         self._generateTripXML(l_scenarioconfig, l_runcfg, p_initialsorting, l_tripfile, self._forcerebuildscenarios)
         self._generateRouteXML(l_netfile, l_tripfile, l_routefile, self._forcerebuildscenarios)
@@ -177,9 +211,14 @@ class SumoConfig(Configuration):
             "additionalfile": l_additionalfile,
             "tripfile": l_tripfile,
             "routefile": l_routefile,
-            "tripinfofile": l_tripinfofile,
+            #"tripinfofile": l_tripinfofile,
             "configfile": l_configfile,
-            "fcdfile": l_fcdfile
+            #"fcdfile": l_fcdfile
+            "inductionloopfiles": {
+                "pre21": l_ilooppre21file,
+                "post21": l_ilooppost21file,
+                "exit": l_iloopexitfile,
+            }
         }
 
     def _generateNodeXML(self, p_scenarioconfig, p_nodefile, p_forcerebuildscenarios=False):
@@ -253,7 +292,7 @@ class SumoConfig(Configuration):
             "edge",
             attrib={
                 "id": "21segment",
-                "from" : "21start",
+                "from": "21start",
                 "to": "21end",
                 "numLanes": "2",
                 "spreadType": "center",
@@ -264,7 +303,7 @@ class SumoConfig(Configuration):
         # add splits and joins
         l_addotllane = True
         for i_segmentpos in xrange(0,int(l_length),int(l_segmentlength)) \
-                if not self._onlyoneotlsegment else xrange(0,int(2*l_segmentlength),int(l_segmentlength)):
+                if not self._onlyoneotlsegment else xrange(0,int(2*l_segmentlength-1),int(l_segmentlength)):
             etree.SubElement(
                 l_21edge,
                 "split",
@@ -274,6 +313,7 @@ class SumoConfig(Configuration):
                     "speed": str(l_maxspeed)
                 }
             )
+            self._lastsegmentpos = i_segmentpos #TODO: fix this hack
             l_addotllane ^= True
 
         # Exit lane
@@ -293,7 +333,7 @@ class SumoConfig(Configuration):
         with open(p_edgefile, "w") as f_pedgexml:
             f_pedgexml.write(etree.tostring(l_edges, pretty_print=True))
 
-    def _generateAdditionalXML(self, p_scenarioconfig, p_initialsorting, p_run, p_scenarioname, p_additionalfile, p_forcerebuildscenarios):
+    def _generateAdditionalXML(self, p_scenarioconfig, p_initialsorting, p_run, p_scenarioname, p_ilooppre21file, p_ilooppost21file, p_iloopexitfile, p_additionalfile, p_forcerebuildscenarios):
         if os.path.isfile(p_additionalfile) and not p_forcerebuildscenarios:
             return
 
@@ -316,37 +356,37 @@ class SumoConfig(Configuration):
                 "friendlyPos": "true",
                 "splitByType": "true",
                 "freq": "1",
-                "file": os.path.join(self._runsdir, p_scenarioname, str(p_initialsorting), str(p_run), "{}.inductionLoop.pre21.xml".format(p_scenarioname))
+                "file": p_ilooppre21file
             }
         )
 
-        # induction loop at the beginning of last one-lane segment
+        # induction loop at the beginning of last one-lane segment (post21)
         etree.SubElement(
             l_additional,
             "inductionLoop",
             attrib={
                 "id": "post21",
-                "lane": "21segment_0",
-                "pos": str(l_length-l_segmentlength+5),
+                "lane": "21segment.{}_0".format(self._lastsegmentpos-int(l_segmentlength)) if l_nbswitches % 2 == 1 and not self._onlyoneotlsegment else "21segment.{}_0".format(self._lastsegmentpos),
+                "pos": str(int(l_segmentlength)) if l_nbswitches % 2 == 1 and not self._onlyoneotlsegment else "0",
                 "friendlyPos": "true",
                 "splitByType": "true",
                 "freq": "1",
-                "file": os.path.join(self._runsdir, p_scenarioname, str(p_initialsorting), str(p_run), "{}.inductionLoop.post21.xml".format(p_scenarioname))
+                "file": p_ilooppost21file
             }
         )
 
-        # induction loop at the end of exit lane
+        # induction loop at the end of last one-lane segment (exit)
         etree.SubElement(
             l_additional,
             "inductionLoop",
             attrib={
                 "id": "exit",
-                "lane": "21end_exit_0",
-                "pos": str(l_segmentlength-5),
+                "lane": "21segment.{}_0".format(self._lastsegmentpos) if l_nbswitches % 2 == 1 or self._onlyoneotlsegment else "21end_exit_0",
+                "pos": str(int(l_segmentlength)),
                 "friendlyPos": "true",
                 "splitByType": "true",
                 "freq": "1",
-                "file": os.path.join(self._runsdir, p_scenarioname, str(p_initialsorting), str(p_run), "{}.inductionLoop.exit.xml".format(p_scenarioname))
+                "file": p_iloopexitfile
             }
         )
 
@@ -540,4 +580,6 @@ class SumoConfig(Configuration):
             stderr=subprocess.STDOUT
         )
         self._log.debug(l_duarouterprocess)
+
+
 

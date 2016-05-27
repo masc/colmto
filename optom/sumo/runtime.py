@@ -39,8 +39,8 @@ class Runtime(object):
             [
                 self._sumobinary,
                 "-c", p_runcfg.get("configfile"),
-                "--tripinfo-output", p_runcfg.get("tripinfofile"),
-                "--fcd-output", p_runcfg.get("fcdfile"),
+                #"--tripinfo-output", p_runcfg.get("tripinfofile"),
+                #"--fcd-output", p_runcfg.get("fcdfile"),
                 "--gui-settings-file", p_runcfg.get("settingsfile"),
                 "--time-to-teleport", "-1",
                 "--no-step-log"
@@ -49,5 +49,4 @@ class Runtime(object):
             bufsize=-1
         )
         self._log.info("%s : %s", self._sumobinary, l_sumoprocess.replace("\n",""))
-        self._log.info("Finished run %d", p_runnumber)
 

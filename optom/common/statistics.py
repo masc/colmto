@@ -70,10 +70,10 @@ class Statistics(object):
                 l_ettrips = l_ettripstree.getroot()
                 l_trips = dict(map(lambda t: (t.attrib.get("id"), t.attrib), l_ettrips.iter("vType")))
 
-                l_tripinfofname = i_scenariorun.get("tripinfofile")
-                l_ettripinfotree = etree.parse(l_tripinfofname)
-                l_ettripinfos = l_ettripinfotree.getroot()
-                l_vehicles = len(l_ettripinfos)
+                #l_tripinfofname = i_scenariorun.get("tripinfofile")
+                #l_ettripinfotree = etree.parse(l_tripinfofname)
+                #l_ettripinfos = l_ettripinfotree.getroot()
+                #l_vehicles = len(l_ettripinfos)
 
                 for i_tripinfo in l_ettripinfos:
                     l_vid = i_tripinfo.get("id")
