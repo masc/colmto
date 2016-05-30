@@ -182,6 +182,7 @@ class SumoConfig(Configuration):
         l_ilooppre21file = os.path.join(self._runsdir, l_scenarioname, str(p_initialsorting), str(p_run), "{}.inductionLoop.pre21.xml".format(l_scenarioname))
         l_ilooppost21file = os.path.join(self._runsdir, l_scenarioname, str(p_initialsorting), str(p_run), "{}.inductionLoop.post21.xml".format(l_scenarioname))
         l_iloopexitfile = os.path.join(self._runsdir, l_scenarioname, str(p_initialsorting), str(p_run), "{}.inductionLoop.exit.xml".format(l_scenarioname))
+        l_ladfile = os.path.join(self._runsdir, l_scenarioname, str(p_initialsorting), str(p_run), "{}.lad.xml".format(l_scenarioname))
         #l_fcdfile = os.path.join(l_destinationdir, str(p_initialsorting), str(p_run), "{}.fcd-output.xml".format(l_scenarioname))
         l_iloopfiles = {
             "1_pre21": l_ilooppre21file,
@@ -194,7 +195,7 @@ class SumoConfig(Configuration):
             self._log.info("Incomplete/non-existing SUMO run configuration for %s, %s, %d -> (re)building", l_scenarioname, p_initialsorting, p_run)
             self._forcerebuildscenarios = True
 
-        self._generateAdditionalXML(l_scenarioconfig, p_initialsorting, p_run, l_scenarioname, l_iloopfiles, l_additionalfile, self._forcerebuildscenarios)
+        self._generateAdditionalXML(l_scenarioconfig, p_initialsorting, p_run, l_scenarioname, l_iloopfiles, l_ladfile, l_additionalfile, self._forcerebuildscenarios)
         self._generateConfigXML(l_configfile, l_netfile, l_routefile, l_additionalfile, l_settingsfile, l_runcfg.get("simtimeinterval"), self._forcerebuildscenarios)
         self._generateTripXML(l_scenarioconfig, l_runcfg, p_initialsorting, l_tripfile, self._forcerebuildscenarios)
         self._generateRouteXML(l_netfile, l_tripfile, l_routefile, self._forcerebuildscenarios)
@@ -290,6 +291,7 @@ class SumoConfig(Configuration):
         )
 
         # add splits and joins
+        self._laneareadetectors = {}
         l_addotllane = True
         for i_segmentpos in xrange(0,int(l_length),int(l_segmentlength)) \
                 if not self._onlyoneotlsegment else xrange(0,int(2*l_segmentlength-1),int(l_segmentlength)):
@@ -302,6 +304,34 @@ class SumoConfig(Configuration):
                     "speed": str(l_maxspeed)
                 }
             )
+
+            # fill 2+1 segment with lane area detectors (precompute xml attributes)
+            for i_ladspos in xrange(0, int(l_segmentlength), 20):
+                l_id = "LAD_{}".format(len(self._laneareadetectors))
+                self._laneareadetectors[l_id] = {
+                    "id": l_id,
+                    "lane": "21segment_0" if i_segmentpos == 0 else "21segment.{}_0".format(i_segmentpos),
+                    "pos": str(i_ladspos),
+                    "length": "20",
+                    "friendlyPos": "true",
+                    "splitByType": "true",
+                    "freq": "1",
+                    "file": ""
+                }
+
+                if l_addotllane:
+                    l_id = "LAD_{}".format(len(self._laneareadetectors))
+                    self._laneareadetectors[l_id] = {
+                        "id": l_id,
+                        "lane": "21segment_1" if i_segmentpos == 0 else "21segment.{}_1".format(i_segmentpos),
+                        "pos": str(i_ladspos),
+                        "length": "20",
+                        "friendlyPos": "true",
+                        "splitByType": "true",
+                        "freq": "1",
+                        "file": ""
+                    }
+
             self._lastsegmentpos = i_segmentpos #TODO: fix this hack
             l_addotllane ^= True
 
@@ -322,7 +352,7 @@ class SumoConfig(Configuration):
         with open(p_edgefile, "w") as f_pedgexml:
             f_pedgexml.write(etree.tostring(l_edges, pretty_print=True))
 
-    def _generateAdditionalXML(self, p_scenarioconfig, p_initialsorting, p_run, p_scenarioname, p_iloopfiles, p_additionalfile, p_forcerebuildscenarios):
+    def _generateAdditionalXML(self, p_scenarioconfig, p_initialsorting, p_run, p_scenarioname, p_iloopfiles, p_ladfile, p_additionalfile, p_forcerebuildscenarios):
         if os.path.isfile(p_additionalfile) and not p_forcerebuildscenarios:
             return
 
@@ -334,7 +364,6 @@ class SumoConfig(Configuration):
 
         l_additional = etree.Element("additional")
         # place induction loop right before the first split (i.e. end of starting edge)
-        #     <inductionLoop id="myLoop1" lane="foo_0" pos="42" freq="900" file="out.xml"/>
         etree.SubElement(
             l_additional,
             "inductionLoop",
@@ -348,6 +377,18 @@ class SumoConfig(Configuration):
                 "file": p_iloopfiles.get("1_pre21")
             }
         )
+
+        # place lane area detectors (each 20m)
+        # <laneAreaDetector id="<ID>" lane="<LANE_ID>" pos="<POSITION_ON_LANE>" length="<DETECTOR_LENGTH>"
+        # freq="<AGGREGATION_TIME>" file="<OUTPUT_FILE>" [cont="<BOOL>"] [timeThreshold="<FLOAT>"]
+        # [speedThreshold="<FLOAT>"] [jamThreshold="<FLOAT>"] [friendlyPos="x"]/>
+        for i_attrib in self._laneareadetectors.itervalues():
+            i_attrib["file"] = p_ladfile
+            etree.SubElement(
+                l_additional,
+                "laneAreaDetector",
+                attrib=i_attrib
+            )
 
         # induction loop at the beginning of last one-lane segment (post21)
         etree.SubElement(
