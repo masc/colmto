@@ -12,6 +12,8 @@
 # You should have received a copy of the CC0 legalcode along with this
 # work.  If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 from matplotlib.colors import ListedColormap
+import matplotlib.colors as colors
+import matplotlib.cm as cm
 
 __all__ = ['magma', 'inferno', 'plasma', 'viridis']
 
@@ -1043,15 +1045,15 @@ _viridis_data = [[0.267004, 0.004874, 0.329415],
                  [0.983868, 0.904867, 0.136897],
                  [0.993248, 0.906157, 0.143936]]
 
-cmaps = {}
+_cmaps = {}
 for (name, data) in (('magma', _magma_data),
                      ('inferno', _inferno_data),
                      ('plasma', _plasma_data),
                      ('viridis', _viridis_data)):
 
-    cmaps[name] = ListedColormap(data, name=name)
+    _cmaps[name] = ListedColormap(data, name=name)
 
-magma = cmaps['magma']
-inferno = cmaps['inferno']
-plasma = cmaps['plasma']
-viridis = cmaps['viridis']
+
+def get_mapped_cmap(p_cmap_name, p_range_max):
+    l_cnorm = colors.Normalize(vmin=0, vmax=p_range_max)
+    return cm.ScalarMappable(norm=l_cnorm, cmap=_cmaps[p_cmap_name]).to_rgba
