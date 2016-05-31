@@ -31,13 +31,13 @@ import yaml
 import os
 import sh
 
-from common import log
+from optom.common import log
 
 
 class Configuration(object):
 
     def __init__(self, p_args):
-        self._log = log.logger(p_args, __name__)
+        self._log = log.logger(__name__, p_args.loglevel, p_args.logfile)
 
         self._args = p_args
 
@@ -84,11 +84,6 @@ class Configuration(object):
         if p_args.scenarios is not None:
             self._runconfig["scenarios"] = p_args.scenarios if p_args.scenarios != ["all"] else self._scenarioconfig.keys()
 
-    def dumpConfig(self, p_config, p_location):
-        fp = open(p_location, "w")
-        yaml.dump(p_config, fp, Dumper=SafeDumper, default_flow_style=False)
-        fp.close()
-
     @property
     def runconfig(self):
         return self._runconfig
@@ -104,5 +99,9 @@ class Configuration(object):
     @property
     def outputdir(self):
         return self._outputdir
+
+    @property
+    def runprefix(self):
+        return self._runprefix
 
 

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# @package log
+# @package s
 # @cond LICENSE
 # ######################################################################################
 # # LGPL License                                                                       #
@@ -20,36 +20,7 @@
 # # along with this program. If not, see http://www.gnu.org/licenses/                  #
 # ######################################################################################
 # @endcond
-import logging
-import logging.handlers
-import os
+import optom.optom as optom
 
-s_loglevel = {
-    "CRITICAL": logging.CRITICAL,
-    "ERROR": logging.ERROR,
-    "WARNING": logging.WARNING,
-    "INFO": logging.INFO,
-    "DEBUG": logging.DEBUG,
-    "NOTSET": logging.NOTSET
-}
-
-
-def logger(p_name, p_loglevel=logging.NOTSET, p_logfile=os.path.expanduser(u"~/.optom/optom.log")):
-    if not os.path.exists(os.path.dirname(p_logfile)):
-        os.makedirs(os.path.dirname(p_logfile))
-
-    l_log = logging.getLogger(p_name)
-    l_level = p_loglevel if type(p_loglevel) is int else s_loglevel.get(p_loglevel.upper())
-    l_log.setLevel(l_level if l_level is not None else logging.NOTSET)
-    # create a file handler
-    l_handler = logging.handlers.RotatingFileHandler(p_logfile, maxBytes=100*1024*1024, backupCount=16)
-    l_handler.setLevel(l_level if l_level is not None else logging.NOTSET)
-
-    # create a logging format
-    l_formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-    l_handler.setFormatter(l_formatter)
-
-    # add the handlers to the logger
-    l_log.addHandler(l_handler)
-
-    return l_log
+if __name__ == "__main__":
+    optom.Optom()

@@ -23,41 +23,56 @@
 from __future__ import division
 from __future__ import print_function
 
-import os
-import random
-import subprocess
-from common import log
+from optom.common import log
 
 try:
     from lxml import etree
-    print("{} running with lxml.etree".format(__name__))
 except ImportError:
     try:
         # Python 2.5
         import xml.etree.cElementTree as etree
-        print("{} running with cElementTree on Python 2.5+".format(__name__))
     except ImportError:
         try:
             # Python 2.5
             import xml.etree.ElementTree as etree
-            print("{} running with ElementTree on Python 2.5+".format(__name__))
         except ImportError:
             try:
                 # normal cElementTree install
                 import cElementTree as etree
-                print("{} running with cElementTree".format(__name__))
             except ImportError:
                 try:
                     # normal ElementTree install
                     import elementtree.ElementTree as etree
-                    print("{} running with ElementTree".format(__name__))
                 except ImportError:
-                    print("{} Failed to import ElementTree from any known place".format(__name__))
-
+                    print("Failed to import ElementTree from any known place")
+import yaml
+try:
+    from yaml import CSafeLoader as SafeLoader, CSafeDumper as SafeDumper
+except ImportError:
+    from yaml import SafeLoader, SafeDumper
 import itertools
-from configuration import Configuration
-from environment.vehicle import Vehicle
-from common import visualisation
+import os
+import random
+import subprocess
+import ast
+from optom.configuration.configuration import Configuration
+from optom.environment.vehicle import Vehicle
+from optom.common import visualisation
+from optom.common.io import Writer
+
+s_iloop_template = etree.XML("""
+    <xsl:stylesheet version= "1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+    <xsl:template match="/">
+    <detector>
+    <xsl:for-each select="detector/interval/typedInterval">
+    <vehicle>
+    <xsl:copy-of select="@type|@begin"/>
+    </vehicle>
+    </xsl:for-each>
+    </detector>
+    </xsl:template>
+    </xsl:stylesheet>""")
+
 
 
 class SumoConfig(Configuration):
@@ -65,8 +80,8 @@ class SumoConfig(Configuration):
     def __init__(self, p_args, p_netconvertbinary, p_duarouterbinary):
         super(SumoConfig, self).__init__(p_args)
 
-        self._log = log.logger(p_args, __name__)
-
+        self._log = log.logger(__name__, p_args.loglevel, p_args.logfile)
+        self._writer = Writer(p_args)
         self._netconvertbinary = p_netconvertbinary
         self._duarouterbinary = p_duarouterbinary
         self._forcerebuildscenarios = p_args.forcerebuildscenarios
@@ -88,7 +103,7 @@ class SumoConfig(Configuration):
         self._onlyoneotlsegment = p_args.onlyoneotlsegment
 
         # dump configuration
-        self.dumpConfig(
+        self._writer.writeYAML(
             {
                 "optomversion": self._optomversion,
                 "runconfig": self.runconfig,
@@ -155,37 +170,44 @@ class SumoConfig(Configuration):
             os.mkdir(os.path.join(os.path.join(l_destinationdir, str(p_initialsorting), str(p_run))))
 
         self._log.debug("Generating SUMO run configuration for scenario %s / sorting %s / run %d", l_scenarioname, p_initialsorting, p_run)
-        if p_scenarioruns.get("runs").get(p_initialsorting) is None:
-            p_scenarioruns.get("runs")[p_initialsorting] = {}
-        p_scenarioruns.get("runs").get(p_initialsorting)[p_run] = {}
-        l_scenariorun = p_scenarioruns.get("runs").get(p_initialsorting).get(p_run)
 
         l_netfile = p_scenarioruns.get("netfile")
         l_settingsfile = p_scenarioruns.get("settingsfile")
 
-        l_additionalfile = l_scenariorun["additionalfile"] = os.path.join(l_destinationdir, str(p_initialsorting), str(p_run), "{}.add.xml".format(l_scenarioname))
-        l_tripfile = l_scenariorun["tripfile"] = os.path.join(l_destinationdir, str(p_initialsorting), str(p_run), "{}.trip.xml".format(l_scenarioname))
-        l_routefile = l_scenariorun["routefile"] = os.path.join(l_destinationdir, str(p_initialsorting), str(p_run), "{}.rou.xml".format(l_scenarioname))
-        l_configfile = l_scenariorun["configfile"] = os.path.join(l_destinationdir, str(p_initialsorting), str(p_run), "{}.sumo.cfg".format(l_scenarioname))
-        l_tripinfofile = l_scenariorun["tripinfofile"] = os.path.join(l_destinationdir, str(p_initialsorting), str(p_run), "{}.tripinfo-output.xml".format(l_scenarioname))
-        l_fcdfile = l_scenariorun["fcdfile"] = os.path.join(l_destinationdir, str(p_initialsorting), str(p_run), "{}.fcd-output.xml".format(l_scenarioname))
-
+        l_additionalfile = os.path.join(l_destinationdir, str(p_initialsorting), str(p_run), "{}.add.xml".format(l_scenarioname))
+        l_tripfile = os.path.join(l_destinationdir, str(p_initialsorting), str(p_run), "{}.trip.xml".format(l_scenarioname))
+        l_routefile = os.path.join(l_destinationdir, str(p_initialsorting), str(p_run), "{}.rou.xml".format(l_scenarioname))
+        l_configfile = os.path.join(l_destinationdir, str(p_initialsorting), str(p_run), "{}.sumo.cfg".format(l_scenarioname))
+        #l_tripinfofile = os.path.join(l_destinationdir, str(p_initialsorting), str(p_run), "{}.tripinfo-output.xml".format(l_scenarioname))
+        l_ilooppre21file = os.path.join(self._runsdir, l_scenarioname, str(p_initialsorting), str(p_run), "{}.inductionLoop.pre21.xml".format(l_scenarioname))
+        l_ilooppost21file = os.path.join(self._runsdir, l_scenarioname, str(p_initialsorting), str(p_run), "{}.inductionLoop.post21.xml".format(l_scenarioname))
+        l_iloopexitfile = os.path.join(self._runsdir, l_scenarioname, str(p_initialsorting), str(p_run), "{}.inductionLoop.exit.xml".format(l_scenarioname))
+        #l_fcdfile = os.path.join(l_destinationdir, str(p_initialsorting), str(p_run), "{}.fcd-output.xml".format(l_scenarioname))
+        l_iloopfiles = {
+            "1_pre21": l_ilooppre21file,
+            "2_post21": l_ilooppost21file,
+            "3_exit": l_iloopexitfile
+        }
         l_runcfgfiles = [l_tripfile, l_additionalfile, l_routefile, l_configfile]
 
         if len(filter(lambda fname: not os.path.isfile(fname), l_runcfgfiles)) > 0:
             self._log.info("Incomplete/non-existing SUMO run configuration for %s, %s, %d -> (re)building", l_scenarioname, p_initialsorting, p_run)
             self._forcerebuildscenarios = True
 
-        self._generateAdditionalXML(l_scenarioconfig, p_initialsorting, p_run, l_scenarioname, l_additionalfile, self._forcerebuildscenarios)
+        self._generateAdditionalXML(l_scenarioconfig, p_initialsorting, p_run, l_scenarioname, l_iloopfiles, l_additionalfile, self._forcerebuildscenarios)
         self._generateConfigXML(l_configfile, l_netfile, l_routefile, l_additionalfile, l_settingsfile, l_runcfg.get("simtimeinterval"), self._forcerebuildscenarios)
         self._generateTripXML(l_scenarioconfig, l_runcfg, p_initialsorting, l_tripfile, self._forcerebuildscenarios)
         self._generateRouteXML(l_netfile, l_tripfile, l_routefile, self._forcerebuildscenarios)
 
         return {
+            "settingsfile": l_settingsfile,
+            "additionalfile": l_additionalfile,
+            "tripfile": l_tripfile,
+            "routefile": l_routefile,
+            #"tripinfofile": l_tripinfofile,
             "configfile": l_configfile,
-            "tripinfofile": l_tripinfofile,
-            "fcdfile": l_fcdfile,
-            "settingsfile": l_settingsfile
+            #"fcdfile": l_fcdfile,
+            "inductionloopfiles": l_iloopfiles
         }
 
     def _generateNodeXML(self, p_scenarioconfig, p_nodefile, p_forcerebuildscenarios=False):
@@ -201,11 +223,20 @@ class SumoConfig(Configuration):
             l_length = 2*l_segmentlength # two times segment length
 
         l_nodes = etree.Element("nodes")
-        etree.SubElement(l_nodes, "node", attrib={"id": "2_1_start", "x": "0", "y": "0"})
-        etree.SubElement(l_nodes, "node", attrib={"id": "2_1_end", "x": str(l_length), "y": "0"})
-        # dummy node for easier from-to routing
+        etree.SubElement(l_nodes, "node", attrib={"id": "enter", "x": str(-l_segmentlength), "y": "0"})
+        etree.SubElement(l_nodes, "node", attrib={"id": "21start", "x": "0", "y": "0"})
+        etree.SubElement(l_nodes, "node", attrib={"id": "21end", "x": str(l_length), "y": "0"})
 
-        etree.SubElement(l_nodes, "node", attrib={"id": "ramp_exit", "x": str(l_length+l_segmentlength), "y": "0"})
+        # dummy node for easier from-to routing
+        etree.SubElement(
+            l_nodes,
+            "node",
+            attrib={
+                "id": "exit",
+                "x": str(l_length+0.1 if l_nbswitches % 2 == 1 or self._onlyoneotlsegment else l_length+l_segmentlength),
+                "y": "0"
+            }
+        )
 
         with open(p_nodefile, "w") as f_pnodesxml:
             f_pnodesxml.write(etree.tostring(l_nodes, pretty_print=True))
@@ -224,32 +255,74 @@ class SumoConfig(Configuration):
 
         # create edges xml
         l_edges = etree.Element("edges")
-        l_21edge = etree.SubElement(l_edges, "edge", attrib={"id": "2_1_segment",
-                                                                   "from" : "2_1_start",
-                                                                   "to": "2_1_end",
-                                                                   "numLanes": "2",
-                                                                   "speed": str(l_maxspeed)})
+
+
+        # find slowest vehicle speed to be used as parameter for entering lane
+        l_lowestspeed = min(
+            map(lambda vtype: vtype.get("desiredSpeed"), self.runconfig.get("vtypedistribution").itervalues())
+        )
+
+        # Entering edge with one lane, leading to 2+1 Roadway
+        etree.SubElement(
+            l_edges,
+            "edge",
+            attrib={
+                "id": "enter_21start",
+                "from" : "enter",
+                "to": "21start",
+                "numLanes": "1",
+                "speed": str(l_lowestspeed)
+            }
+        )
+
+        # 2+1 Roadway
+        l_21edge = etree.SubElement(
+            l_edges,
+            "edge",
+            attrib={
+                "id": "21segment",
+                "from": "21start",
+                "to": "21end",
+                "numLanes": "2",
+                "spreadType": "center",
+                "speed": str(l_maxspeed)
+            }
+        )
 
         # add splits and joins
-        l_addotllane = False
+        l_addotllane = True
         for i_segmentpos in xrange(0,int(l_length),int(l_segmentlength)) \
-                if not self._onlyoneotlsegment else xrange(0,int(2*l_segmentlength),int(l_segmentlength)):
-            etree.SubElement(l_21edge, "split", attrib={"pos": str(i_segmentpos),
-                                                              "lanes": "0 1" if l_addotllane else "0",
-                                                              "speed": str(l_maxspeed)})
+                if not self._onlyoneotlsegment else xrange(0,int(2*l_segmentlength-1),int(l_segmentlength)):
+            etree.SubElement(
+                l_21edge,
+                "split",
+                attrib={
+                    "pos": str(i_segmentpos),
+                    "lanes": "0 1" if l_addotllane else "0",
+                    "speed": str(l_maxspeed)
+                }
+            )
+            self._lastsegmentpos = i_segmentpos #TODO: fix this hack
             l_addotllane ^= True
 
-        # dummy edge
-        etree.SubElement(l_edges, "edge", attrib={"id": "2_1_end-ramp_exit",
-                                                        "from" : "2_1_end",
-                                                        "to": "ramp_exit",
-                                                        "numLanes": "1",
-                                                        "speed": str(l_maxspeed)})
+        # Exit lane
+        etree.SubElement(
+            l_edges,
+            "edge",
+            attrib={
+                "id": "21end_exit",
+                "from": "21end",
+                "to": "exit",
+                "numLanes": "1",
+                "spreadType": "center",
+                "speed": str(l_maxspeed)
+            }
+        )
 
         with open(p_edgefile, "w") as f_pedgexml:
             f_pedgexml.write(etree.tostring(l_edges, pretty_print=True))
 
-    def _generateAdditionalXML(self, p_scenarioconfig, p_initialsorting, p_run, p_scenarioname, p_additionalfile, p_forcerebuildscenarios):
+    def _generateAdditionalXML(self, p_scenarioconfig, p_initialsorting, p_run, p_scenarioname, p_iloopfiles, p_additionalfile, p_forcerebuildscenarios):
         if os.path.isfile(p_additionalfile) and not p_forcerebuildscenarios:
             return
 
@@ -257,32 +330,54 @@ class SumoConfig(Configuration):
         l_length = p_scenarioconfig.get("parameters").get("length")
         l_nbswitches = p_scenarioconfig.get("parameters").get("switches")
         # assume even distributed otl segment lengths
-        l_segmentlength = l_length / ( l_nbswitches + 1 )
+        l_segmentlength = l_length / (l_nbswitches + 1)
 
         l_additional = etree.Element("additional")
         # place induction loop right before the first split (i.e. end of starting edge)
         #     <inductionLoop id="myLoop1" lane="foo_0" pos="42" freq="900" file="out.xml"/>
-        etree.SubElement(l_additional, "inductionLoop",
-                               attrib={
-                                   "id": "pre",
-                                   "lane": "2_1_segment_0",
-                                   "pos": str(l_segmentlength-5),
-                                   "friendlyPos": "true",
-                                   "splitByType": "true",
-                                   "freq" : "1",
-                                   "file": os.path.join(self._runsdir, p_scenarioname, str(p_initialsorting), str(p_run), "{}.inductionLoop.start.xml".format(p_scenarioname))
-                               })
+        etree.SubElement(
+            l_additional,
+            "inductionLoop",
+            attrib={
+                "id": "1_pre21",
+                "lane": "enter_21start_0",
+                "pos": str(l_segmentlength-5),
+                "friendlyPos": "true",
+                "splitByType": "true",
+                "freq": "1",
+                "file": p_iloopfiles.get("1_pre21")
+            }
+        )
 
-        etree.SubElement(l_additional, "inductionLoop",
-                               attrib={
-                                   "id": "post",
-                                   "lane": "2_1_end-ramp_exit_0",
-                                   "pos": str(l_segmentlength-5),
-                                   "friendlyPos": "true",
-                                   "splitByType": "true",
-                                   "freq" : "1",
-                                   "file": os.path.join(self._runsdir, p_scenarioname, str(p_initialsorting), str(p_run), "{}.inductionLoop.exit.xml".format(p_scenarioname))
-                               })
+        # induction loop at the beginning of last one-lane segment (post21)
+        etree.SubElement(
+            l_additional,
+            "inductionLoop",
+            attrib={
+                "id": "2_post21",
+                "lane": "21segment.{}_0".format(self._lastsegmentpos-int(l_segmentlength)) if l_nbswitches % 2 == 1 and not self._onlyoneotlsegment else "21segment.{}_0".format(self._lastsegmentpos),
+                "pos": str(int(l_segmentlength)) if l_nbswitches % 2 == 1 and not self._onlyoneotlsegment else "0",
+                "friendlyPos": "true",
+                "splitByType": "true",
+                "freq": "1",
+                "file": p_iloopfiles.get("2_post21")
+            }
+        )
+
+        # induction loop at the end of last one-lane segment (exit)
+        etree.SubElement(
+            l_additional,
+            "inductionLoop",
+            attrib={
+                "id": "3_exit",
+                "lane": "21segment.{}_0".format(self._lastsegmentpos) if l_nbswitches % 2 == 1 or self._onlyoneotlsegment else "21end_exit_0",
+                "pos": str(int(l_segmentlength-5)),
+                "friendlyPos": "true",
+                "splitByType": "true",
+                "freq": "1",
+                "file": p_iloopfiles.get("3_exit")
+            }
+        )
 
         with open(p_additionalfile, "w") as f_paddxml:
             f_paddxml.write(etree.tostring(l_additional, pretty_print=True))
@@ -388,13 +483,14 @@ class SumoConfig(Configuration):
         self._log.debug("Scenario's AADT of %d vehicles/average annual day => %d vehicles for %d simulation seconds",
                         l_aadt, l_numberofvehicles, (l_timeend - l_timebegin))
 
-        l_vehicles = self._createFixedInitialVehicleDistribution(p_runcfg,
-                                                                 p_scenarioconfig,
-                                                                 l_numberofvehicles,
-                                                                 l_aadt,
-                                                                 p_initialsorting,
-                                                                 p_runcfg.get("vtypedistribution")
-                                                                 )
+        l_vehicles = self._createFixedInitialVehicleDistribution(
+            p_runcfg,
+            p_scenarioconfig,
+            l_numberofvehicles,
+            l_aadt,
+            p_initialsorting,
+            p_runcfg.get("vtypedistribution")
+        )
 
 
         # xml
@@ -434,8 +530,8 @@ class SumoConfig(Configuration):
             etree.SubElement(l_trips, "trip", attrib={
                 "id": i_vehicle.id,
                 "depart": str(i_vehicle.starttime),
-                "from": "2_1_segment",
-                "to": "2_1_end-ramp_exit",
+                "from": "enter_21start",
+                "to": "21end_exit",
                 "type": i_vehicle.id,
                 "departSpeed": "max",
             })
@@ -457,7 +553,7 @@ class SumoConfig(Configuration):
             ],
             stderr=subprocess.STDOUT
         )
-        self._log.debug(l_netconvertprocess)
+        self._log.debug("%s: %s", self._netconvertbinary, l_netconvertprocess.replace("\n",""))
 
     def _generateRouteXML(self, p_netfile, p_tripfile, p_routefile, p_forcerebuildscenarios=False):
         if os.path.isfile(p_routefile) and not p_forcerebuildscenarios:
@@ -472,5 +568,32 @@ class SumoConfig(Configuration):
             ],
             stderr=subprocess.STDOUT
         )
-        self._log.debug(l_duarouterprocess)
+        self._log.debug("%s: %s", self._duarouterbinary, l_duarouterprocess.replace("\n",""))
+
+    def aggregate_iloop_files(self, p_iloopfiles):
+        l_iloopdata = {}
+        self._log.debug("Reading and aggregating induction loop logs")
+        for i_loopid, i_fname in p_iloopfiles.iteritems():
+            l_root = etree.parse(i_fname)
+            l_vehicles = etree.XSLT(s_iloop_template)(l_root).iter("vehicle")
+            for i_vehicle in l_vehicles:
+                if l_iloopdata.get(i_vehicle.get("type")) is None:
+                    l_iloopdata[i_vehicle.get("type")] = {}
+                l_iloopdata.get(i_vehicle.get("type"))[i_loopid] = {
+                    "time": yaml.load(i_vehicle.get("begin"), Loader=SafeLoader),
+                    "segmentlength": 0
+                }
+
+        # create deltas in logical ordering, i.e. ---> d1 ---> d2 ---> d3 => delta(d1,d2), delta(d1,d3), delta(d2,d3)
+        # i.e. 2-length tuples, in sorted order, no repeated elements. we assume this works as we use a numerical prefix
+        # 1_, 2_,... for all induction loop ids in sequential order in driving direction
+        l_deltas = {}
+        for i_vehicle, i_iloopdata in l_iloopdata.iteritems():
+            l_deltas[i_vehicle] = {}
+            for i_pair in itertools.combinations(sorted(p_iloopfiles.iterkeys()), 2):
+                    l_deltas.get(i_vehicle)["{} to {}".format(i_pair[0][2:],i_pair[1][2:])] \
+                        = i_iloopdata.get(i_pair[1]).get("time")-i_iloopdata.get(i_pair[0]).get("time")
+        return l_deltas
+
+
 

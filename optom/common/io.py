@@ -23,7 +23,7 @@
 
 from __future__ import print_function
 from __future__ import division
-
+import log
 import gzip
 import h5py
 import yaml
@@ -39,33 +39,58 @@ try:
 except ImportError:
     from yaml import SafeLoader, SafeDumper
 
-import log
+try:
+    from lxml import etree
+except ImportError:
+    try:
+        # Python 2.5
+        import xml.etree.cElementTree as etree
+    except ImportError:
+        try:
+            # Python 2.5
+            import xml.etree.ElementTree as etree
+        except ImportError:
+            try:
+                # normal cElementTree install
+                import cElementTree as etree
+            except ImportError:
+                try:
+                    # normal ElementTree install
+                    import elementtree.ElementTree as etree
+                except ImportError:
+                    print("Failed to import ElementTree from any known place")
 
 
-class ResultsWriter(object):
+class Reader(object):
+    def __init__(self, p_args):
+        self._log = log.logger(__name__, p_args.loglevel, p_args.logfile)
+
+    def read_etree(self, p_fname):
+        self._log.debug("Parsing %s with etree", p_fname)
+        return etree.parse(p_fname)
+
+
+class Writer(object):
 
     def __init__(self, p_args):
-        self._log = log.logger(p_args, __name__)
+        self._log = log.logger(__name__, p_args.loglevel, p_args.logfile)
 
     def writeJsonPretty(self, p_object, p_filename):
-        self._log.info(" * writing %s", p_filename)
+        self._log.debug("Writing %s", p_filename)
         fp = gzip.GzipFile(p_filename, 'w') if p_filename.endswith(".gz") else open(p_filename, mode="w")
         json.dump(p_object, fp, sort_keys=True, indent=4, separators=(', ', ' : '))
         fp.close()
-        self._log.info("   done")
 
     def writeJson(self, p_object, p_filename):
-        self._log.info(" * writing %s", p_filename)
+        self._log.debug("Writing %s", p_filename)
         with gzip.GzipFile(p_filename, 'w') if p_filename.endswith(".gz") else open(p_filename, mode="w") as fp:
             fp.write(jsondumps(p_object))
-        self._log.info("   done")
 
     def writeYAML(self, p_object, p_filename, p_default_flow_style=False):
+        self._log.debug("Writing %s", p_filename)
         fp = gzip.GzipFile(p_filename, 'w') if p_filename.endswith(".gz") else open(p_filename, mode="w")
-        self._log.info(" * writing %s", p_filename)
         yaml.dump(p_object, fp, Dumper=SafeDumper, default_flow_style=p_default_flow_style)
         fp.close()
-        self._log.info("   done")
 
     ## Write an object to a specific path into an open file, identified by fileid
     #  @param self The object pointer
@@ -79,6 +104,7 @@ class ResultsWriter(object):
             raise TypeError(u"p_objectdict is not dict")
 
         l_file = h5py.File(p_filename, 'a')
+        h5py.File
 
         if l_file and type(l_file) is h5py._hl.files.File:
 

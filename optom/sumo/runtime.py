@@ -23,14 +23,15 @@
 from __future__ import print_function
 from __future__ import division
 import subprocess
-from common import log
+from optom.common import log
+
 
 class Runtime(object):
 
     def __init__(self, p_args, p_sumoconfig, p_sumobinary):
         self._sumoconfig = p_sumoconfig
         self._sumobinary = p_sumobinary
-        self._log = log.logger(p_args, __name__)
+        self._log = log.logger(__name__, p_args.loglevel, p_args.logfile)
 
     def run(self, p_runcfg, p_scenarioname, p_runnumber):
         self._log.info("Running scenario %s: run %d", p_scenarioname, p_runnumber)
@@ -38,8 +39,8 @@ class Runtime(object):
             [
                 self._sumobinary,
                 "-c", p_runcfg.get("configfile"),
-                "--tripinfo-output", p_runcfg.get("tripinfofile"),
-                "--fcd-output", p_runcfg.get("fcdfile"),
+                #"--tripinfo-output", p_runcfg.get("tripinfofile"),
+                #"--fcd-output", p_runcfg.get("fcdfile"),
                 "--gui-settings-file", p_runcfg.get("settingsfile"),
                 "--time-to-teleport", "-1",
                 "--no-step-log"
@@ -48,5 +49,4 @@ class Runtime(object):
             bufsize=-1
         )
         self._log.info("%s : %s", self._sumobinary, l_sumoprocess.replace("\n",""))
-        self._log.info("Finished run %d", p_runnumber)
 

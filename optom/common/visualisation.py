@@ -27,6 +27,9 @@ import matplotlib.colors as colors
 import matplotlib.cm as cm
 import matplotlib.pyplot as plt
 from matplotlib import rc
+import log
+
+s_log = log.logger(__name__)
 
 
 def colormap(p_values, p_cmap):
@@ -36,6 +39,7 @@ def colormap(p_values, p_cmap):
 
 
 def boxplot(p_filename, p_data, p_title="", p_xlabel="", p_ylabel=""):
+    s_log.info("Creating boxplot %s", p_filename)
     rc("text", usetex=True)
     rc("font", **{"family": "sans-serif", "sans-serif": ["Helvetica"], "size" :10})
     rc("text.latex", preamble=r"\usepackage{cmbright}")

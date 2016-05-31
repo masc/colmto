@@ -7,7 +7,7 @@ Baseline-10km-OTL:
   parameters:
     aadt: 43200
     length: 30000
-    maxSpeed: 33.333333333333336
+    maxSpeed: 40.0
     switches: 2
     type: GT
 BW-B292-Aglasterhausen-Obrigheim:
@@ -19,7 +19,7 @@ BW-B292-Aglasterhausen-Obrigheim:
   parameters:
     aadt: 12870
     length: 7800.0
-    maxSpeed: 27.77777777777778
+    maxSpeed: 40.0 # original was 27.77777777777778
     switches: 8
     type: GT
 BW-B31n-Stockach-Ueberlingen:
@@ -31,7 +31,7 @@ BW-B31n-Stockach-Ueberlingen:
   parameters:
     aadt: 12700
     length: 10000.0
-    maxSpeed: 33.333333333333336
+    maxSpeed: 40.0 # original was 33.333333333333336
     switches: 4
     type: TLE
 BW-B33-Gengenbach-Biberach:
@@ -43,6 +43,6 @@ BW-B33-Gengenbach-Biberach:
   parameters:
     aadt: 18000
     length: 5600.0
-    maxSpeed: 27.77777777777778
+    maxSpeed: 40.0 # original was 27.77777777777778
     switches: 4
     type: TLE
