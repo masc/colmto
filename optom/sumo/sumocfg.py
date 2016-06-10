@@ -23,8 +23,8 @@
 from __future__ import division
 from __future__ import print_function
 
-from optom.common import log
 from optom.common import colormaps
+from optom.common import log
 
 try:
     from lxml import etree
@@ -56,10 +56,8 @@ import itertools
 import os
 import random
 import subprocess
-import ast
 from optom.configuration.configuration import Configuration
 from optom.environment.vehicle import Vehicle
-from optom.common import visualisation
 from optom.common.io import Writer
 
 s_iloop_template = etree.XML("""
