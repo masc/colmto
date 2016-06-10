@@ -54,7 +54,7 @@ class Sumo(object):
             self._log.error("/!\ scenario %s not found in configuration", p_scenarioname)
             return
 
-        self._allscenarioruns[p_scenarioname] = l_scenarioruns = self._sumocfg.generateScenario(p_scenarioname)
+        self._allscenarioruns[p_scenarioname] = l_scenarioruns = self._sumocfg.generate_scenario(p_scenarioname)
         l_initialsortings = self._sumocfg.runconfig.get("initialsortings")
 
         l_iloopresults = {}
@@ -63,7 +63,7 @@ class Sumo(object):
             l_iloopresults[i_initialsorting] = {}
             l_scenarioruns.get("runs")[i_initialsorting] = {}
             for i_run in xrange(self._sumocfg.runconfig.get("runs")):
-                l_scenarioruns.get("runs").get(i_initialsorting)[i_run] = l_runcfg = self._sumocfg.generateRun(l_scenarioruns, i_initialsorting, i_run)
+                l_scenarioruns.get("runs").get(i_initialsorting)[i_run] = l_runcfg = self._sumocfg.generate_run(l_scenarioruns, i_initialsorting, i_run)
                 self._runtime.run(l_runcfg, p_scenarioname, i_run)
                 self._log.debug("Converting induction loop XMLs with etree.XSLT")
                 l_iloopresults.get(i_initialsorting)[i_run] = self._sumocfg.aggregate_iloop_files(l_runcfg.get("inductionloopfiles"))

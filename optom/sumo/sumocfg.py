@@ -46,6 +46,7 @@ except ImportError:
                 except ImportError:
                     print("Failed to import ElementTree from any known place")
 import yaml
+
 try:
     from yaml import CSafeLoader as SafeLoader, CSafeDumper as SafeDumper
 except ImportError:
@@ -74,9 +75,7 @@ s_iloop_template = etree.XML("""
     </xsl:stylesheet>""")
 
 
-
 class SumoConfig(Configuration):
-
     def __init__(self, p_args, p_netconvertbinary, p_duarouterbinary):
         super(SumoConfig, self).__init__(p_args)
 
@@ -128,7 +127,7 @@ class SumoConfig(Configuration):
     def get(self, p_key):
         return self.runconfig.get("sumo").get(p_key)
 
-    def generateScenario(self, p_scenarioname):
+    def generate_scenario(self, p_scenarioname):
         l_destinationdir = os.path.join(self._runsdir, p_scenarioname)
         if not os.path.exists(os.path.join(l_destinationdir)):
             os.mkdir(l_destinationdir)
@@ -144,16 +143,18 @@ class SumoConfig(Configuration):
         l_nodefile = l_scenarioruns["nodefile"] = os.path.join(l_destinationdir, "{}.nod.xml".format(p_scenarioname))
         l_edgefile = l_scenarioruns["edgefile"] = os.path.join(l_destinationdir, "{}.edg.xml".format(p_scenarioname))
         l_netfile = l_scenarioruns["netfile"] = os.path.join(l_destinationdir, "{}.net.xml".format(p_scenarioname))
-        l_settingsfile = l_scenarioruns["settingsfile"] = os.path.join(l_destinationdir, "{}.settings.xml".format(p_scenarioname))
+        l_settingsfile = l_scenarioruns["settingsfile"] = os.path.join(
+            l_destinationdir, "{}.settings.xml".format(p_scenarioname)
+        )
 
-        self._generateNodeXML(l_scenarioconfig, l_nodefile, self._forcerebuildscenarios)
-        self._generateEdgeXML(l_scenarioconfig, l_edgefile, self._forcerebuildscenarios)
-        self._generateSettingsXML(l_scenarioconfig, l_runcfg, l_settingsfile, self._forcerebuildscenarios)
-        self._generateNetXML(l_nodefile, l_edgefile, l_netfile, self._forcerebuildscenarios)
+        self._generate_node_xml(l_scenarioconfig, l_nodefile, self._forcerebuildscenarios)
+        self._generate_edge_xml(l_scenarioconfig, l_edgefile, self._forcerebuildscenarios)
+        self._generate_settings_xml(l_scenarioconfig, l_runcfg, l_settingsfile, self._forcerebuildscenarios)
+        self._generate_net_xml(l_nodefile, l_edgefile, l_netfile, self._forcerebuildscenarios)
 
         return l_scenarioruns
 
-    def generateRun(self, p_scenarioruns, p_initialsorting, p_run):
+    def generate_run(self, p_scenarioruns, p_initialsorting, p_run):
         l_scenarioname = p_scenarioruns.get("scenarioname")
         l_scenarioconfig = self.scenarioconfig.get(l_scenarioname)
 
@@ -169,20 +170,44 @@ class SumoConfig(Configuration):
         if not os.path.exists(os.path.join(l_destinationdir, str(p_initialsorting), str(p_run))):
             os.mkdir(os.path.join(os.path.join(l_destinationdir, str(p_initialsorting), str(p_run))))
 
-        self._log.debug("Generating SUMO run configuration for scenario %s / sorting %s / run %d", l_scenarioname, p_initialsorting, p_run)
+        self._log.debug(
+            "Generating SUMO run configuration for scenario %s / sorting %s / run %d",
+            l_scenarioname, p_initialsorting, p_run
+        )
 
         l_netfile = p_scenarioruns.get("netfile")
         l_settingsfile = p_scenarioruns.get("settingsfile")
 
-        l_additionalfile = os.path.join(l_destinationdir, str(p_initialsorting), str(p_run), "{}.add.xml".format(l_scenarioname))
-        l_tripfile = os.path.join(l_destinationdir, str(p_initialsorting), str(p_run), "{}.trip.xml".format(l_scenarioname))
-        l_routefile = os.path.join(l_destinationdir, str(p_initialsorting), str(p_run), "{}.rou.xml".format(l_scenarioname))
-        l_configfile = os.path.join(l_destinationdir, str(p_initialsorting), str(p_run), "{}.sumo.cfg".format(l_scenarioname))
-        #l_tripinfofile = os.path.join(l_destinationdir, str(p_initialsorting), str(p_run), "{}.tripinfo-output.xml".format(l_scenarioname))
-        l_ilooppre21file = os.path.join(self._runsdir, l_scenarioname, str(p_initialsorting), str(p_run), "{}.inductionLoop.pre21.xml".format(l_scenarioname))
-        l_ilooppost21file = os.path.join(self._runsdir, l_scenarioname, str(p_initialsorting), str(p_run), "{}.inductionLoop.post21.xml".format(l_scenarioname))
-        l_iloopexitfile = os.path.join(self._runsdir, l_scenarioname, str(p_initialsorting), str(p_run), "{}.inductionLoop.exit.xml".format(l_scenarioname))
-        #l_fcdfile = os.path.join(l_destinationdir, str(p_initialsorting), str(p_run), "{}.fcd-output.xml".format(l_scenarioname))
+        l_additionalfile = os.path.join(
+            l_destinationdir, str(p_initialsorting), str(p_run), "{}.add.xml".format(l_scenarioname)
+        )
+        l_tripfile = os.path.join(
+            l_destinationdir, str(p_initialsorting), str(p_run), "{}.trip.xml".format(l_scenarioname)
+        )
+        l_routefile = os.path.join(
+            l_destinationdir, str(p_initialsorting), str(p_run), "{}.rou.xml".format(l_scenarioname)
+        )
+        l_configfile = os.path.join(
+            l_destinationdir, str(p_initialsorting), str(p_run), "{}.sumo.cfg".format(l_scenarioname)
+        )
+        # l_tripinfofile = os.path.join(l_destinationdir, str(p_initialsorting), str(p_run),
+        # "{}.tripinfo-output.xml".format(l_scenarioname))
+        l_ilooppre21file = os.path.join(
+            self._runsdir, l_scenarioname, str(p_initialsorting), str(p_run), "{}.inductionLoop.pre21.xml".format(
+                l_scenarioname
+            )
+        )
+        l_ilooppost21file = os.path.join(
+            self._runsdir, l_scenarioname, str(p_initialsorting), str(p_run), "{}.inductionLoop.post21.xml".format(
+                l_scenarioname)
+        )
+        l_iloopexitfile = os.path.join(
+            self._runsdir, l_scenarioname, str(p_initialsorting), str(p_run), "{}.inductionLoop.exit.xml".format(
+                l_scenarioname
+            )
+        )
+        # l_fcdfile = os.path.join(l_destinationdir, str(p_initialsorting), str(p_run),
+        # "{}.fcd-output.xml".format(l_scenarioname))
         l_iloopfiles = {
             "1_pre21": l_ilooppre21file,
             "2_post21": l_ilooppost21file,
@@ -191,36 +216,51 @@ class SumoConfig(Configuration):
         l_runcfgfiles = [l_tripfile, l_additionalfile, l_routefile, l_configfile]
 
         if len(filter(lambda fname: not os.path.isfile(fname), l_runcfgfiles)) > 0:
-            self._log.info("Incomplete/non-existing SUMO run configuration for %s, %s, %d -> (re)building", l_scenarioname, p_initialsorting, p_run)
+            self._log.info(
+                "Incomplete/non-existing SUMO run configuration for %s, %s, %d -> (re)building",
+                l_scenarioname, p_initialsorting, p_run
+            )
             self._forcerebuildscenarios = True
 
-        self._generateAdditionalXML(l_scenarioconfig, p_initialsorting, p_run, l_scenarioname, l_iloopfiles, l_additionalfile, self._forcerebuildscenarios)
-        self._generateConfigXML(l_configfile, l_netfile, l_routefile, l_additionalfile, l_settingsfile, l_runcfg.get("simtimeinterval"), self._forcerebuildscenarios)
-        self._generateTripXML(l_scenarioconfig, l_runcfg, p_initialsorting, l_tripfile, self._forcerebuildscenarios)
-        self._generateRouteXML(l_netfile, l_tripfile, l_routefile, self._forcerebuildscenarios)
+        self._generate_additional_xml(
+            l_scenarioconfig, l_iloopfiles, l_additionalfile,
+            self._forcerebuildscenarios
+        )
+        self._generate_config_xml(
+            l_configfile, l_netfile, l_routefile, l_additionalfile, l_settingsfile, l_runcfg.get("simtimeinterval"),
+            self._forcerebuildscenarios
+        )
+        self._generate_trip_xml(
+            l_scenarioconfig, l_runcfg, p_initialsorting, l_tripfile,
+            self._forcerebuildscenarios
+        )
+        self._generate_route_xml(
+            l_netfile, l_tripfile, l_routefile,
+            self._forcerebuildscenarios
+        )
 
         return {
             "settingsfile": l_settingsfile,
             "additionalfile": l_additionalfile,
             "tripfile": l_tripfile,
             "routefile": l_routefile,
-            #"tripinfofile": l_tripinfofile,
+            # "tripinfofile": l_tripinfofile,
             "configfile": l_configfile,
-            #"fcdfile": l_fcdfile,
+            # "fcdfile": l_fcdfile,
             "inductionloopfiles": l_iloopfiles
         }
 
-    def _generateNodeXML(self, p_scenarioconfig, p_nodefile, p_forcerebuildscenarios=False):
+    def _generate_node_xml(self, p_scenarioconfig, p_nodefile, p_forcerebuildscenarios=False):
         if os.path.isfile(p_nodefile) and not p_forcerebuildscenarios:
             return
 
         # parameters
         l_length = p_scenarioconfig.get("parameters").get("length")
         l_nbswitches = p_scenarioconfig.get("parameters").get("switches")
-        l_segmentlength = l_length / ( l_nbswitches + 1 )
+        l_segmentlength = l_length / (l_nbswitches + 1)
 
         if self._onlyoneotlsegment:
-            l_length = 2*l_segmentlength # two times segment length
+            l_length = 2 * l_segmentlength  # two times segment length
 
         l_nodes = etree.Element("nodes")
         etree.SubElement(l_nodes, "node", attrib={"id": "enter", "x": str(-l_segmentlength), "y": "0"})
@@ -233,7 +273,8 @@ class SumoConfig(Configuration):
             "node",
             attrib={
                 "id": "exit",
-                "x": str(l_length+0.1 if l_nbswitches % 2 == 1 or self._onlyoneotlsegment else l_length+l_segmentlength),
+                "x": str(
+                    l_length + 0.1 if l_nbswitches % 2 == 1 or self._onlyoneotlsegment else l_length + l_segmentlength),
                 "y": "0"
             }
         )
@@ -241,7 +282,7 @@ class SumoConfig(Configuration):
         with open(p_nodefile, "w") as f_pnodesxml:
             f_pnodesxml.write(etree.tostring(l_nodes, pretty_print=True))
 
-    def _generateEdgeXML(self, p_scenarioconfig, p_edgefile, p_forcerebuildscenarios=False):
+    def _generate_edge_xml(self, p_scenarioconfig, p_edgefile, p_forcerebuildscenarios=False):
         if os.path.isfile(p_edgefile) and not p_forcerebuildscenarios:
             return
 
@@ -251,11 +292,10 @@ class SumoConfig(Configuration):
         l_maxspeed = p_scenarioconfig.get("parameters").get("maxSpeed")
 
         # assume even distributed otl segment lengths
-        l_segmentlength = l_length / ( l_nbswitches + 1 )
+        l_segmentlength = l_length / (l_nbswitches + 1)
 
         # create edges xml
         l_edges = etree.Element("edges")
-
 
         # find slowest vehicle speed to be used as parameter for entering lane
         l_lowestspeed = min(
@@ -268,7 +308,7 @@ class SumoConfig(Configuration):
             "edge",
             attrib={
                 "id": "enter_21start",
-                "from" : "enter",
+                "from": "enter",
                 "to": "21start",
                 "numLanes": "1",
                 "speed": str(l_lowestspeed)
@@ -291,8 +331,8 @@ class SumoConfig(Configuration):
 
         # add splits and joins
         l_addotllane = True
-        for i_segmentpos in xrange(0,int(l_length),int(l_segmentlength)) \
-                if not self._onlyoneotlsegment else xrange(0,int(2*l_segmentlength-1),int(l_segmentlength)):
+        for i_segmentpos in xrange(0, int(l_length), int(l_segmentlength)) \
+                if not self._onlyoneotlsegment else xrange(0, int(2 * l_segmentlength - 1), int(l_segmentlength)):
             etree.SubElement(
                 l_21edge,
                 "split",
@@ -302,7 +342,7 @@ class SumoConfig(Configuration):
                     "speed": str(l_maxspeed)
                 }
             )
-            self._lastsegmentpos = i_segmentpos #TODO: fix this hack
+            self._lastsegmentpos = i_segmentpos  # TODO: fix this hack
             l_addotllane ^= True
 
         # Exit lane
@@ -322,7 +362,7 @@ class SumoConfig(Configuration):
         with open(p_edgefile, "w") as f_pedgexml:
             f_pedgexml.write(etree.tostring(l_edges, pretty_print=True))
 
-    def _generateAdditionalXML(self, p_scenarioconfig, p_initialsorting, p_run, p_scenarioname, p_iloopfiles, p_additionalfile, p_forcerebuildscenarios):
+    def _generate_additional_xml(self, p_scenarioconfig, p_iloopfiles, p_additionalfile, p_forcerebuildscenarios):
         if os.path.isfile(p_additionalfile) and not p_forcerebuildscenarios:
             return
 
@@ -341,7 +381,7 @@ class SumoConfig(Configuration):
             attrib={
                 "id": "1_pre21",
                 "lane": "enter_21start_0",
-                "pos": str(l_segmentlength-5),
+                "pos": str(l_segmentlength - 5),
                 "friendlyPos": "true",
                 "splitByType": "true",
                 "freq": "1",
@@ -355,7 +395,9 @@ class SumoConfig(Configuration):
             "inductionLoop",
             attrib={
                 "id": "2_post21",
-                "lane": "21segment.{}_0".format(self._lastsegmentpos-int(l_segmentlength)) if l_nbswitches % 2 == 1 and not self._onlyoneotlsegment else "21segment.{}_0".format(self._lastsegmentpos),
+                "lane": "21segment.{}_0".format(self._lastsegmentpos - int(l_segmentlength))
+                if l_nbswitches % 2 == 1 and not self._onlyoneotlsegment
+                else "21segment.{}_0".format(self._lastsegmentpos),
                 "pos": str(int(l_segmentlength)) if l_nbswitches % 2 == 1 and not self._onlyoneotlsegment else "0",
                 "friendlyPos": "true",
                 "splitByType": "true",
@@ -370,8 +412,9 @@ class SumoConfig(Configuration):
             "inductionLoop",
             attrib={
                 "id": "3_exit",
-                "lane": "21segment.{}_0".format(self._lastsegmentpos) if l_nbswitches % 2 == 1 or self._onlyoneotlsegment else "21end_exit_0",
-                "pos": str(int(l_segmentlength-5)),
+                "lane": "21segment.{}_0".format(
+                    self._lastsegmentpos) if l_nbswitches % 2 == 1 or self._onlyoneotlsegment else "21end_exit_0",
+                "pos": str(int(l_segmentlength - 5)),
                 "friendlyPos": "true",
                 "splitByType": "true",
                 "freq": "1",
@@ -382,8 +425,9 @@ class SumoConfig(Configuration):
         with open(p_additionalfile, "w") as f_paddxml:
             f_paddxml.write(etree.tostring(l_additional, pretty_print=True))
 
-    ## create sumo config
-    def _generateConfigXML(self, p_configfile, p_netfile, p_routefile, p_additionalfile, p_settingsfile, p_simtimeinterval, p_forcerebuildscenarios=False):
+    # create sumo config
+    def _generate_config_xml(self, p_configfile, p_netfile, p_routefile, p_additionalfile, p_settingsfile,
+                             p_simtimeinterval, p_forcerebuildscenarios=False):
         if os.path.isfile(p_configfile) and not p_forcerebuildscenarios:
             return
         assert type(p_simtimeinterval) == list and len(p_simtimeinterval) == 2
@@ -400,38 +444,39 @@ class SumoConfig(Configuration):
         with open(p_configfile, "w") as f_pconfigxml:
             f_pconfigxml.write(etree.tostring(l_configuration, pretty_print=True))
 
-    def _generateSettingsXML(self, p_scenarioconfig, p_runcfg, p_settingsfile, p_forcerebuildscenarios=False):
+    def _generate_settings_xml(self, p_scenarioconfig, p_runcfg, p_settingsfile, p_forcerebuildscenarios=False):
         if os.path.isfile(p_settingsfile) and not p_forcerebuildscenarios:
             return
 
         l_viewsettings = etree.Element("viewsettings")
         etree.SubElement(l_viewsettings, "viewport",
-                               attrib={"x": str(p_scenarioconfig.get("parameters").get("length") / 2),
-                                       "y": "0",
-                                       "zoom": "100"})
+                         attrib={"x": str(p_scenarioconfig.get("parameters").get("length") / 2),
+                                 "y": "0",
+                                 "zoom": "100"})
         etree.SubElement(l_viewsettings, "delay", attrib={"value": str(p_runcfg.get("sumo").get("gui-delay"))})
 
         with open(p_settingsfile, "w") as f_pconfigxml:
             f_pconfigxml.write(etree.tostring(l_viewsettings, pretty_print=True))
 
-    def _nextTime(self, p_lambda, p_prevstarttime, p_distribution="poisson"):
-        if p_distribution=="poisson":
-            return p_prevstarttime+random.expovariate(p_lambda)
-        elif p_distribution=="linear":
-            return p_prevstarttime+1/p_lambda
+    def _next_timestep(self, p_lambda, p_prevstarttime, p_distribution="poisson"):
+        if p_distribution == "poisson":
+            return p_prevstarttime + random.expovariate(p_lambda)
+        elif p_distribution == "linear":
+            return p_prevstarttime + 1 / p_lambda
         else:
             return p_prevstarttime
 
-    def _createFixedInitialVehicleDistribution(self, p_runcfg, p_scenarioconfig, p_nbvehicles, p_aadt, p_initialsorting, p_vtypedistribution):
+    def _create_vehicle_distribution(self, p_runcfg, p_scenarioconfig, p_nbvehicles, p_aadt, p_initialsorting,
+                                     p_vtypedistribution):
         self._log.debug("Create fixed initial vehicle distribution with %s", p_vtypedistribution)
         l_vtypedistribution = list(itertools.chain.from_iterable(
             map(
-                lambda (k,v): [k] * int(round(100 * v.get("fraction"))),
+                lambda (k, v): [k] * int(round(100 * v.get("fraction"))),
                 p_vtypedistribution.iteritems()
             )
         ))
 
-        l_vehps = p_aadt / (24*60*60) \
+        l_vehps = p_aadt / (24 * 60 * 60) \
             if not p_runcfg.get("vehiclespersecond").get("enabled") else p_runcfg.get("vehiclespersecond").get("value")
 
         l_vehicles = map(
@@ -458,15 +503,15 @@ class SumoConfig(Configuration):
             l_vehicles.sort(key=lambda v: v.maxspeed)
 
         # assign start time and id to each vehicle
-        for i,i_vehicle in enumerate(l_vehicles):
+        for i, i_vehicle in enumerate(l_vehicles):
             i_vehicle.provision("vehicle{}".format(i),
-                                self._nextTime(l_vehps,
-                                               l_vehicles[i-1].starttime if i > 0 else 0,
-                                               p_runcfg.get("starttimedistribution")))
+                                self._next_timestep(l_vehps,
+                                                    l_vehicles[i - 1].starttime if i > 0 else 0,
+                                                    p_runcfg.get("starttimedistribution")))
 
         return l_vehicles
 
-    def _generateTripXML(self, p_scenarioconfig, p_runcfg, p_initialsorting, p_tripfile, p_forcerebuildscenarios=False):
+    def _generate_trip_xml(self, p_scenarioconfig, p_runcfg, p_initialsorting, p_tripfile, p_forcerebuildscenarios=False):
         if os.path.isfile(p_tripfile) and not p_forcerebuildscenarios:
             return
 
@@ -477,13 +522,13 @@ class SumoConfig(Configuration):
         l_timebegin, l_timeend = p_runcfg.get("simtimeinterval")
 
         # number of vehicles = AADT / [seconds of day] * [scenario time in seconds]
-        l_numberofvehicles = int(round(l_aadt / (24*60*60) * (l_timeend - l_timebegin))) \
+        l_numberofvehicles = int(round(l_aadt / (24 * 60 * 60) * (l_timeend - l_timebegin))) \
             if not p_runcfg.get("nbvehicles").get("enabled") else p_runcfg.get("nbvehicles").get("value")
 
         self._log.debug("Scenario's AADT of %d vehicles/average annual day => %d vehicles for %d simulation seconds",
                         l_aadt, l_numberofvehicles, (l_timeend - l_timebegin))
 
-        l_vehicles = self._createFixedInitialVehicleDistribution(
+        l_vehicles = self._create_vehicle_distribution(
             p_runcfg,
             p_scenarioconfig,
             l_numberofvehicles,
@@ -492,7 +537,6 @@ class SumoConfig(Configuration):
             p_runcfg.get("vtypedistribution")
         )
 
-
         # xml
         l_trips = etree.Element("trips")
 
@@ -500,8 +544,9 @@ class SumoConfig(Configuration):
         for i_vehicle in l_vehicles:
 
             # filter for relevant attributes
-            l_vattr = dict( map( lambda (k, v): (k, str(v)), filter(
-                lambda (k, v): k in ["vClass","length","width","height","minGap","accel","decel","speedFactor","speedDev"], i_vehicle.vtype.iteritems()
+            l_vattr = dict(map(lambda (k, v): (k, str(v)), filter(
+                lambda (k, v): k in ["vClass", "length", "width", "height", "minGap", "accel", "decel", "speedFactor",
+                                     "speedDev"], i_vehicle.vtype.iteritems()
             )))
 
             l_vattr["id"] = str(i_vehicle.id)
@@ -511,8 +556,10 @@ class SumoConfig(Configuration):
             if l_runcfgspeeddev != None:
                 l_vattr["speedDev"] = str(l_runcfgspeeddev)
 
-            l_runcfgdesiredspeed = self.runconfig.get("vtypedistribution").get(l_vattr.get("vClass")).get("desiredSpeed")
-            l_vattr["maxSpeed"] = str(l_runcfgdesiredspeed) if l_runcfgdesiredspeed != None else str(i_vehicle.getMaxSpeed())
+            l_runcfgdesiredspeed = self.runconfig.get("vtypedistribution").get(l_vattr.get("vClass")).get(
+                "desiredSpeed")
+            l_vattr["maxSpeed"] = str(l_runcfgdesiredspeed) if l_runcfgdesiredspeed != None else str(
+                i_vehicle.getMaxSpeed())
 
             l_runcfglength = self.runconfig.get("vtypedistribution").get(l_vattr.get("vClass")).get("length")
             if l_runcfglength != None:
@@ -539,8 +586,8 @@ class SumoConfig(Configuration):
         with open(p_tripfile, "w") as f_ptripxml:
             f_ptripxml.write(etree.tostring(l_trips, pretty_print=True))
 
-    ## create net xml using netconvert
-    def _generateNetXML(self, p_nodefile, p_edgefile, p_netfile, p_forcerebuildscenarios=False):
+    # create net xml using netconvert
+    def _generate_net_xml(self, p_nodefile, p_edgefile, p_netfile, p_forcerebuildscenarios=False):
         if os.path.isfile(p_netfile) and not p_forcerebuildscenarios:
             return
 
@@ -553,9 +600,9 @@ class SumoConfig(Configuration):
             ],
             stderr=subprocess.STDOUT
         )
-        self._log.debug("%s: %s", self._netconvertbinary, l_netconvertprocess.replace("\n",""))
+        self._log.debug("%s: %s", self._netconvertbinary, l_netconvertprocess.replace("\n", ""))
 
-    def _generateRouteXML(self, p_netfile, p_tripfile, p_routefile, p_forcerebuildscenarios=False):
+    def _generate_route_xml(self, p_netfile, p_tripfile, p_routefile, p_forcerebuildscenarios=False):
         if os.path.isfile(p_routefile) and not p_forcerebuildscenarios:
             return
 
@@ -568,7 +615,7 @@ class SumoConfig(Configuration):
             ],
             stderr=subprocess.STDOUT
         )
-        self._log.debug("%s: %s", self._duarouterbinary, l_duarouterprocess.replace("\n",""))
+        self._log.debug("%s: %s", self._duarouterbinary, l_duarouterprocess.replace("\n", ""))
 
     def aggregate_iloop_files(self, p_iloopfiles):
         l_iloopdata = {}
@@ -591,9 +638,6 @@ class SumoConfig(Configuration):
         for i_vehicle, i_iloopdata in l_iloopdata.iteritems():
             l_deltas[i_vehicle] = {}
             for i_pair in itertools.combinations(sorted(p_iloopfiles.iterkeys()), 2):
-                    l_deltas.get(i_vehicle)["{} to {}".format(i_pair[0][2:],i_pair[1][2:])] \
-                        = i_iloopdata.get(i_pair[1]).get("time")-i_iloopdata.get(i_pair[0]).get("time")
+                l_deltas.get(i_vehicle)["{} to {}".format(i_pair[0][2:], i_pair[1][2:])] \
+                    = i_iloopdata.get(i_pair[1]).get("time") - i_iloopdata.get(i_pair[0]).get("time")
         return l_deltas
-
-
-
