@@ -24,6 +24,7 @@ from __future__ import division
 from __future__ import print_function
 
 from optom.common import log
+from optom.common import colormaps
 
 try:
     from lxml import etree
@@ -110,6 +111,12 @@ class SumoConfig(Configuration):
                 "vtypesconfig": self.vtypesconfig
             },
             os.path.join(p_args.outputdir, "SUMO", self._runprefix, "configuration.yaml")
+        )
+
+        # generate color map for vehicle max speeds
+        self._speed_colormap = colormaps.get_mapped_cmap(
+            self.scenarioconfig.get("parameters").get("maxSpeed"),
+            "plasma"
         )
 
     @property
@@ -484,15 +491,9 @@ class SumoConfig(Configuration):
             [random.choice(l_vtypedistribution) for i in xrange(p_nbvehicles)]
         )
 
-        # generate color map for vehicle max speeds
-        l_colormap = visualisation.colormap(
-            xrange(int(round(p_scenarioconfig.get("parameters").get("maxSpeed")))),
-            'jet_r'
-        )
-
         # update colors
         for i_vehicle in l_vehicles:
-            i_vehicle.color = l_colormap.to_rgba(i_vehicle.maxspeed)
+            i_vehicle.color = self._speed_colormap(i_vehicle.maxspeed)
 
         # sort speeds according to initialsorting flag
         assert p_initialsorting in ["best", "random", "worst"]

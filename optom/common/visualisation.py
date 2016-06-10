@@ -32,12 +32,6 @@ import log
 s_log = log.logger(__name__)
 
 
-def colormap(p_values, p_cmap):
-    l_jet = plt.get_cmap(p_cmap)
-    l_cnorm = colors.Normalize(vmin=min(p_values), vmax=max(p_values))
-    return cm.ScalarMappable(norm=l_cnorm, cmap=l_jet)
-
-
 def boxplot(p_filename, p_data, p_title="", p_xlabel="", p_ylabel=""):
     s_log.info("Creating boxplot %s", p_filename)
     rc("text", usetex=True)
