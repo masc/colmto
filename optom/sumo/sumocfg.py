@@ -75,6 +75,7 @@ s_iloop_template = etree.XML("""
 
 
 class SumoConfig(Configuration):
+
     def __init__(self, p_args, p_netconvertbinary, p_duarouterbinary):
         super(SumoConfig, self).__init__(p_args)
 
@@ -112,9 +113,10 @@ class SumoConfig(Configuration):
         )
 
         # generate color map for vehicle max speeds
+        l_global_maxspeed = max(map(lambda i_scenario: i_scenario.get("parameters").get("maxSpeed"), self.scenarioconfig.itervalues()))
         self._speed_colormap = colormaps.get_mapped_cmap(
-            self.scenarioconfig.get("parameters").get("maxSpeed"),
-            "plasma"
+            "plasma",
+            l_global_maxspeed
         )
 
     @property
