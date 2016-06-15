@@ -48,5 +48,5 @@ class Runtime(object):
             stderr=subprocess.STDOUT,
             bufsize=-1
         )
-        self._log.debug("%s : %s", self._sumobinary, l_sumoprocess.replace("\n",""))
+        self._log.debug("%s : %s", self._sumobinary, l_sumoprocess.replace("\n", ""))
 
