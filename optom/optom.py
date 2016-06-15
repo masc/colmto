@@ -24,6 +24,7 @@ from __future__ import print_function
 
 import argparse
 import os
+import sys
 import shutil
 import datetime
 from configuration.configuration import Configuration
@@ -38,12 +39,13 @@ class Optom(object):
         # place default config in ~/.optom if there exists none
         if not os.path.exists(l_configdir):
             os.mkdir(l_configdir)
+        l_cwd = os.path.realpath(os.path.dirname(sys.argv[0]))
         if not os.path.isfile(os.path.join(l_configdir, u"runconfig.yaml")):
-            shutil.copy("optom/resources/runconfig.yaml", os.path.join(l_configdir, u"runconfig.yaml"))
+            shutil.copy(os.path.join(l_cwd, "optom/resources/runconfig.yaml"), os.path.join(l_configdir, u"runconfig.yaml"))
         if not os.path.isfile(os.path.join(l_configdir, u"vtypesconfig.yaml")):
-            shutil.copy("optom/resources/vtypesconfig.yaml", os.path.join(l_configdir, u"vtypesconfig.yaml"))
+            shutil.copy(os.path.join(l_cwd, "optom/resources/vtypesconfig.yaml"), os.path.join(l_configdir, u"vtypesconfig.yaml"))
         if not os.path.isfile(os.path.join(l_configdir, u"scenarioconfig.yaml")):
-            shutil.copy("optom/resources/scenarioconfig.yaml", os.path.join(l_configdir, u"scenarioconfig.yaml"))
+            shutil.copy(os.path.join(l_cwd, "optom/resources/scenarioconfig.yaml"), os.path.join(l_configdir, u"scenarioconfig.yaml"))
 
         l_parser = argparse.ArgumentParser(description="Process parameters for optom")
         l_parser.add_argument("--runconfig", dest="runconfig", type=str, default=os.path.join(l_configdir, u"runconfig.yaml"))
