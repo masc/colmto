@@ -199,27 +199,14 @@ class SumoConfig(Configuration):
         )
         # l_tripinfofile = os.path.join(l_destinationdir, str(p_initialsorting), str(p_run),
         # "{}.tripinfo-output.xml".format(l_scenarioname))
-        l_ilooppre21file = os.path.join(
-            self._runsdir, l_scenarioname, str(p_initialsorting), str(p_run), "{}.inductionLoop.pre21.xml".format(
+        l_iloopfile = os.path.join(
+            self._runsdir, l_scenarioname, str(p_initialsorting), str(p_run), "{}.inductionLoops.xml".format(
                 l_scenarioname
             )
         )
-        l_ilooppost21file = os.path.join(
-            self._runsdir, l_scenarioname, str(p_initialsorting), str(p_run), "{}.inductionLoop.post21.xml".format(
-                l_scenarioname)
-        )
-        l_iloopexitfile = os.path.join(
-            self._runsdir, l_scenarioname, str(p_initialsorting), str(p_run), "{}.inductionLoop.exit.xml".format(
-                l_scenarioname
-            )
-        )
+
         # l_fcdfile = os.path.join(l_destinationdir, str(p_initialsorting), str(p_run),
         # "{}.fcd-output.xml".format(l_scenarioname))
-        l_iloopfiles = {
-            "1_pre21": l_ilooppre21file,
-            "2_post21": l_ilooppost21file,
-            "3_exit": l_iloopexitfile
-        }
         l_runcfgfiles = [l_tripfile, l_additionalfile, l_routefile, l_configfile]
 
         if len(filter(lambda fname: not os.path.isfile(fname), l_runcfgfiles)) > 0:
@@ -230,7 +217,7 @@ class SumoConfig(Configuration):
             self._forcerebuildscenarios = True
 
         self._generate_additional_xml(
-            l_scenarioconfig, l_iloopfiles, l_additionalfile,
+            l_scenarioconfig, l_iloopfile, l_additionalfile,
             self._forcerebuildscenarios
         )
         self._generate_config_xml(
@@ -254,7 +241,7 @@ class SumoConfig(Configuration):
             # "tripinfofile": l_tripinfofile,
             "configfile": l_configfile,
             # "fcdfile": l_fcdfile,
-            "inductionloopfiles": l_iloopfiles
+            "iloopfile": l_iloopfile
         }
 
     def _generate_node_xml(self, p_scenarioconfig, p_nodefile, p_forcerebuildscenarios=False):
@@ -369,7 +356,7 @@ class SumoConfig(Configuration):
         with open(p_edgefile, "w") as f_pedgexml:
             f_pedgexml.write(etree.tostring(l_edges, pretty_print=True))
 
-    def _generate_additional_xml(self, p_scenarioconfig, p_iloopfiles, p_additionalfile, p_forcerebuildscenarios):
+    def _generate_additional_xml(self, p_scenarioconfig, p_iloopfile, p_additionalfile, p_forcerebuildscenarios):
         if os.path.isfile(p_additionalfile) and not p_forcerebuildscenarios:
             return
 
@@ -392,7 +379,7 @@ class SumoConfig(Configuration):
                 "friendlyPos": "true",
                 "splitByType": "true",
                 "freq": "1",
-                "file": p_iloopfiles.get("1_pre21")
+                "file": p_iloopfile
             }
         )
 
@@ -409,7 +396,7 @@ class SumoConfig(Configuration):
                 "friendlyPos": "true",
                 "splitByType": "true",
                 "freq": "1",
-                "file": p_iloopfiles.get("2_post21")
+                "file": p_iloopfile
             }
         )
 
@@ -425,7 +412,7 @@ class SumoConfig(Configuration):
                 "friendlyPos": "true",
                 "splitByType": "true",
                 "freq": "1",
-                "file": p_iloopfiles.get("3_exit")
+                "file": p_iloopfile
             }
         )
 
@@ -618,19 +605,19 @@ class SumoConfig(Configuration):
         )
         self._log.debug("%s: %s", self._duarouterbinary, l_duarouterprocess.replace("\n", ""))
 
-    def aggregate_iloop_files(self, p_iloopfiles):
+    def aggregate_iloop_file(self, p_iloopfile):
         l_iloopdata = {}
         self._log.debug("Reading and aggregating induction loop logs")
-        for i_loopid, i_fname in p_iloopfiles.iteritems():
-            l_root = etree.parse(i_fname)
-            l_vehicles = etree.XSLT(s_iloop_template)(l_root).iter("vehicle")
-            for i_vehicle in l_vehicles:
-                if l_iloopdata.get(i_vehicle.get("type")) is None:
-                    l_iloopdata[i_vehicle.get("type")] = {}
-                l_iloopdata.get(i_vehicle.get("type"))[i_loopid] = {
-                    "time": yaml.load(i_vehicle.get("begin"), Loader=SafeLoader),
-                    "segmentlength": 0
-                }
+
+        l_root = etree.parse(p_iloopfile)
+        l_vehicles = etree.XSLT(s_iloop_template)(l_root).iter("vehicle")
+        for i_vehicle in l_vehicles:
+            if l_iloopdata.get(i_vehicle.get("type")) is None:
+                l_iloopdata[i_vehicle.get("type")] = {}
+            l_iloopdata.get(i_vehicle.get("type"))[i_loopid] = {
+                "time": yaml.load(i_vehicle.get("begin"), Loader=SafeLoader),
+                "segmentlength": 0
+            }
 
         # create deltas in logical ordering, i.e. ---> d1 ---> d2 ---> d3 => delta(d1,d2), delta(d1,d3), delta(d2,d3)
         # i.e. 2-length tuples, in sorted order, no repeated elements. we assume this works as we use a numerical prefix
