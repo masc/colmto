@@ -102,7 +102,7 @@ class SumoConfig(Configuration):
         self._onlyoneotlsegment = p_args.onlyoneotlsegment
 
         # dump configuration
-        self._writer.writeYAML(
+        self._writer.write_yaml(
             {
                 "optomversion": self._optomversion,
                 "runconfig": self.runconfig,
