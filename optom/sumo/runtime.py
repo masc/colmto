@@ -34,7 +34,7 @@ class Runtime(object):
         self._log = log.logger(__name__, p_args.loglevel, p_args.logfile)
 
     def run(self, p_runcfg, p_scenarioname, p_runnumber):
-        self._log.info("Running scenario %s: run %d", p_scenarioname, p_runnumber)
+        self._log.debug("Running scenario %s: run %d", p_scenarioname, p_runnumber)
         l_sumoprocess = subprocess.check_output(
             [
                 self._sumobinary,
@@ -48,5 +48,5 @@ class Runtime(object):
             stderr=subprocess.STDOUT,
             bufsize=-1
         )
-        self._log.info("%s : %s", self._sumobinary, l_sumoprocess.replace("\n",""))
+        self._log.debug("%s : %s", self._sumobinary, l_sumoprocess.replace("\n",""))
 

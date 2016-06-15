@@ -210,7 +210,7 @@ class SumoConfig(Configuration):
         l_runcfgfiles = [l_tripfile, l_additionalfile, l_routefile, l_configfile]
 
         if len(filter(lambda fname: not os.path.isfile(fname), l_runcfgfiles)) > 0:
-            self._log.info(
+            self._log.debug(
                 "Incomplete/non-existing SUMO run configuration for %s, %s, %d -> (re)building",
                 l_scenarioname, p_initialsorting, p_run
             )
