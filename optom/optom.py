@@ -57,7 +57,7 @@ class Optom(object):
         l_parser.add_argument("--runprefix", dest="runprefix", type=str, default=datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"))
         l_parser.add_argument("--logfile", dest="logfile", type=str, default=os.path.join(l_configdir, u"optom.log"))
         l_parser.add_argument("--loglevel", dest="loglevel", type=str, default="INFO")
-        l_parser.add_argument("--quiet", "-q", dest="quiet", action="store_true", default=False)
+        l_parser.add_argument("-q", "--quiet", dest="quiet", action="store_true", default=False, help="suppress log info output to stdout")
 
         l_mutexgrouprunchoice = l_parser.add_mutually_exclusive_group(required=False)
         l_mutexgrouprunchoice.add_argument("--sumo", dest="runsumo", default=False, action="store_true", help="run SUMO simulation")
