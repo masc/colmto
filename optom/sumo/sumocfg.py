@@ -79,7 +79,7 @@ class SumoConfig(Configuration):
     def __init__(self, p_args, p_netconvertbinary, p_duarouterbinary):
         super(SumoConfig, self).__init__(p_args)
 
-        self._log = log.logger(__name__, p_args.loglevel, p_args.logfile)
+        self._log = log.logger(__name__, p_args.loglevel, p_args.quiet, p_args.logfile)
         self._writer = Writer(p_args)
         self._netconvertbinary = p_netconvertbinary
         self._duarouterbinary = p_duarouterbinary

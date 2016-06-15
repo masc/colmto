@@ -39,11 +39,11 @@ class Optom(object):
         if not os.path.exists(l_configdir):
             os.mkdir(l_configdir)
         if not os.path.isfile(os.path.join(l_configdir, u"runconfig.yaml")):
-            shutil.copy("resources/runconfig.yaml",os.path.join(l_configdir, u"runconfig.yaml"))
+            shutil.copy("optom/resources/runconfig.yaml", os.path.join(l_configdir, u"runconfig.yaml"))
         if not os.path.isfile(os.path.join(l_configdir, u"vtypesconfig.yaml")):
-            shutil.copy("resources/vtypesconfig.yaml",os.path.join(l_configdir, u"vtypesconfig.yaml"))
+            shutil.copy("optom/resources/vtypesconfig.yaml", os.path.join(l_configdir, u"vtypesconfig.yaml"))
         if not os.path.isfile(os.path.join(l_configdir, u"scenarioconfig.yaml")):
-            shutil.copy("resources/scenarioconfig.yaml",os.path.join(l_configdir, u"scenarioconfig.yaml"))
+            shutil.copy("optom/resources/scenarioconfig.yaml", os.path.join(l_configdir, u"scenarioconfig.yaml"))
 
         l_parser = argparse.ArgumentParser(description="Process parameters for optom")
         l_parser.add_argument("--runconfig", dest="runconfig", type=str, default=os.path.join(l_configdir, u"runconfig.yaml"))
@@ -57,6 +57,7 @@ class Optom(object):
         l_parser.add_argument("--runprefix", dest="runprefix", type=str, default=datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"))
         l_parser.add_argument("--logfile", dest="logfile", type=str, default=os.path.join(l_configdir, u"optom.log"))
         l_parser.add_argument("--loglevel", dest="loglevel", type=str, default="INFO")
+        l_parser.add_argument("--quiet", "-q", dest="quiet", action="store_true", default=False)
 
         l_mutexgrouprunchoice = l_parser.add_mutually_exclusive_group(required=False)
         l_mutexgrouprunchoice.add_argument("--sumo", dest="runsumo", default=False, action="store_true", help="run SUMO simulation")
@@ -71,7 +72,7 @@ class Optom(object):
         l_sumogroup.add_argument("--only-one-otl-segment", dest="onlyoneotlsegment", default=False, action="store_true", help="Generate SUMO scenarios with only on OTL segment")
         l_args = l_parser.parse_args()
 
-        l_log = log.logger(__name__, l_args.loglevel, l_args.logfile)
+        l_log = log.logger(__name__, l_args.loglevel, l_args.quiet, l_args.logfile)
         l_log.info("---- Starting OPTOM ----")
         l_configuration = Configuration(l_args)
         l_log.debug("Initial loading of configuration done")
