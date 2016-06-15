@@ -58,7 +58,6 @@ class Sumo(object):
         l_initialsortings = self._sumocfg.runconfig.get("initialsortings")
 
         l_iloopresults = {}
-
         for i_initialsorting in l_initialsortings:
             l_iloopresults[i_initialsorting] = {}
             l_scenarioruns.get("runs")[i_initialsorting] = {}
@@ -67,7 +66,14 @@ class Sumo(object):
                 self._runtime.run(l_runcfg, p_scenarioname, i_run)
                 self._log.debug("Converting induction loop XMLs with etree.XSLT")
                 #l_iloopresults.get(i_initialsorting)[i_run] = self._sumocfg.aggregate_iloop_files(l_runcfg.get("inductionloopfiles"))
-                self._log.info("Finished run %d", i_run)
+                if i_run % 10 == 0:
+                    self._log.info(
+                        "Scenario %s, sorting %s: Finished run %d/%d",
+                        p_scenarioname,
+                        i_initialsorting,
+                        i_run+1,
+                        len(l_scenarioruns.get("runs").get(i_initialsorting))
+                    )
 
         self._writer.writeYAML(
             l_iloopresults,
