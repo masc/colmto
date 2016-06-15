@@ -66,7 +66,7 @@ s_iloop_template = etree.XML("""
     <detector>
     <xsl:for-each select="detector/interval/typedInterval">
     <vehicle>
-    <xsl:copy-of select="@type|@begin"/>
+    <xsl:copy-of select="@id|@type|@begin"/>
     </vehicle>
     </xsl:for-each>
     </detector>
@@ -610,22 +610,18 @@ class SumoConfig(Configuration):
         self._log.debug("Reading and aggregating induction loop logs")
 
         l_root = etree.parse(p_iloopfile)
-        l_vehicles = etree.XSLT(s_iloop_template)(l_root).iter("vehicle")
-        for i_vehicle in l_vehicles:
-            if l_iloopdata.get(i_vehicle.get("type")) is None:
-                l_iloopdata[i_vehicle.get("type")] = {}
-            l_iloopdata.get(i_vehicle.get("type"))[i_loopid] = {
-                "time": yaml.load(i_vehicle.get("begin"), Loader=SafeLoader),
-                "segmentlength": 0
-            }
+        l_iloop_detections = etree.XSLT(s_iloop_template)(l_root).iter("vehicle")
+        l_vehicle_data = {}
+        for i_v in l_iloop_detections:
+            if i_v.get("type") in l_vehicle_data:
+                l_vehicle_data.get(i_v.get("type"))[i_v.get("id")] = float(i_v.get("begin"))
+            else:
+                l_vehicle_data[i_v.get("type")] = {
+                    i_v.get("id"): float(i_v.get("begin"))
+                }
 
-        # create deltas in logical ordering, i.e. ---> d1 ---> d2 ---> d3 => delta(d1,d2), delta(d1,d3), delta(d2,d3)
-        # i.e. 2-length tuples, in sorted order, no repeated elements. we assume this works as we use a numerical prefix
-        # 1_, 2_,... for all induction loop ids in sequential order in driving direction
-        l_deltas = {}
-        for i_vehicle, i_iloopdata in l_iloopdata.iteritems():
-            l_deltas[i_vehicle] = {}
-            for i_pair in itertools.combinations(sorted(p_iloopfiles.iterkeys()), 2):
-                l_deltas.get(i_vehicle)["{} to {}".format(i_pair[0][2:], i_pair[1][2:])] \
-                    = i_iloopdata.get(i_pair[1]).get("time") - i_iloopdata.get(i_pair[0]).get("time")
-        return l_deltas
+        for i_vid, i_vdata in l_vehicle_data.iteritems():
+            for i_pair in itertools.combinations(sorted(i_vdata.iteritems(), key=lambda i: i[1]), 2):
+                i_vdata[(i_pair[0][0], i_pair[1][0])] = i_pair[1][1] - i_pair[0][1]
+
+        return l_vehicle_data
