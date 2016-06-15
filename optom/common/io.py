@@ -98,7 +98,7 @@ class Writer(object):
     #  @param p_path Destination path in HDF5 structure, will be created if not existent.
     #  @param p_objectdict Object(s) to be stored in a named dictionary structure ([name] -> str|int|float|list|numpy)
     #  @param **kwargs Optional arguments passed to create_dataset
-    def writeHDF5(self, p_filename, p_path, p_objectdict, **kwargs):
+    def write_hdf5(self, p_filename, p_path, p_objectdict, **kwargs):
         # verify whether arguments are sane
         if type(p_objectdict) is not dict:
             raise TypeError(u"p_objectdict is not dict")
