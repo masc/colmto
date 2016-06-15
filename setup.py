@@ -46,7 +46,8 @@ setup(name="optom",
       cmdclass={'test': PyTest},
       
       # TODO: List of packages that this one depends upon:   
-      install_requires=['gurobipy', 'matplotlib', 'sh', 'lxml', 'h5py', 'PyYAML', 'python-cjson' ],
+      install_requires=['gurobipy', 'matplotlib', 'sh', 'lxml', 'h5py', 'PyYAML', 'python-cjson', 'pathos'],
+      # NOTE: For pathos use pip2 install git+https://github.com/uqfoundation/pathos
       # TODO: List executable scripts, provided by the package (this is just an example)
       entry_points={
         'console_scripts': 
