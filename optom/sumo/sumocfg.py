@@ -155,7 +155,7 @@ class SumoConfig(Configuration):
         )
 
         self._generate_node_xml(l_scenarioconfig, l_nodefile, self._forcerebuildscenarios)
-        self._generate_edge_xml(l_scenarioconfig, l_edgefile, self._forcerebuildscenarios)
+        l_scenarioruns["detectorpositions"] = self._generate_edge_xml(l_scenarioconfig, l_edgefile, self._forcerebuildscenarios)
         self._generate_settings_xml(l_scenarioconfig, l_runcfg, l_settingsfile, self._forcerebuildscenarios)
         self._generate_net_xml(l_nodefile, l_edgefile, l_netfile, self._forcerebuildscenarios)
 
@@ -164,7 +164,7 @@ class SumoConfig(Configuration):
     def generate_run(self, p_scenarioruns, p_initialsorting, p_run):
         l_scenarioname = p_scenarioruns.get("scenarioname")
         l_scenarioconfig = self.scenarioconfig.get(l_scenarioname)
-
+        l_detector_positions = p_scenarioruns.get("detectorpositions")
         l_destinationdir = os.path.join(self._runsdir, p_scenarioruns.get("scenarioname"))
         if not os.path.exists(os.path.join(l_destinationdir)):
             os.mkdir(l_destinationdir)
@@ -217,7 +217,7 @@ class SumoConfig(Configuration):
             self._forcerebuildscenarios = True
 
         self._generate_additional_xml(
-            l_scenarioconfig, l_iloopfile, l_additionalfile,
+            l_scenarioconfig, l_detector_positions, l_iloopfile, l_additionalfile,
             self._forcerebuildscenarios
         )
         self._generate_config_xml(
@@ -324,6 +324,15 @@ class SumoConfig(Configuration):
         )
 
         # add splits and joins
+        l_detector_positions = {
+            "iloop": {
+                "enter_21start": l_segmentlength-5,
+                "21end_exit": l_segmentlength-5,
+                "switches": []
+            },
+            "otl": []
+        }
+
         l_addotllane = True
         for i_segmentpos in xrange(0, int(l_length), int(l_segmentlength)) \
                 if not self._onlyoneotlsegment else xrange(0, int(2 * l_segmentlength - 1), int(l_segmentlength)):
@@ -336,7 +345,8 @@ class SumoConfig(Configuration):
                     "speed": str(l_maxspeed)
                 }
             )
-            self._lastsegmentpos = i_segmentpos  # TODO: fix this hack
+
+            l_detector_positions.get("iloop").get("switches").append(i_segmentpos)
             l_addotllane ^= True
 
         # Exit lane
@@ -348,7 +358,7 @@ class SumoConfig(Configuration):
                 "from": "21end",
                 "to": "exit",
                 "numLanes": "1",
-                "spreadType": "center",
+                "spreadType": "right",
                 "speed": str(l_maxspeed)
             }
         )
@@ -356,7 +366,9 @@ class SumoConfig(Configuration):
         with open(p_edgefile, "w") as f_pedgexml:
             f_pedgexml.write(etree.tostring(l_edges, pretty_print=True))
 
-    def _generate_additional_xml(self, p_scenarioconfig, p_iloopfile, p_additionalfile, p_forcerebuildscenarios):
+        return l_detector_positions
+
+    def _generate_additional_xml(self, p_scenarioconfig, p_detector_positions, p_iloopfile, p_additionalfile, p_forcerebuildscenarios):
         if os.path.isfile(p_additionalfile) and not p_forcerebuildscenarios:
             return
 
@@ -375,7 +387,7 @@ class SumoConfig(Configuration):
             attrib={
                 "id": "1_pre21",
                 "lane": "enter_21start_0",
-                "pos": str(l_segmentlength - 5),
+                "pos": str(p_detector_positions.get("iloop").get("enter_21start")),
                 "friendlyPos": "true",
                 "splitByType": "true",
                 "freq": "1",
@@ -383,16 +395,15 @@ class SumoConfig(Configuration):
             }
         )
 
-        # induction loop at the beginning of last one-lane segment (post21)
+        # induction loop at the beginning of last one-lane segment (21end_exit)
         etree.SubElement(
             l_additional,
             "inductionLoop",
             attrib={
                 "id": "2_post21",
-                "lane": "21segment.{}_0".format(self._lastsegmentpos - int(l_segmentlength))
-                if l_nbswitches % 2 == 1 and not self._onlyoneotlsegment
-                else "21segment.{}_0".format(self._lastsegmentpos),
-                "pos": str(int(l_segmentlength)) if l_nbswitches % 2 == 1 and not self._onlyoneotlsegment else "0",
+                "lane": "21end_exit_0" if l_nbswitches % 2 == 0 and not self._onlyoneotlsegment
+                else "21segment.{}_0".format(p_detector_positions.get("iloop").get("switches")[-1]),
+                "pos": "0",
                 "friendlyPos": "true",
                 "splitByType": "true",
                 "freq": "1",
@@ -407,8 +418,8 @@ class SumoConfig(Configuration):
             attrib={
                 "id": "3_exit",
                 "lane": "21segment.{}_0".format(
-                    self._lastsegmentpos) if l_nbswitches % 2 == 1 or self._onlyoneotlsegment else "21end_exit_0",
-                "pos": str(int(l_segmentlength - 5)),
+                    p_detector_positions.get("iloop").get("switches")[-1]) if l_nbswitches % 2 == 1 or self._onlyoneotlsegment else "21end_exit_0",
+                "pos": str(p_detector_positions.get("iloop").get("21end_exit")),
                 "friendlyPos": "true",
                 "splitByType": "true",
                 "freq": "1",
