@@ -75,18 +75,18 @@ class Writer(object):
     def __init__(self, p_args):
         self._log = log.logger(__name__, p_args.loglevel, p_args.logfile)
 
-    def writeJsonPretty(self, p_object, p_filename):
+    def write_json_pretty(self, p_object, p_filename):
         self._log.debug("Writing %s", p_filename)
         fp = gzip.GzipFile(p_filename, 'w') if p_filename.endswith(".gz") else open(p_filename, mode="w")
         json.dump(p_object, fp, sort_keys=True, indent=4, separators=(', ', ' : '))
         fp.close()
 
-    def writeJson(self, p_object, p_filename):
+    def write_json(self, p_object, p_filename):
         self._log.debug("Writing %s", p_filename)
         with gzip.GzipFile(p_filename, 'w') if p_filename.endswith(".gz") else open(p_filename, mode="w") as fp:
             fp.write(jsondumps(p_object))
 
-    def writeYAML(self, p_object, p_filename, p_default_flow_style=False):
+    def write_yaml(self, p_object, p_filename, p_default_flow_style=False):
         self._log.debug("Writing %s", p_filename)
         fp = gzip.GzipFile(p_filename, 'w') if p_filename.endswith(".gz") else open(p_filename, mode="w")
         yaml.dump(p_object, fp, Dumper=SafeDumper, default_flow_style=p_default_flow_style)
@@ -98,7 +98,7 @@ class Writer(object):
     #  @param p_path Destination path in HDF5 structure, will be created if not existent.
     #  @param p_objectdict Object(s) to be stored in a named dictionary structure ([name] -> str|int|float|list|numpy)
     #  @param **kwargs Optional arguments passed to create_dataset
-    def writeHDF5(self, p_filename, p_path, p_objectdict, **kwargs):
+    def write_hdf5(self, p_filename, p_path, p_objectdict, **kwargs):
         # verify whether arguments are sane
         if type(p_objectdict) is not dict:
             raise TypeError(u"p_objectdict is not dict")

@@ -38,12 +38,12 @@ from runtime import Runtime
 class Sumo(object):
 
     def __init__(self, p_args):
-        self._log = log.logger(__name__, p_args.loglevel, p_args.logfile)
+        self._log = log.logger(__name__, p_args.loglevel, p_args.quiet, p_args.logfile)
 
         self._sumocfg = SumoConfig(p_args, checkBinary("netconvert"), checkBinary("duarouter"))
         self._writer = Writer(p_args)
         self._statistics = Statistics(p_args)
-        self._allscenarioruns = {} # map scenarios -> runid -> files
+        self._allscenarioruns = {}  # map scenarios -> runid -> files
         self._runtime = Runtime(p_args, self._sumocfg,
                                 checkBinary("sumo")
                                 if self._sumocfg.get("headless")
@@ -58,7 +58,6 @@ class Sumo(object):
         l_initialsortings = self._sumocfg.runconfig.get("initialsortings")
 
         l_iloopresults = {}
-
         for i_initialsorting in l_initialsortings:
             l_iloopresults[i_initialsorting] = {}
             l_scenarioruns.get("runs")[i_initialsorting] = {}
@@ -66,10 +65,17 @@ class Sumo(object):
                 l_scenarioruns.get("runs").get(i_initialsorting)[i_run] = l_runcfg = self._sumocfg.generate_run(l_scenarioruns, i_initialsorting, i_run)
                 self._runtime.run(l_runcfg, p_scenarioname, i_run)
                 self._log.debug("Converting induction loop XMLs with etree.XSLT")
-                #l_iloopresults.get(i_initialsorting)[i_run] = self._sumocfg.aggregate_iloop_files(l_runcfg.get("inductionloopfiles"))
-                self._log.info("Finished run %d", i_run)
+                l_iloopresults.get(i_initialsorting)[i_run] = self._sumocfg.aggregate_iloop_file(l_runcfg.get("iloopfile"))
+                if i_run % 10 == 0:
+                    self._log.info(
+                        "Scenario %s, sorting %s: Finished run %d/%d",
+                        p_scenarioname,
+                        i_initialsorting,
+                        i_run+1,
+                        len(l_scenarioruns.get("runs").get(i_initialsorting))
+                    )
 
-        self._writer.writeYAML(
+        self._writer.write_yaml(
             l_iloopresults,
             os.path.join(self._sumocfg.resultsdir, "iloops-{}.yaml.gz".format(p_scenarioname))
         )
@@ -78,9 +84,9 @@ class Sumo(object):
         # l_stats = self._statistics.compute_sumo_results(p_scenarioname, l_scenarioruns, l_iloopresults, p_deltas=l_deltas)
         #
         # # dump scenario run cfg to yaml.gz file
-        # self._writer.writeYAML(l_scenarioruns, os.path.join(self._sumocfg.runsdir, "runs-{}.yaml.gz".format(p_scenarioname)))
+        # self._writer.write_yaml(l_scenarioruns, os.path.join(self._sumocfg.runsdir, "runs-{}.yaml.gz".format(p_scenarioname)))
         # # dump statistic results to yaml.gz/json.gz file
-        # self._writer.writeYAML(l_stats, os.path.join(self._sumocfg.resultsdir, "results-{}.yaml.gz".format(p_scenarioname)))
+        # self._writer.write_yaml(l_stats, os.path.join(self._sumocfg.resultsdir, "results-{}.yaml.gz".format(p_scenarioname)))
         #
         # l_vtypedistribution = self._sumocfg.runconfig.get("vtypedistribution")
         # l_vtypedistribution = ", ".join(["{}: ${}$".format(vtype, l_vtypedistribution.get(vtype).get("fraction")) for vtype in l_vtypedistribution])

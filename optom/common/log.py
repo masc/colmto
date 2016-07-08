@@ -23,6 +23,7 @@
 import logging
 import logging.handlers
 import os
+import sys
 
 s_loglevel = {
     "CRITICAL": logging.CRITICAL,
@@ -34,22 +35,30 @@ s_loglevel = {
 }
 
 
-def logger(p_name, p_loglevel=logging.NOTSET, p_logfile=os.path.expanduser(u"~/.optom/optom.log")):
+def logger(p_name, p_loglevel=logging.NOTSET, p_quiet=False, p_logfile=os.path.expanduser(u"~/.optom/optom.log")):
     if not os.path.exists(os.path.dirname(p_logfile)):
         os.makedirs(os.path.dirname(p_logfile))
 
     l_log = logging.getLogger(p_name)
     l_level = p_loglevel if type(p_loglevel) is int else s_loglevel.get(p_loglevel.upper())
     l_log.setLevel(l_level if l_level is not None else logging.NOTSET)
+
     # create a file handler
-    l_handler = logging.handlers.RotatingFileHandler(p_logfile, maxBytes=100*1024*1024, backupCount=16)
-    l_handler.setLevel(l_level if l_level is not None else logging.NOTSET)
+    l_fhandler = logging.handlers.RotatingFileHandler(p_logfile, maxBytes=100*1024*1024, backupCount=16)
+    l_fhandler.setLevel(l_level if l_level is not None else logging.NOTSET)
 
     # create a logging format
     l_formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-    l_handler.setFormatter(l_formatter)
+    l_fhandler.setFormatter(l_formatter)
 
     # add the handlers to the logger
-    l_log.addHandler(l_handler)
+    l_log.addHandler(l_fhandler)
+
+    # create a stdout handler for info if not set to quiet
+    if not p_quiet:
+        l_shandler = logging.StreamHandler(sys.stdout)
+        l_shandler.setLevel(logging.INFO)
+        l_shandler.setFormatter(l_formatter)
+        l_log.addHandler(l_shandler)
 
     return l_log
