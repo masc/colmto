@@ -46,3 +46,17 @@ BW-B33-Gengenbach-Biberach:
     maxSpeed: 40.0 # original was 27.77777777777778
     switches: 4
     type: TLE
+CSE-Test:
+  description:
+    from: CSE-Start
+    road: CSE-Test
+    state: None
+    to: CSE-End
+  parameters:
+    aadt: 18000
+    length: 100.0
+    maxSpeed: 40.0 # original was 27.77777777777778
+    switches: 0
+    type: TLE
+
+

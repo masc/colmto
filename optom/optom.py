@@ -63,9 +63,9 @@ class Optom(object):
 
         l_mutexgrouprunchoice = l_parser.add_mutually_exclusive_group(required=False)
         l_mutexgrouprunchoice.add_argument("--sumo", dest="runsumo", default=False, action="store_true", help="run SUMO simulation")
-        l_mutexgrouprunchoice.add_argument("--naive", dest="runnaive", default=False, action="store_true", help="run naive calculation")
-        l_mutexgrouprunchoice.add_argument("--mip", dest="runmip", default=False, action="store_true", help="run MIP optimization")
-        l_mutexgrouprunchoice.add_argument("--nf", dest="runnf", default=False, action="store_true", help="run network flow optimization")
+        l_mutexgrouprunchoice.add_argument("--cse", dest="runcse", default=False, action="store_true", help="run naive cse optimisation")
+        l_mutexgrouprunchoice.add_argument("--mip", dest="runmip", default=False, action="store_true", help="run MIP optimisation")
+        l_mutexgrouprunchoice.add_argument("--nf", dest="runnf", default=False, action="store_true", help="run network flow optimisation")
         l_sumogroup = l_parser.add_argument_group("SUMO")
         l_mutexsumogroup = l_sumogroup.add_mutually_exclusive_group(required=False)
         l_mutexsumogroup.add_argument("--headless", dest="headless", default=None, action="store_true", help="run without SUMO GUI")
@@ -79,11 +79,15 @@ class Optom(object):
         l_configuration = Configuration(l_args)
         l_log.debug("Initial loading of configuration done")
 
-        if l_configuration.runconfig.get("sumo").get("enabled"):
-            l_log.info("---- Starting SUMO ----")
+        if l_configuration.runconfig.get("sumo").get("enabled") or l_args.runsumo:
+            l_log.info("---- Starting SUMO Baseline Simulation ----")
             from sumo.sumo import Sumo
-            l_sumo = Sumo(l_args)
-            l_sumo.runScenarios()
+            Sumo(l_args).run_scenarios()
+
+        elif l_configuration.runconfig.get("cse").get("enabled") or l_args.runcse:
+            l_log.info("---- Starting Coordination Service Entity Optimisation ----")
+            from cse.runtime import Runtime
+            Runtime(l_configuration).run_scenario()
 
 if __name__ == "__main__":
     optom = Optom()

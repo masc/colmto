@@ -116,7 +116,7 @@ class Sumo(object):
         #                       "relative time loss in percent ($\\frac{\\mathrm{Traveltime}}{\\mathrm{Traveltime}-\\mathrm{Timeloss}}*100$)"
         #                       )
 
-    def runScenarios(self):
+    def run_scenarios(self):
         for i_scenarioname in self._sumocfg.runconfig.get("scenarios"):
             self._runScenario(i_scenarioname)
 
