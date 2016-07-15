@@ -1,30 +1,27 @@
 # -*- coding: utf-8 -*-
-# @package sumocfg
+# @package optom
 # @cond LICENSE
-# ######################################################################################
-# # LGPL License                                                                       #
-# #                                                                                    #
-# # This file is part of the Optimisation of Overtaking Manoeuvres (OPTOM) project.                     #
-# # Copyright (c) 2016, Malte Aschermann (malte.aschermann@tu-clausthal.de)            #
-# # This program is free software: you can redistribute it and/or modify               #
-# # it under the terms of the GNU Lesser General Public License as                     #
-# # published by the Free Software Foundation, either version 3 of the                 #
-# # License, or (at your option) any later version.                                    #
-# #                                                                                    #
-# # This program is distributed in the hope that it will be useful,                    #
-# # but WITHOUT ANY WARRANTY; without even the implied warranty of                     #
-# # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                      #
-# # GNU Lesser General Public License for more details.                                #
-# #                                                                                    #
-# # You should have received a copy of the GNU Lesser General Public License           #
-# # along with this program. If not, see http://www.gnu.org/licenses/                  #
-# ######################################################################################
+# #############################################################################
+# # LGPL License                                                              #
+# #                                                                           #
+# # This file is part of the Optimisation of Overtaking Manoeuvres project.   #
+# # Copyright (c) 2016, Malte Aschermann (malte.aschermann@tu-clausthal.de)   #
+# # This program is free software: you can redistribute it and/or modify      #
+# # it under the terms of the GNU Lesser General Public License as            #
+# # published by the Free Software Foundation, either version 3 of the        #
+# # License, or (at your option) any later version.                           #
+# #                                                                           #
+# # This program is distributed in the hope that it will be useful,           #
+# # but WITHOUT ANY WARRANTY; without even the implied warranty of            #
+# # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             #
+# # GNU Lesser General Public License for more details.                       #
+# #                                                                           #
+# # You should have received a copy of the GNU Lesser General Public License  #
+# # along with this program. If not, see http://www.gnu.org/licenses/         #
+# #############################################################################
 # @endcond
 from __future__ import division
 from __future__ import print_function
-
-from optom.common import colormaps
-from optom.common import log
 
 try:
     from lxml import etree
@@ -46,8 +43,6 @@ except ImportError:
                     import elementtree.ElementTree as etree
                 except ImportError:
                     print("Failed to import ElementTree from any known place")
-import yaml
-
 try:
     from yaml import CSafeLoader as SafeLoader, CSafeDumper as SafeDumper
 except ImportError:
@@ -56,9 +51,12 @@ import itertools
 import os
 import random
 import subprocess
-from optom.configuration.configuration import Configuration
-from optom.environment.vehicle import Vehicle
-from optom.common.io import Writer
+
+import optom.configuration.configuration
+import optom.common.io
+import optom.common.colormaps
+import optom.common.log
+import optom.environment.vehicle
 
 s_iloop_template = etree.XML("""
     <xsl:stylesheet version= "1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
@@ -74,13 +72,13 @@ s_iloop_template = etree.XML("""
     </xsl:stylesheet>""")
 
 
-class SumoConfig(Configuration):
+class SumoConfig(optom.configuration.configuration.Configuration):
 
     def __init__(self, p_args, p_netconvertbinary, p_duarouterbinary):
         super(SumoConfig, self).__init__(p_args)
 
-        self._log = log.logger(__name__, p_args.loglevel, p_args.quiet, p_args.logfile)
-        self._writer = Writer(p_args)
+        self._log = optom.common.log.logger(__name__, p_args.loglevel, p_args.quiet, p_args.logfile)
+        self._writer = optom.common.io.Writer(p_args)
         self._netconvertbinary = p_netconvertbinary
         self._duarouterbinary = p_duarouterbinary
         self._forcerebuildscenarios = p_args.forcerebuildscenarios
@@ -113,8 +111,13 @@ class SumoConfig(Configuration):
         )
 
         # generate color map for vehicle max speeds
-        l_global_maxspeed = max(map(lambda i_scenario: i_scenario.get("parameters").get("maxSpeed"), self.scenarioconfig.itervalues()))
-        self._speed_colormap = colormaps.get_mapped_cmap(
+        l_global_maxspeed = max(
+            map(
+                lambda i_scenario: i_scenario.get("parameters").get("maxSpeed"),
+                self.scenarioconfig.itervalues()
+            )
+        )
+        self._speed_colormap = optom.common.colormaps.get_mapped_cmap(
             "plasma",
             l_global_maxspeed
         )
@@ -155,7 +158,8 @@ class SumoConfig(Configuration):
         )
 
         self._generate_node_xml(l_scenarioconfig, l_nodefile, self._forcerebuildscenarios)
-        l_scenarioruns["detectorpositions"] = self._generate_edge_xml(l_scenarioconfig, l_edgefile, self._forcerebuildscenarios)
+        l_scenarioruns["detectorpositions"] = self._generate_edge_xml(l_scenarioconfig, l_edgefile,
+                                                                      self._forcerebuildscenarios)
         self._generate_settings_xml(l_scenarioconfig, l_runcfg, l_settingsfile, self._forcerebuildscenarios)
         self._generate_net_xml(l_nodefile, l_edgefile, l_netfile, self._forcerebuildscenarios)
 
@@ -368,7 +372,8 @@ class SumoConfig(Configuration):
 
         return l_detector_positions
 
-    def _generate_additional_xml(self, p_scenarioconfig, p_detector_positions, p_iloopfile, p_additionalfile, p_forcerebuildscenarios):
+    def _generate_additional_xml(self, p_scenarioconfig, p_detector_positions, p_iloopfile, p_additionalfile,
+                                 p_forcerebuildscenarios):
         if os.path.isfile(p_additionalfile) and not p_forcerebuildscenarios:
             return
 
@@ -418,7 +423,8 @@ class SumoConfig(Configuration):
             attrib={
                 "id": "3_exit",
                 "lane": "21segment.{}_0".format(
-                    p_detector_positions.get("iloop").get("switches")[-1]) if l_nbswitches % 2 == 1 or self._onlyoneotlsegment else "21end_exit_0",
+                    p_detector_positions.get("iloop").get("switches")[-1]
+                ) if l_nbswitches % 2 == 1 or self._onlyoneotlsegment else "21end_exit_0",
                 "pos": str(p_detector_positions.get("iloop").get("21end_exit")),
                 "friendlyPos": "true",
                 "splitByType": "true",
@@ -485,7 +491,9 @@ class SumoConfig(Configuration):
             if not p_runcfg.get("vehiclespersecond").get("enabled") else p_runcfg.get("vehiclespersecond").get("value")
 
         l_vehicles = map(
-            lambda vtype: Vehicle(vtype=self.vtypesconfig.get(vtype), speed_sigma=p_vtypedistribution.get(vtype).get("speedDev")),
+            lambda vtype: optom.environment.vehicle.Vehicle(vtype=self.vtypesconfig.get(vtype),
+                                                            speed_sigma=p_vtypedistribution.get(vtype).get("speedDev")
+                                                            ),
             [random.choice(l_vtypedistribution) for i in xrange(p_nbvehicles)]
         )
 
@@ -510,7 +518,8 @@ class SumoConfig(Configuration):
 
         return l_vehicles
 
-    def _generate_trip_xml(self, p_scenarioconfig, p_runcfg, p_initialsorting, p_tripfile, p_forcerebuildscenarios=False):
+    def _generate_trip_xml(self, p_scenarioconfig, p_runcfg, p_initialsorting, p_tripfile,
+                           p_forcerebuildscenarios=False):
         if os.path.isfile(p_tripfile) and not p_forcerebuildscenarios:
             return
 
@@ -552,16 +561,16 @@ class SumoConfig(Configuration):
             l_vattr["color"] = "{},{},{},{}".format(*i_vehicle.color)
             # override parameters speedDev, desiredSpeed, and length if defined in run config
             l_runcfgspeeddev = self.runconfig.get("vtypedistribution").get(l_vattr.get("vClass")).get("speedDev")
-            if l_runcfgspeeddev != None:
+            if l_runcfgspeeddev is not None:
                 l_vattr["speedDev"] = str(l_runcfgspeeddev)
 
             l_runcfgdesiredspeed = self.runconfig.get("vtypedistribution").get(l_vattr.get("vClass")).get(
                 "desiredSpeed")
-            l_vattr["maxSpeed"] = str(l_runcfgdesiredspeed) if l_runcfgdesiredspeed != None else str(
+            l_vattr["maxSpeed"] = str(l_runcfgdesiredspeed) if l_runcfgdesiredspeed is not None else str(
                 i_vehicle.speedmax)
 
             l_runcfglength = self.runconfig.get("vtypedistribution").get(l_vattr.get("vClass")).get("length")
-            if l_runcfglength != None:
+            if l_runcfglength is not None:
                 l_vattr["length"] = str(l_runcfglength)
 
             # fix tractor vClass to trailer

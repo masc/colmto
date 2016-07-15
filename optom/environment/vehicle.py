@@ -1,23 +1,24 @@
-# @package vehicle
+# -*- coding: utf-8 -*-
+# @package optom
 # @cond LICENSE
-# ######################################################################################
-# # LGPL License                                                                       #
-# #                                                                                    #
-# # This file is part of the Optimisation of Overtaking Manoeuvres (OPTOM) project.                     #
-# # Copyright (c) 2016, Malte Aschermann (malte.aschermann@tu-clausthal.de)            #
-# # This program is free software: you can redistribute it and/or modify               #
-# # it under the terms of the GNU Lesser General Public License as                     #
-# # published by the Free Software Foundation, either version 3 of the                 #
-# # License, or (at your option) any later version.                                    #
-# #                                                                                    #
-# # This program is distributed in the hope that it will be useful,                    #
-# # but WITHOUT ANY WARRANTY; without even the implied warranty of                     #
-# # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                      #
-# # GNU Lesser General Public License for more details.                                #
-# #                                                                                    #
-# # You should have received a copy of the GNU Lesser General Public License           #
-# # along with this program. If not, see http://www.gnu.org/licenses/                  #
-# ######################################################################################
+# #############################################################################
+# # LGPL License                                                              #
+# #                                                                           #
+# # This file is part of the Optimisation of Overtaking Manoeuvres project.   #
+# # Copyright (c) 2016, Malte Aschermann (malte.aschermann@tu-clausthal.de)   #
+# # This program is free software: you can redistribute it and/or modify      #
+# # it under the terms of the GNU Lesser General Public License as            #
+# # published by the Free Software Foundation, either version 3 of the        #
+# # License, or (at your option) any later version.                           #
+# #                                                                           #
+# # This program is distributed in the hope that it will be useful,           #
+# # but WITHOUT ANY WARRANTY; without even the implied warranty of            #
+# # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             #
+# # GNU Lesser General Public License for more details.                       #
+# #                                                                           #
+# # You should have received a copy of the GNU Lesser General Public License  #
+# # along with this program. If not, see http://www.gnu.org/licenses/         #
+# #############################################################################
 # @endcond
 import random
 import environment
@@ -41,7 +42,6 @@ class Vehicle(object):
         self._trajectory = {}
         self._cycle = 0
         self._cycle_limit = 10
-
 
     @property
     def vtype(self):
@@ -93,7 +93,7 @@ class Vehicle(object):
     def _update_position(self, p_position):
         if self._grid[p_position[0]][p_position[1]].vehicle is None and \
                         self._grid[p_position[0]][p_position[1]].state == environment.CELL_TYPE.FREE:
-            if self._position != (None,None):
+            if self._position != (None, None):
                 self._grid[p_position[0]][p_position[1]].vehicle = None
                 self._grid[p_position[0]][p_position[1]].state = environment.CELL_TYPE.FREE
             self._grid[p_position[0]][p_position[1]].vehicle = self

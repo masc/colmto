@@ -1,24 +1,24 @@
 # -*- coding: utf-8 -*-
-# @package runtime
+# @package optom
 # @cond LICENSE
-# ######################################################################################
-# # LGPL License                                                                       #
-# #                                                                                    #
-# # This file is part of the Optimisation of Overtaking Manoeuvres (OPTOM) project.                     #
-# # Copyright (c) 2016, Malte Aschermann (malte.aschermann@tu-clausthal.de)            #
-# # This program is free software: you can redistribute it and/or modify               #
-# # it under the terms of the GNU Lesser General Public License as                     #
-# # published by the Free Software Foundation, either version 3 of the                 #
-# # License, or (at your option) any later version.                                    #
-# #                                                                                    #
-# # This program is distributed in the hope that it will be useful,                    #
-# # but WITHOUT ANY WARRANTY; without even the implied warranty of                     #
-# # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                      #
-# # GNU Lesser General Public License for more details.                                #
-# #                                                                                    #
-# # You should have received a copy of the GNU Lesser General Public License           #
-# # along with this program. If not, see http://www.gnu.org/licenses/                  #
-# ######################################################################################
+# #############################################################################
+# # LGPL License                                                              #
+# #                                                                           #
+# # This file is part of the Optimisation of Overtaking Manoeuvres project.   #
+# # Copyright (c) 2016, Malte Aschermann (malte.aschermann@tu-clausthal.de)   #
+# # This program is free software: you can redistribute it and/or modify      #
+# # it under the terms of the GNU Lesser General Public License as            #
+# # published by the Free Software Foundation, either version 3 of the        #
+# # License, or (at your option) any later version.                           #
+# #                                                                           #
+# # This program is distributed in the hope that it will be useful,           #
+# # but WITHOUT ANY WARRANTY; without even the implied warranty of            #
+# # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             #
+# # GNU Lesser General Public License for more details.                       #
+# #                                                                           #
+# # You should have received a copy of the GNU Lesser General Public License  #
+# # along with this program. If not, see http://www.gnu.org/licenses/         #
+# #############################################################################
 # @endcond
 from __future__ import print_function
 from __future__ import division
@@ -39,8 +39,8 @@ class Runtime(object):
             [
                 self._sumobinary,
                 "-c", p_runcfg.get("configfile"),
-                #"--tripinfo-output", p_runcfg.get("tripinfofile"),
-                #"--fcd-output", p_runcfg.get("fcdfile"),
+                # "--tripinfo-output", p_runcfg.get("tripinfofile"),
+                # "--fcd-output", p_runcfg.get("fcdfile"),
                 "--gui-settings-file", p_runcfg.get("settingsfile"),
                 "--time-to-teleport", "-1",
                 "--no-step-log"
@@ -49,4 +49,3 @@ class Runtime(object):
             bufsize=-1
         )
         self._log.debug("%s : %s", self._sumobinary, l_sumoprocess.replace("\n", ""))
-

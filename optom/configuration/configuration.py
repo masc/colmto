@@ -1,24 +1,24 @@
 # -*- coding: utf-8 -*-
-# @package configuration
+# @package optom
 # @cond LICENSE
-# ######################################################################################
-# # LGPL License                                                                       #
-# #                                                                                    #
-# # This file is part of the Optimisation of Overtaking Manoeuvres (OPTOM) project.                     #
-# # Copyright (c) 2016, Malte Aschermann (malte.aschermann@tu-clausthal.de)            #
-# # This program is free software: you can redistribute it and/or modify               #
-# # it under the terms of the GNU Lesser General Public License as                     #
-# # published by the Free Software Foundation, either version 3 of the                 #
-# # License, or (at your option) any later version.                                    #
-# #                                                                                    #
-# # This program is distributed in the hope that it will be useful,                    #
-# # but WITHOUT ANY WARRANTY; without even the implied warranty of                     #
-# # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                      #
-# # GNU Lesser General Public License for more details.                                #
-# #                                                                                    #
-# # You should have received a copy of the GNU Lesser General Public License           #
-# # along with this program. If not, see http://www.gnu.org/licenses/                  #
-# ######################################################################################
+# #############################################################################
+# # LGPL License                                                              #
+# #                                                                           #
+# # This file is part of the Optimisation of Overtaking Manoeuvres project.   #
+# # Copyright (c) 2016, Malte Aschermann (malte.aschermann@tu-clausthal.de)   #
+# # This program is free software: you can redistribute it and/or modify      #
+# # it under the terms of the GNU Lesser General Public License as            #
+# # published by the Free Software Foundation, either version 3 of the        #
+# # License, or (at your option) any later version.                           #
+# #                                                                           #
+# # This program is distributed in the hope that it will be useful,           #
+# # but WITHOUT ANY WARRANTY; without even the implied warranty of            #
+# # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             #
+# # GNU Lesser General Public License for more details.                       #
+# #                                                                           #
+# # You should have received a copy of the GNU Lesser General Public License  #
+# # along with this program. If not, see http://www.gnu.org/licenses/         #
+# #############################################################################
 # @endcond
 from __future__ import print_function
 from __future__ import division
@@ -68,13 +68,13 @@ class Configuration(object):
         # store currently running version
         # inferred from current HEAD if located inside a git project. otherwise set version to "UNKNOWN"
         try:
-            self._optomversion = str(sh.git.bake("rev-parse")("HEAD")).replace("\n","")
+            self._optomversion = str(sh.git.bake("rev-parse")("HEAD")).replace("\n", "")
         except sh.ErrorReturnCode:
             self._optomversion = "UNKNOWN"
 
-        self._overrideCfgFlags(p_args)
+        self._override_cfg_flags(p_args)
 
-    def _overrideCfgFlags(self, p_args):
+    def _override_cfg_flags(self, p_args):
         if p_args.headless:
             self._runconfig.get("sumo")["headless"] = True
         if p_args.gui:
@@ -82,7 +82,10 @@ class Configuration(object):
         if p_args.runs is not None:
             self._runconfig["runs"] = p_args.runs
         if p_args.scenarios is not None:
-            self._runconfig["scenarios"] = p_args.scenarios if p_args.scenarios != ["all"] else self._scenarioconfig.keys()
+            if p_args.scenarios != ["all"]:
+                self._runconfig["scenarios"] = p_args.scenarios
+            else:
+                self._scenarioconfig.keys()
 
     @property
     def runconfig(self):
@@ -103,5 +106,3 @@ class Configuration(object):
     @property
     def runprefix(self):
         return self._runprefix
-
-
