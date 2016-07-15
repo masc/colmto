@@ -485,27 +485,27 @@ class SumoConfig(Configuration):
             if not p_runcfg.get("vehiclespersecond").get("enabled") else p_runcfg.get("vehiclespersecond").get("value")
 
         l_vehicles = map(
-            lambda vtype: Vehicle(self.vtypesconfig.get(vtype), p_vtypedistribution.get(vtype).get("speedDev")),
+            lambda vtype: Vehicle(vtype=self.vtypesconfig.get(vtype), speed_sigma=p_vtypedistribution.get(vtype).get("speedDev")),
             [random.choice(l_vtypedistribution) for i in xrange(p_nbvehicles)]
         )
 
         # update colors
         for i_vehicle in l_vehicles:
-            i_vehicle.color = self._speed_colormap(i_vehicle.maxspeed)
+            i_vehicle.color = self._speed_colormap(i_vehicle.speedmax)
 
         # sort speeds according to initialsorting flag
         assert p_initialsorting in ["best", "random", "worst"]
 
         if p_initialsorting == "best":
-            l_vehicles.sort(key=lambda v: v.maxspeed, reverse=True)
+            l_vehicles.sort(key=lambda v: v.speedmax, reverse=True)
         elif p_initialsorting == "worst":
-            l_vehicles.sort(key=lambda v: v.maxspeed)
+            l_vehicles.sort(key=lambda v: v.speedmax)
 
         # assign start time and id to each vehicle
         for i, i_vehicle in enumerate(l_vehicles):
             i_vehicle.provision("vehicle{}".format(i),
                                 self._next_timestep(l_vehps,
-                                                    l_vehicles[i - 1].starttime if i > 0 else 0,
+                                                    l_vehicles[i - 1].timestart if i > 0 else 0,
                                                     p_runcfg.get("starttimedistribution")))
 
         return l_vehicles
@@ -558,7 +558,7 @@ class SumoConfig(Configuration):
             l_runcfgdesiredspeed = self.runconfig.get("vtypedistribution").get(l_vattr.get("vClass")).get(
                 "desiredSpeed")
             l_vattr["maxSpeed"] = str(l_runcfgdesiredspeed) if l_runcfgdesiredspeed != None else str(
-                i_vehicle.getMaxSpeed())
+                i_vehicle.speedmax)
 
             l_runcfglength = self.runconfig.get("vtypedistribution").get(l_vattr.get("vClass")).get("length")
             if l_runcfglength != None:
@@ -575,7 +575,7 @@ class SumoConfig(Configuration):
         for i_vehicle in l_vehicles:
             etree.SubElement(l_trips, "trip", attrib={
                 "id": i_vehicle.id,
-                "depart": str(i_vehicle.starttime),
+                "depart": str(i_vehicle.timestart),
                 "from": "enter_21start",
                 "to": "21end_exit",
                 "type": i_vehicle.id,

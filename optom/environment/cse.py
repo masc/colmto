@@ -28,7 +28,14 @@ from optom.common import log
 class CSE(object):
 
     def __init__(self):
-        pass
+        self._cycle = 0
+
+    @property
+    def cycle(self):
+        return self._cycle
 
     def run(self):
-        pass
+        # TODO
+        print("Running CSE in cycle", self.cycle)
+        self._cycle += 1
+        return self
