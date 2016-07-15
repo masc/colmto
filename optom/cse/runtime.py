@@ -59,6 +59,6 @@ class Runtime(object):
     def vehicles(self):
         return self._vehicles
 
-
     def move(self, p_vehice_id, p_from, p_to):
         pass
+
