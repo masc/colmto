@@ -48,7 +48,7 @@ class Runtime(object):
                 lambda v: v is not None,
                 map(lambda v: v.run(),
                     l_runlist
-                )
+                    )
             )
 
     @property
