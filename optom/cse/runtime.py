@@ -37,7 +37,6 @@ class CSERuntime(object):
         self._environment.add_vehicle(p_vehicle_id=0, p_position=(2, 0))
         self._environment.add_vehicle(p_vehicle_id=1, p_position=(1, 0))
         self._environment.add_vehicle(p_vehicle_id=2, p_position=(0, 0))
-        print(self._environment.vehicles)
 
     def run_scenario(self):
         print(map(lambda c: c[1].state, self._environment.grid))

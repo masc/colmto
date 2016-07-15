@@ -21,6 +21,7 @@
 # #############################################################################
 # @endcond
 from __future__ import print_function
+import networkx
 from optom.common.enum import Enum
 import vehicle
 
@@ -28,10 +29,14 @@ CELL_TYPE = Enum(["FREE", "BLOCKED", "VEHICLE"])
 
 
 class Cell(object):
-
-    def __init__(self, p_state=CELL_TYPE.FREE, p_vehicle=None):
+    def __init__(self, p_position, p_state=CELL_TYPE.FREE, p_vehicle=None):
+        self._position = p_position
         self._state = p_state
         self._vehicle = p_vehicle
+
+    @property
+    def position(self):
+        return self._position
 
     @property
     def state(self):
@@ -57,14 +62,27 @@ class Cell(object):
 
 
 class Environment(object):
-
     def __init__(self):
-        self._grid = [[Cell(), Cell(CELL_TYPE.BLOCKED)] for _ in xrange(10)] \
-                     + [[Cell(), Cell()] for _ in xrange(10)] \
-                     + [[Cell(), Cell(CELL_TYPE.BLOCKED)] for _ in xrange(10)]
-
+        self._grid = [[Cell((x, 0)), Cell((x, 1), CELL_TYPE.BLOCKED)] for x in xrange(10)] \
+                   + [[Cell((x, 0)), Cell((x, 1))] for x in xrange(10)] \
+                   + [[Cell((x, 0)), Cell((x, 1), CELL_TYPE.BLOCKED)] for x in xrange(10)]
+        self._graph = networkx.DiGraph()
+        for i_cells in self.grid:
+            l_xcell = i_cells[0]
+            l_ycell = i_cells[1]
+            self.graph.add_node(l_xcell, position=l_xcell.position)
+            self.graph.add_node(l_ycell, position=l_ycell.position)
         self._vehicles = {}
-        self._edges = {}
+        print(self.graph)
+        self.connect_cells()
+
+    @property
+    def graph(self):
+        return self._graph
+
+    @property
+    def grid(self):
+        return self._grid
 
     @property
     def vehicles(self):
@@ -74,16 +92,20 @@ class Environment(object):
     def vehicle(self, p_vid):
         return self._vehicles.get(p_vid)
 
-    @property
-    def edges(self):
-        return self._edges
+    def isfree(self, p_position):
+        return self._grid[p_position[0]][p_position[1]].state == CELL_TYPE.FREE
 
-    @property
-    def grid(self):
-        return self._grid
+    def isvehicle(self, p_position):
+        return self._grid[p_position[0]][p_position[1]].state == CELL_TYPE.VEHICLE
+
+    def isblocked(self, p_position):
+        return self._grid[p_position[0]][p_position[1]].state == CELL_TYPE.BLOCKED
+
+    def connect_cells(self):
+        pass
 
     def add_vehicle(self, p_vehicle_id, p_position):
-        if self.free(p_position) and p_vehicle_id not in self.vehicles:
+        if self.isfree(p_position) and p_vehicle_id not in self.vehicles:
             self.vehicles[p_vehicle_id] = vehicle.Vehicle(id=p_vehicle_id,
                                                           environment=self,
                                                           position=p_position
@@ -96,11 +118,3 @@ class Environment(object):
             self._vehicles.items()
         )
 
-    def free(self, p_position):
-        return self._grid[p_position[0]][p_position[1]].state == CELL_TYPE.FREE
-
-    def vehicle(self, p_position):
-        return self._grid[p_position[0]][p_position[1]].state == CELL_TYPE.VEHICLE
-
-    def blocked(self, p_position):
-        return self._grid[p_position[0]][p_position[1]].state == CELL_TYPE.BLOCKED
