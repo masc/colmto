@@ -39,17 +39,17 @@ class CSERuntime(object):
         self._environment.add_vehicle(p_vehicle_id=2, p_position=(0, 0))
 
     def run_scenario(self):
-        print(map(lambda c: c[1].state, self._environment.grid))
-        print(map(lambda c: c[0].state, self._environment.grid))
+        # print(map(lambda c: c[1].state, self._environment.grid))
+        # print(map(lambda c: c[0].state, self._environment.grid))
         l_runlist = [self._cse] + self.environment.vehicles.values()
 
-        while len(l_runlist) > 1:
-            l_runlist = filter(
-                lambda v: v is not None,
-                map(lambda v: v.run(),
-                    l_runlist
-                    )
-            )
+        # while len(l_runlist) > 1:
+        #     l_runlist = filter(
+        #         lambda v: v is not None,
+        #         map(lambda v: v.run(),
+        #             l_runlist
+        #             )
+        #     )
 
     @property
     def environment(self):

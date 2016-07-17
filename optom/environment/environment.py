@@ -22,8 +22,10 @@
 # @endcond
 from __future__ import print_function
 import networkx
+import matplotlib.pyplot as plt
 from optom.common.enum import Enum
 import vehicle
+import random
 
 CELL_TYPE = Enum(["FREE", "BLOCKED", "VEHICLE"])
 
@@ -64,8 +66,8 @@ class Cell(object):
 class Environment(object):
     def __init__(self):
         self._grid = [[Cell((x, 0)), Cell((x, 1), CELL_TYPE.BLOCKED)] for x in xrange(10)] \
-                   + [[Cell((x, 0)), Cell((x, 1))] for x in xrange(10)] \
-                   + [[Cell((x, 0)), Cell((x, 1), CELL_TYPE.BLOCKED)] for x in xrange(10)]
+                   + [[Cell((x, 0)), Cell((x, 1))] for x in xrange(10, 20)] \
+                   + [[Cell((x, 0)), Cell((x, 1), CELL_TYPE.BLOCKED)] for x in xrange(20, 30)]
         self._graph = networkx.DiGraph()
         for i_cells in self.grid:
             l_xcell = i_cells[0]
@@ -102,7 +104,41 @@ class Environment(object):
         return self._grid[p_position[0]][p_position[1]].state == CELL_TYPE.BLOCKED
 
     def connect_cells(self):
-        pass
+        print("connecting cells")
+        l_pos = {}
+        for x in xrange(len(self.grid)):
+            for y in xrange(len(self.grid[x])):
+
+                if x < len(self.grid)-1 and self.grid[x][y].state != CELL_TYPE.BLOCKED \
+                        and self.grid[x+1][y].state != CELL_TYPE.BLOCKED:
+
+                    # Join 1-neighbouring cells in driving direction
+                    self.graph.add_weighted_edges_from(
+                        [
+                            (self.grid[x][y], self.grid[x+1][y], random.randint(1, 5))
+                        ]
+                    )
+
+                if y < len(self.grid[x])-1 \
+                        and self.grid[x][y].state != CELL_TYPE.BLOCKED \
+                        and self.grid[x][y+1].state != CELL_TYPE.BLOCKED:
+
+                    # Join 1-neighbouring cells in lane-change direction (perpendicular to driving direction)
+                    self.graph.add_weighted_edges_from(
+                        [
+                            (self.grid[x][y], self.grid[x][y+1], 1),
+                            (self.grid[x][y+1], self.grid[x][y], 1)
+                        ]
+                    )
+
+                l_pos[self.grid[x][y]] = self.grid[x][y].position
+
+        networkx.draw_networkx_edges(self.graph,l_pos,width=1.0,alpha=0.5, edge_color="b")
+        for node in networkx.astar_path(self.graph, self.grid[0][0], self.grid[29][0]):
+            print(node.position)
+
+        networkx.draw(self.graph, pos=l_pos, node_size=16, alpha=0.4, edge_color="r")
+        plt.show()
 
     def add_vehicle(self, p_vehicle_id, p_position):
         if self.isfree(p_position) and p_vehicle_id not in self.vehicles:
