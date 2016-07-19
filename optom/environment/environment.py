@@ -21,62 +21,72 @@
 # #############################################################################
 # @endcond
 from __future__ import print_function
-import networkx
-import matplotlib.pyplot as plt
-from optom.common.enum import Enum
-import vehicle
+
 import random
+from collections import defaultdict
+import itertools
 
-CELL_TYPE = Enum(["FREE", "BLOCKED", "VEHICLE"])
+import matplotlib.pyplot as plt
+import networkx
+
+import vehicle
 
 
-class Cell(object):
-    def __init__(self, p_position, p_state=CELL_TYPE.FREE, p_vehicle=None):
-        self._position = p_position
-        self._state = p_state
-        self._vehicle = p_vehicle
+class Grid(object):
+    def __init__(self):
+        """
+        Construct a time/space-grid for 3-tuples (x,y,t) -> Occupied,
+        with x: {0, ... n} position on lane, y: {0,1} main lane/otl lane, t: {0, ..., T} time step as a defaultdict.
+        :return: Returns None if position not occupied, i.e. free, GridElement object otherwise
+        """
+        self._grid = defaultdict(itertools.repeat(None).next)
 
-    @property
-    def position(self):
-        return self._position
+    def cell(self, pos):
+        if len(pos) != 3:
+            raise AssertionError
+        return self._grid[pos]
 
-    @property
-    def state(self):
-        return self._state
+    def put(self, obj, pos):
+        if type(obj) is not GridElement:
+            raise TypeError
+        if len(pos) != 3:
+            raise AssertionError
+        self._grid[pos] = obj
 
-    @state.setter
-    def state(self, p_state):
-        self._state = CELL_TYPE.VEHICLE
-        return self
+    def pop(self, pos):
+        if len(pos) != 3:
+            raise AssertionError
+        return self._grid.pop(pos)
 
-    @property
-    def vehicle(self):
-        return self._vehicle
+    def move(self, pos_from, pos_to):
+        if self.cell(pos_from) is not GridElement:
+            raise AssertionError
+        if self.cell(pos_to) is not None:
+            raise AssertionError
+        self.put(self.pop(pos_from), pos_to)
 
-    @vehicle.setter
-    def vehicle(self, p_vehicle):
-        if self._state == CELL_TYPE.FREE:
-            self._state = CELL_TYPE.VEHICLE
-            self._vehicle = p_vehicle
-        else:
-            print("Crash into ", __name__, self._state)
-        return self
+
+class GridElement(object):
+    def __init__(self, **p_kwargs):
+        if p_kwargs:
+            raise TypeError('Unexpected **p_kwargs: %r' % p_kwargs)
+
+
+class Wall(GridElement):
+    def __init__(self, **p_kwargs):
+        super(GridElement, self).__init__(p_kwargs)
+        if p_kwargs:
+            raise TypeError('Unexpected **p_kwargs: %r' % p_kwargs)
 
 
 class Environment(object):
-    def __init__(self):
-        self._grid = [[Cell((x, 0)), Cell((x, 1), CELL_TYPE.BLOCKED)] for x in xrange(10)] \
-                   + [[Cell((x, 0)), Cell((x, 1))] for x in xrange(10, 20)] \
-                   + [[Cell((x, 0)), Cell((x, 1), CELL_TYPE.BLOCKED)] for x in xrange(20, 30)]
-        self._graph = networkx.DiGraph()
-        for i_cells in self.grid:
-            l_xcell = i_cells[0]
-            l_ycell = i_cells[1]
-            self.graph.add_node(l_xcell, position=l_xcell.position)
-            self.graph.add_node(l_ycell, position=l_ycell.position)
+    def __init__(self, **p_kwargs):
+        self._length = p_kwargs.pop("length", (30,))
+        self._otl_split_pos = p_kwargs.pop("otl_split_pos", (10,))
+        self._otl_join_pos = p_kwargs.pop("otl_join_pos", (20,))
+        self._grid = Grid()
+        self._graph = self._create_graph()
         self._vehicles = {}
-        print(self.graph)
-        self.connect_cells()
 
     @property
     def graph(self):
@@ -95,50 +105,121 @@ class Environment(object):
         return self._vehicles.get(p_vid)
 
     def isfree(self, p_position):
-        return self._grid[p_position[0]][p_position[1]].state == CELL_TYPE.FREE
+        return self._grid.cell(p_position) is None
 
     def isvehicle(self, p_position):
-        return self._grid[p_position[0]][p_position[1]].state == CELL_TYPE.VEHICLE
+        return type(self._grid.cell(p_position)) is vehicle.Vehicle
 
     def isblocked(self, p_position):
-        return self._grid[p_position[0]][p_position[1]].state == CELL_TYPE.BLOCKED
+        return type(self._grid.cell(p_position)) is Wall
 
-    def connect_cells(self):
-        print("connecting cells")
-        l_pos = {}
-        for x in xrange(len(self.grid)):
-            for y in xrange(len(self.grid[x])):
+    def _create_graph(self):
+        print("Creating MultiDiGraph")
+        l_graph = networkx.MultiDiGraph()
+        l_start_times = [1, 2, 3]
+        l_length = 10
+        for i_start_time in l_start_times:
+            i_pos_t = i_start_time
+            i_pos_x = 1
+            l_velocity = 1
+            while i_pos_x < l_length:
+                i_pos_x_new = i_pos_x + l_velocity
+                l_graph.add_weighted_edges_from(
+                    [
+                        ((i_pos_x, 0, i_pos_t), (i_pos_x_new, 0, i_pos_t+1), 1),
+                    ],
+                    weight="1"
+                )
+                l_graph.add_weighted_edges_from(
+                    [
+                        ((i_pos_x, 0, i_pos_t), (i_pos_x_new, 0, i_pos_t+1), 1),
+                    ],
+                    weight="2"
+                )
+                l_graph.add_weighted_edges_from(
+                    [
+                        ((i_pos_x, 0, i_pos_t), (i_pos_x_new, 0, i_pos_t+1), 1),
+                    ],
+                    weight="3"
+                )
+                i_pos_x = i_pos_x_new
+                i_pos_t += 1
 
-                if x < len(self.grid)-1 and self.grid[x][y].state != CELL_TYPE.BLOCKED \
-                        and self.grid[x+1][y].state != CELL_TYPE.BLOCKED:
+            i_pos_t = i_start_time
+            i_pos_x = 1
+            l_velocity = 2
+            while i_pos_x < l_length:
+                i_pos_x_new = i_pos_x + l_velocity
+                l_graph.add_weighted_edges_from(
+                    [
+                        ((i_pos_x, 0, i_pos_t), (i_pos_x_new, 0, i_pos_t+1), 1),
+                    ],
+                    weight="2"
+                )
+                l_graph.add_weighted_edges_from(
+                    [
+                        ((i_pos_x, 0, i_pos_t), (i_pos_x_new, 0, i_pos_t+1), 1),
+                    ],
+                    weight="3"
+                )
+                i_pos_x = i_pos_x_new
+                i_pos_t += 1
 
-                    # Join 1-neighbouring cells in driving direction
-                    self.graph.add_weighted_edges_from(
-                        [
-                            (self.grid[x][y], self.grid[x+1][y], random.randint(1, 5))
-                        ]
-                    )
+            i_pos_t = i_start_time
+            i_pos_x = 1
+            l_velocity = 3
+            while i_pos_x < l_length:
+                i_pos_x_new = i_pos_x + l_velocity
+                l_graph.add_weighted_edges_from(
+                    [
+                        ((i_pos_x, 0, i_pos_t), (i_pos_x_new, 0, i_pos_t+1), 1),
+                    ],
+                    weight="3"
+                )
+                print((i_pos_x, 0, i_pos_t), (i_pos_x_new, 0, i_pos_t+1))
+                i_pos_x = i_pos_x_new
+                i_pos_t += 1
 
-                if y < len(self.grid[x])-1 \
-                        and self.grid[x][y].state != CELL_TYPE.BLOCKED \
-                        and self.grid[x][y+1].state != CELL_TYPE.BLOCKED:
+        print(sorted(l_graph.edges()))
+        print(networkx.shortest_path(l_graph, (1, 0, 1), (10, 0, 4), weight="3"))
+        return l_graph
 
-                    # Join 1-neighbouring cells in lane-change direction (perpendicular to driving direction)
-                    self.graph.add_weighted_edges_from(
-                        [
-                            (self.grid[x][y], self.grid[x][y+1], 1),
-                            (self.grid[x][y+1], self.grid[x][y], 1)
-                        ]
-                    )
-
-                l_pos[self.grid[x][y]] = self.grid[x][y].position
-
-        networkx.draw_networkx_edges(self.graph,l_pos,width=1.0,alpha=0.5, edge_color="b")
-        for node in networkx.astar_path(self.graph, self.grid[0][0], self.grid[29][0]):
-            print(node.position)
-
-        networkx.draw(self.graph, pos=l_pos, node_size=16, alpha=0.4, edge_color="r")
-        plt.show()
+    # def _connect_cells(self):
+    #     print("connecting cells")
+    #     l_pos = {}
+    #     for x in xrange(len(self.grid)):
+    #         for y in xrange(len(self.grid[x])):
+    #
+    #             if x < len(self.grid)-1 and self.grid[x][y].state != CELL_TYPE.BLOCKED \
+    #                     and self.grid[x+1][y].state != CELL_TYPE.BLOCKED:
+    #
+    #                 # Join 1-neighbouring cells in driving direction
+    #                 self.graph.add_weighted_edges_from(
+    #                     [
+    #                         (self.grid[x][y], self.grid[x+1][y], random.randint(1, 5))
+    #                     ]
+    #                 )
+    #
+    #             if y < len(self.grid[x])-1 \
+    #                     and self.grid[x][y].state != CELL_TYPE.BLOCKED \
+    #                     and self.grid[x][y+1].state != CELL_TYPE.BLOCKED:
+    #
+    #                 # Join 1-neighbouring cells in lane-change direction (perpendicular to driving direction)
+    #                 self.graph.add_weighted_edges_from(
+    #                     [
+    #                         (self.grid[x][y], self.grid[x][y+1], 1),
+    #                         (self.grid[x][y+1], self.grid[x][y], 1)
+    #                     ]
+    #                 )
+    #
+    #             l_pos[self.grid[x][y]] = self.grid[x][y].position
+    #
+    #     networkx.draw_networkx_edges(self.graph,l_pos,width=1.0,alpha=0.5, edge_color="b")
+    #     for node in networkx.astar_path(self.graph, self.grid[0][0], self.grid[29][0]):
+    #         print(node.position)
+    #
+    #     networkx.draw(self.graph, pos=l_pos, node_size=16, alpha=0.4, edge_color="r")
+    #     plt.show()
 
     def add_vehicle(self, p_vehicle_id, p_position):
         if self.isfree(p_position) and p_vehicle_id not in self.vehicles:

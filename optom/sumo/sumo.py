@@ -25,6 +25,7 @@ from __future__ import print_function
 
 import os
 from sumolib import checkBinary
+from collections import defaultdict
 from optom.common.io import Writer
 from optom.common.io import Reader
 from optom.common.statistics import Statistics
@@ -49,7 +50,7 @@ class Sumo(object):
                                 if self._sumocfg.get("headless")
                                 else checkBinary("sumo-gui"))
 
-    def _runScenario(self, p_scenarioname):
+    def _run_scenario(self, p_scenarioname):
         if self._sumocfg.scenarioconfig.get(p_scenarioname) is None:
             self._log.error("/!\ scenario %s not found in configuration", p_scenarioname)
             return
@@ -57,9 +58,8 @@ class Sumo(object):
         self._allscenarioruns[p_scenarioname] = l_scenarioruns = self._sumocfg.generate_scenario(p_scenarioname)
         l_initialsortings = self._sumocfg.runconfig.get("initialsortings")
 
-        l_iloopresults = {}
+        l_iloopresults = defaultdict(dict)
         for i_initialsorting in l_initialsortings:
-            l_iloopresults[i_initialsorting] = {}
             l_scenarioruns.get("runs")[i_initialsorting] = {}
             for i_run in xrange(self._sumocfg.runconfig.get("runs")):
                 l_scenarioruns.get("runs").get(i_initialsorting)[i_run] = l_runcfg = self._sumocfg.generate_run(
@@ -67,7 +67,7 @@ class Sumo(object):
                 )
                 self._runtime.run(l_runcfg, p_scenarioname, i_run)
                 self._log.debug("Converting induction loop XMLs with etree.XSLT")
-                l_iloopresults.get(i_initialsorting)[i_run] = self._sumocfg.aggregate_iloop_file(
+                l_iloopresults[i_initialsorting][i_run] = self._sumocfg.aggregate_iloop_file(
                                                                                             l_runcfg.get("iloopfile"))
                 if i_run % 10 == 0:
                     self._log.info(
@@ -148,7 +148,7 @@ class Sumo(object):
 
     def run_scenarios(self):
         for i_scenarioname in self._sumocfg.runconfig.get("scenarios"):
-            self._runScenario(i_scenarioname)
+            self._run_scenario(i_scenarioname)
 
     def _clean_runs(self):
         pass
