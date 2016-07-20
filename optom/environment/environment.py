@@ -22,6 +22,7 @@
 # @endcond
 from __future__ import print_function
 
+import time
 import random
 from collections import defaultdict
 import itertools
@@ -113,117 +114,58 @@ class Environment(object):
     def isblocked(self, p_position):
         return type(self._grid.cell(p_position)) is Wall
 
-    def _create_graph(self):
+    def _create_graph(self, p_start_times=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10], p_velocities=[1, 2, 3, 4, 5, 6], p_length=12):
         print("Creating DiGraph")
         l_graph = networkx.DiGraph()
-        l_graph.add_node("start")
         l_graph.add_node("end")
-        l_start_times = [1, 2, 3]
-        l_length = 10000
 
-        for i_start_time in l_start_times:
+        for i_start_time in p_start_times:
 
-            i_pos_t = i_start_time
-            i_pos_x = 1
+            for i_velocity in p_velocities:
 
-            # connect start node with node representing pos_x=0 for given start_time
-            l_graph.add_edge(
-                u="start",
-                v=(i_pos_x, 0, i_pos_t),
-                attr_dict={
-                    "1": 1,
-                    "2": 1,
-                    "3": 1
-                }
-            )
-            l_velocity = 1
+                i_pos_t = i_start_time
+                i_pos_x = 0
+                l_attr_dict = dict(
+                    (
+                        (str(s), 10**9 if i_velocity > s else 1) for s in p_velocities
+                    )
+                )
 
-            while i_pos_x < l_length:
-                i_pos_x_new = i_pos_x + l_velocity
+                while i_pos_x < p_length:
+                    i_pos_x_new = i_pos_x + i_velocity
+                    l_graph.add_edge(
+                        u=(i_pos_x, 0, i_pos_t),
+                        v=(i_pos_x_new, 0, i_pos_t+1),
+                        attr_dict=l_attr_dict
+                    )
+                    i_pos_x = i_pos_x_new
+                    i_pos_t += 1
+
+                # connect to end node
                 l_graph.add_edge(
                     u=(i_pos_x, 0, i_pos_t),
-                    v=(i_pos_x_new, 0, i_pos_t+1),
-                    attr_dict={
-                        "1": 1,
-                        "2": 1,
-                        "3": 1
-                    }
+                    v="end",
+                    attr_dict=l_attr_dict
                 )
-                i_pos_x = i_pos_x_new
-                i_pos_t += 1
-
-            # connect to end node
-            l_graph.add_edge(
-                u=(i_pos_x, 0, i_pos_t),
-                v="end",
-                attr_dict={
-                    "1": 1,
-                    "2": 1,
-                    "3": 1
-                }
-            )
-
-            i_pos_t = i_start_time
-            i_pos_x = 1
-            l_velocity = 2
-
-            while i_pos_x < l_length:
-                i_pos_x_new = i_pos_x + l_velocity
-                l_graph.add_edge(
-                    u=(i_pos_x, 0, i_pos_t),
-                    v=(i_pos_x_new, 0, i_pos_t+1),
-                    attr_dict={
-                        "1": 10**9,
-                        "2": 1,
-                        "3": 1
-                    }
-                )
-                i_pos_x = i_pos_x_new
-                i_pos_t += 1
-
-            # connect to end node
-            l_graph.add_edge(
-                u=(i_pos_x, 0, i_pos_t),
-                v="end",
-                attr_dict={
-                    "1": 10**9,
-                    "2": 1,
-                    "3": 1
-                }
-            )
-
-            i_pos_t = i_start_time
-            i_pos_x = 1
-            l_velocity = 3
-
-            while i_pos_x < l_length:
-                i_pos_x_new = i_pos_x + l_velocity
-                l_graph.add_edge(
-                    u=(i_pos_x, 0, i_pos_t),
-                    v=(i_pos_x_new, 0, i_pos_t+1),
-                    attr_dict={
-                        "1": 10**9,
-                        "2": 10**9,
-                        "3": 1
-                    }
-                )
-                i_pos_x = i_pos_x_new
-                i_pos_t += 1
-
-            l_graph.add_edge(
-                u=(i_pos_x, 0, i_pos_t),
-                v="end",
-                attr_dict={
-                    "1": 10**9,
-                    "2": 10**9,
-                    "3": 1
-                }
-            )
 
         print("edges:", l_graph.number_of_edges(), "nodes:", l_graph.number_of_nodes())
-        for i_speed in xrange(1,4):
-            l_path = networkx.shortest_path(l_graph, (1, 0, 1), "end", weight=str(i_speed))
-            print("shortest path for speed", i_speed, ":", "len", len(l_path))
+
+        l_paths = []
+        for i_speed in p_velocities:
+            t_now = time.time()
+            l_path = networkx.astar_path(l_graph, (1, 0, i_speed), "end", weight=str(i_speed))
+            l_paths.append(l_path)
+            t_duration = time.time() - t_now
+            print("shortest path for speed", i_speed, ":", "len", len(l_path), "duration", t_duration)
+
+        # l_pos = dict(
+        #     ((node, node[0::2] if node != "end" else (30, 10)) for node in l_graph.nodes())
+        # )
+        # networkx.draw_networkx_nodes(l_graph, pos=l_pos, node_size=1, alpha=0.5)
+        # networkx.draw_networkx_edges(l_graph, pos=l_pos, width=.5, alpha=0.5, edge_color="b")
+        # networkx.draw_networkx_edges(l_graph, l_pos, edgelist=l_paths[0], width=1, alpha=0.5, edge_color="r")
+        # plt.show()
+
         return l_graph
 
     # def _connect_cells(self):
