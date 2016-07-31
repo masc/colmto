@@ -29,9 +29,11 @@ import itertools
 
 import matplotlib.pyplot as plt
 import networkx
+from networkx.readwrite import graphml
+from progressbar import Percentage, Bar, Counter, ProgressBar, AdaptiveETA
+import os
 
 import vehicle
-from progressbar import Percentage, Bar, ETA, ProgressBar, AdaptiveETA
 
 
 class Grid(object):
@@ -88,6 +90,7 @@ class Environment(object):
         self._otl_join_pos = p_kwargs.pop("otl_join_pos", (20,))
         self._grid = Grid()
         self._graph = self._create_graph()
+
         self._vehicles = {}
 
     @property
@@ -150,24 +153,28 @@ class Environment(object):
                         attr_dict=l_attr_dict
                     )
 
-    def _create_graph(self, p_start_times=xrange(10), p_velocities=(1, 2, 3, 4, 5), p_length=256):
+    def _create_graph(self, p_start_times=xrange(20), p_velocities=(1, 2, 3, 4, 5), p_length=1500):
 
-        l_widgets = [
+        l_pbar_widgets = [
             "Generating Search Space Graph: ",
-            Percentage(),
+            Counter(),
+            "/",
+            str(p_length-1),
+            " (", Percentage(), ")",
             Bar(),
             " ",
             AdaptiveETA()
         ]
-        l_pbar = ProgressBar(
-            widgets=l_widgets,
+        l_length_pbar = ProgressBar(
+            widgets=l_pbar_widgets,
             maxval=p_length-1,
         )
-        l_pbar.start()
+        l_length_pbar.start()
 
         l_graph = networkx.DiGraph()
         l_graph.add_node("end")
 
+        t_start = time.time()
         for i_x in range(p_length):
 
             for i_start_time in p_start_times:
@@ -175,14 +182,25 @@ class Environment(object):
                 l_graph.add_node(l_node)
 
             # add links to nodes
-            for i_node in l_graph.nodes():
+            for i_nb, i_node in enumerate(l_graph.nodes()):
                 if type(i_node) is tuple:
                     self._add_links(l_graph, i_node, p_velocities, p_length)
 
-            l_pbar.update(i_x)
+            l_length_pbar.update(i_x)
 
         print()
-
+        print("graph gen took", time.time()-t_start)
+        print("writing graphml")
+        t_start = time.time()
+        graphml.write_graphml(
+            l_graph,
+            "{}{}-v{}-st{}-len{}.graphml.bz2".format(
+                os.path.expanduser(u"~/.optom"), "/cse", len(p_velocities), len(p_start_times), p_length
+            )
+        )
+        print("graph writing took", time.time()-t_start)
+        print("drawing graph")
+        t_start = time.time()
         l_node_positions = dict(
             (
                 (node, node[0::2] if node != "end" else (p_length+1, 10)) for node in l_graph.nodes()
@@ -191,7 +209,7 @@ class Environment(object):
 
         networkx.draw_networkx_nodes(l_graph,
                                      pos=l_node_positions,
-                                     node_size=8,
+                                     node_size=2,
                                      alpha=1.0
                                      )
 
@@ -202,12 +220,13 @@ class Environment(object):
                                      alpha=0.5,
                                      edge_color="gray"
                                      )
-
+        print("drawing took", time.time()-t_start)
         l_path_colors = ["red", "green", "blue", "purple", "orange"] * int(math.ceil(len(p_start_times)/5+1))
 
         l_paths = []
 
         for i_start_time in p_start_times:
+            t_start = time.time()
             l_path = networkx.astar_path(
                 l_graph,
                 (0, 0, i_start_time),
@@ -215,6 +234,12 @@ class Environment(object):
                 weight=str(
                     p_velocities[i_start_time % len(p_velocities)]
                 )
+            )
+            print(
+                (0, 0, i_start_time),
+                "->",
+                "end",
+                time.time()-t_start
             )
             l_edges = map(lambda v1, v2: (v1, v2), l_path[:-1], l_path[1:])
             l_paths.append(l_edges)
