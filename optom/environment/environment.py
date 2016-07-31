@@ -76,7 +76,7 @@ class GridElement(object):
 
 class Wall(GridElement):
     def __init__(self, **p_kwargs):
-        super(GridElement, self).__init__(p_kwargs)
+        super(GridElement, self).__init__()
         if p_kwargs:
             raise TypeError('Unexpected **p_kwargs: %r' % p_kwargs)
 
@@ -87,7 +87,7 @@ class Environment(object):
         self._otl_split_pos = p_kwargs.pop("otl_split_pos", (10,))
         self._otl_join_pos = p_kwargs.pop("otl_join_pos", (20,))
         self._grid = Grid()
-        self._graph = self._create_graph_iterative()
+        self._graph = self._create_graph()
         self._vehicles = {}
 
     @property
@@ -114,114 +114,44 @@ class Environment(object):
     def isblocked(self, p_position):
         return type(self._grid.cell(p_position)) is Wall
 
-    def _add_links(self, p_graph, p_position, p_velocities, p_length):
-        for i_velocity in p_velocities:
-            l_attr_dict = dict(
-                (
-                    (str(s), 10**9 if i_velocity > s else 1) for s in p_velocities
-                )
-            )
-            l_x, l_y, l_t = p_position
-            if l_x+i_velocity <= p_length:
-                l_destination = (l_x+i_velocity, 0, l_t+1)
-                p_graph.add_edge(
-                    u=p_position,
-                    v=l_destination,
-                    attr_dict=l_attr_dict
-                )
-                self._add_links(p_graph, l_destination, p_velocities, p_length)
-            else:
-                p_graph.add_edge(
-                    u=p_position,
-                    v="end",
-                    attr_dict=l_attr_dict
-                )
-
-    def _add_links_iterative(self, p_graph, p_node, p_velocities, p_length):
+    @staticmethod
+    def _add_links(p_graph, p_node, p_velocities, p_length):
 
         for i_velocity in p_velocities:
-            l_attr_dict = dict(
-                (
-                    (str(s), 10**9 if i_velocity > s else 1) for s in p_velocities
-                )
-            )
             l_x, l_y, l_t = p_node
-            if l_x+i_velocity <= p_length:
-                l_destination = (l_x+i_velocity, 0, l_t+1)
-                p_graph.add_edge(
-                    u=p_node,
-                    v=l_destination,
-                    attr_dict=l_attr_dict
+            l_destination = (l_x+i_velocity, 0, l_t+1)
+            if not p_graph.has_edge(p_node,l_destination):
+                l_attr_dict = dict(
+                    (
+                        (str(s), 10**12 if i_velocity > s else 1) for s in p_velocities
+                    )
                 )
-            else:
-                # print("End edge", p_node, l_attr_dict)
-                p_graph.add_edge(
-                    u=p_node,
-                    v="end",
-                    attr_dict=l_attr_dict
-                )
+                if l_x+i_velocity <= p_length:
+                    p_graph.add_edge(
+                        u=p_node,
+                        v=l_destination,
+                        attr_dict=l_attr_dict
+                    )
+                elif l_x == p_length:
+                    l_attr_dict = dict(
+                        (
+                            (str(s), 1) for s in p_velocities
+                        )
+                    )
+                    p_graph.add_edge(
+                        u=p_node,
+                        v="end",
+                        attr_dict=l_attr_dict
+                    )
+                else:
+                    p_graph.add_edge(
+                        u=p_node,
+                        v="end",
+                        attr_dict=l_attr_dict
+                    )
 
-    def _create_graph_recursive(self,
-                                p_start_times=(0, 1, 2, 3, 4, 5, 6, 7, 8, 9),
-                                p_velocities=(1, 2, 3, 4, 5),
-                                p_length=16):
-        print("Creating DiGraph")
-        l_graph = networkx.DiGraph()
-        l_graph.add_node("end")
-        t_start = time.time()
+    def _create_graph(self, p_start_times=xrange(10), p_velocities=(1, 2, 3, 4, 5), p_length=256):
 
-        for i_start_time in p_start_times:
-            l_position = (0, 0, i_start_time)
-            self._add_links(l_graph, l_position, p_velocities, p_length)
-
-        t_duration = time.time() - t_start
-        print("duration", t_duration)
-
-        print("edges:", l_graph.number_of_edges(), "nodes:", l_graph.number_of_nodes())
-
-        l_node_positions = dict(
-            ((node, node[0::2] if node != "end" else (p_length+1, 10)) for node in l_graph.nodes())
-        )
-
-        networkx.draw_networkx_nodes(l_graph,
-                                     pos=l_node_positions,
-                                     node_size=64,
-                                     alpha=1.0
-                                     )
-
-        networkx.draw_networkx_edges(l_graph,
-                                     l_node_positions,
-                                     edgelist=l_graph.edges(),
-                                     width=1,
-                                     alpha=0.5,
-                                     edge_color="gray"
-                                     )
-
-        l_path_colors = ["red", "green", "blue", "purple", "orange", "red", "green", "blue", "purple", "orange"]
-
-        l_paths = []
-
-        for i_start_time in p_start_times:
-            t_now = time.time()
-            l_path = networkx.astar_path(l_graph, (0, 0, i_start_time), "end", weight=str(i_start_time+1))
-            l_edges = map(lambda v1, v2: (v1, v2), l_path[:-1], l_path[1:])
-            l_paths.append(
-                l_edges
-            )
-            t_duration = time.time() - t_now
-            print("shortest path for start time", i_start_time, "with speed", i_start_time+1, ":", "paths", list(l_path), "duration", t_duration)
-            networkx.draw_networkx_edges(
-                l_graph, l_node_positions, edgelist=l_edges, width=2, alpha=1.0, edge_color=l_path_colors[i_start_time]
-            )
-
-        plt.show()
-
-        return l_graph
-
-    def _create_graph_iterative(self,
-                                p_start_times=xrange(20),
-                                p_velocities=(1, 2, 3, 4, 5),
-                                p_length=128):
         l_widgets = [
             "Generating Search Space Graph: ",
             Percentage(),
@@ -237,7 +167,6 @@ class Environment(object):
 
         l_graph = networkx.DiGraph()
         l_graph.add_node("end")
-        t_start = time.time()
 
         for i_x in range(p_length):
 
@@ -248,19 +177,16 @@ class Environment(object):
             # add links to nodes
             for i_node in l_graph.nodes():
                 if type(i_node) is tuple:
-                    self._add_links_iterative(l_graph, i_node, p_velocities, p_length)
+                    self._add_links(l_graph, i_node, p_velocities, p_length)
 
             l_pbar.update(i_x)
 
         print()
 
-        t_duration = time.time() - t_start
-        print("duration", t_duration)
-
-        print("edges:", l_graph.number_of_edges(), "nodes:", l_graph.number_of_nodes())
-
         l_node_positions = dict(
-            ((node, node[0::2] if node != "end" else (p_length+1, 10)) for node in l_graph.nodes())
+            (
+                (node, node[0::2] if node != "end" else (p_length+1, 10)) for node in l_graph.nodes()
+            )
         )
 
         networkx.draw_networkx_nodes(l_graph,
@@ -277,19 +203,21 @@ class Environment(object):
                                      edge_color="gray"
                                      )
 
-        l_path_colors = ["red", "green", "blue", "purple", "orange"] * int(math.ceil(len(p_start_times)/5))
+        l_path_colors = ["red", "green", "blue", "purple", "orange"] * int(math.ceil(len(p_start_times)/5+1))
 
         l_paths = []
 
         for i_start_time in p_start_times:
-            t_now = time.time()
-            l_path = networkx.astar_path(l_graph, (0, 0, i_start_time), "end", weight=str(i_start_time+1))
-            l_edges = map(lambda v1, v2: (v1, v2), l_path[:-1], l_path[1:])
-            l_paths.append(
-                l_edges
+            l_path = networkx.astar_path(
+                l_graph,
+                (0, 0, i_start_time),
+                "end",
+                weight=str(
+                    p_velocities[i_start_time % len(p_velocities)]
+                )
             )
-            t_duration = time.time() - t_now
-            # print("shortest path for start time", i_start_time, "with speed", i_start_time+1, ":", "paths", list(l_path), "duration", t_duration)
+            l_edges = map(lambda v1, v2: (v1, v2), l_path[:-1], l_path[1:])
+            l_paths.append(l_edges)
             networkx.draw_networkx_edges(
                 l_graph, l_node_positions, edgelist=l_edges, width=2, alpha=1.0, edge_color=l_path_colors[i_start_time]
             )
