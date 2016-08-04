@@ -88,6 +88,10 @@ class Configuration(object):
                 self._scenarioconfig.keys()
 
     @property
+    def args(self):
+        return self._args
+
+    @property
     def runconfig(self):
         return self._runconfig
 

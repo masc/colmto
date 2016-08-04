@@ -31,7 +31,7 @@ class CSERuntime(object):
 
     def __init__(self, p_configuration):
         self._configuration = p_configuration
-        self._environment = Environment()
+        self._environment = Environment(p_configuration)
         self._cse = CSE()
 
         # self._environment.add_vehicle(p_vehicle_id=0, p_position=(2, 0))
