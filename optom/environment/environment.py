@@ -22,24 +22,26 @@
 # @endcond
 from __future__ import print_function
 
-import time
-import math
-from collections import defaultdict
 import itertools
+import math
+import os
+import time
+from collections import defaultdict
 
 import matplotlib.pyplot as plt
 import networkx
-from networkx.readwrite import graphml, nx_yaml, json_graph
-import optom.common.io
-
+from networkx.readwrite import json_graph
 from progressbar import Percentage, Bar, Counter, ProgressBar, AdaptiveETA, Timer
-import os
 
+import optom.common.io
+import optom.common.log
 import vehicle
 
 
 class Grid(object):
-    def __init__(self, p_dimension=(64,2), p_blocked_ranges=(((i,0) for i in xrange(0,16)), ((i,0) for i in xrange(48,64)))):
+    def __init__(self,
+                 p_dimension=(64, 2),
+                 p_blocked_ranges=(((i, 0) for i in xrange(0, 16)), ((i, 0) for i in xrange(48, 64)))):
         """
         Construct a time/space-grid for 3-tuples (x,y,t) -> Occupied,
         with x: {0, ... n} position on lane, y: {0,1} main lane/otl lane, t: {0, ..., T} time step as a defaultdict.
@@ -49,7 +51,6 @@ class Grid(object):
         for i_blocked_range in p_blocked_ranges:
             for i_block in i_blocked_range:
                 self._grid[i_block] = Wall()
-        print(self._grid)
 
     def cell(self, pos):
         if len(pos) != 3:
@@ -64,9 +65,9 @@ class Grid(object):
         self._grid[pos] = obj
 
     def pop(self, pos):
-        if len(pos) != 3:
-            raise AssertionError
-        return self._grid.pop(pos)
+        l_cell = self._grid.cell(pos)
+        self._grid[pos] = None
+        return l_cell
 
     def move(self, pos_from, pos_to):
         if self.cell(pos_from) is not GridElement:
@@ -91,6 +92,12 @@ class Wall(GridElement):
 
 class Environment(object):
     def __init__(self, p_configuration, **p_kwargs):
+        self._log = optom.common.log.logger(
+            __name__,
+            p_configuration.args.loglevel,
+            p_configuration.args.quiet,
+            p_configuration.args.logfile
+        )
         self._writer = optom.common.io.Writer(p_configuration.args)
         self._length = p_kwargs.pop("length", (30,))
         self._otl_split_pos = p_kwargs.pop("otl_split_pos", (10,))
@@ -129,7 +136,7 @@ class Environment(object):
         for i_velocity in p_velocities:
             l_x, l_y, l_t = p_node
             l_destination = (l_x+i_velocity, 0, l_t+1)
-            if not p_graph.has_edge(p_node,l_destination):
+            if not p_graph.has_edge(p_node, l_destination):
                 l_attr_dict = dict(
                     (
                         (str(s), 10**12 if i_velocity > s else 1) for s in p_velocities
@@ -160,52 +167,20 @@ class Environment(object):
                     )
 
     def _write_graph(self, p_graph, p_velocities, p_start_times, p_length):
-        # print("writing graphml")
-        # t_start = time.time()
-        # graphml.write_graphml(
-        #     p_graph,
-        #     "{}{}-v{}-st{}-len{}.graphml".format(
-        #         os.path.expanduser(u"~/.optom"), "/cse", len(p_velocities), len(p_start_times), p_length
-        #     )
-        # )
-        # print("graphml writing took", time.time()-t_start)
-        # print("writing yaml")
-        # t_start = time.time()
-        # nx_yaml.write_yaml(
-        #     p_graph,
-        #     "{}{}-v{}-st{}-len{}.yaml".format(
-        #         os.path.expanduser(u"~/.optom"), "/cse", len(p_velocities), len(p_start_times), p_length
-        #     )
-        # )
-        # print("yaml writing took", time.time()-t_start)
-        print("writing json adjacency_data via", optom.common.io.Writer)
+        self._log.info("writing json adjacency_data via {}".format(optom.common.io.Writer))
         t_start = time.time()
         l_json = json_graph.adjacency_data(p_graph)
 
-        self._writer.write_json(
+        self._writer.write_json_pretty(
             l_json,
-            "{}{}-v{}-st{}-len{}.adj.json.gz".format(
+            "{}{}-v{}-st{}-len{}.adj.json".format(
                 os.path.expanduser(u"~/.optom"), "/cse", len(p_velocities), len(p_start_times), p_length
             )
         )
-        print("json adjacency_data writing took", time.time()-t_start)
-        print("writing json node_link_data via", optom.common.io.Writer)
-        t_start = time.time()
-        l_json = json_graph.node_link_data(p_graph)
+        self._log.info("json adjacency_data writing took {} seconds".format(round(time.time()-t_start, 1)))
 
-        self._writer.write_json(
-            l_json,
-            "{}{}-v{}-st{}-len{}.nodelink.json.gz".format(
-                os.path.expanduser(u"~/.optom"), "/cse", len(p_velocities), len(p_start_times), p_length
-            )
-        )
-        print("json node_link_data writing took", time.time()-t_start)
-
-
-
-    @staticmethod
-    def _draw_graph(p_graph, p_velocities, p_start_times, p_length):
-        print("drawing graph")
+    def _draw_graph(self, p_graph, p_velocities, p_start_times, p_length):
+        self._log.info("drawing graph")
         t_start = time.time()
         l_node_positions = dict(
             (
@@ -226,7 +201,7 @@ class Environment(object):
                                      alpha=0.5,
                                      edge_color="gray"
                                      )
-        print("drawing took", time.time()-t_start)
+        self._log.info("drawing took", time.time()-t_start)
         l_path_colors = ["red", "green", "blue", "purple", "orange"] * int(math.ceil(len(p_start_times)/5+1))
 
         l_paths = []
@@ -241,7 +216,7 @@ class Environment(object):
                     p_velocities[i_start_time % len(p_velocities)]
                 )
             )
-            print(
+            self._log.info(
                 (0, 0, i_start_time),
                 "->",
                 "end",
@@ -255,8 +230,7 @@ class Environment(object):
 
         plt.show()
 
-    def _create_graph(self, p_start_times=xrange(20), p_velocities=(1, 2, 3, 4, 5), p_length=512):
-
+    def _create_graph(self, p_start_times=xrange(20), p_velocities=(1, 2, 3, 4, 5), p_length=100):
         l_pbar_widgets = [
             "Generating Search Space Graph: ",
             Counter(),
@@ -293,14 +267,14 @@ class Environment(object):
             l_length_pbar.update(i_x)
 
         print()
-        print("graph gen took", time.time()-t_start)
+        self._log.info("Generating Search Space Graph took {} seconds".format(round(time.time()-t_start, 1)))
 
         self._write_graph(l_graph, p_velocities, p_start_times, p_length)
 
         return l_graph
 
     # def _create_graph(self, p_start_times=[0, 1, 2], p_velocities=[1, 2, 3], p_length=12):
-    #     print("Creating DiGraph")
+    #     self._log.info("Creating DiGraph")
     #     l_graph = networkx.DiGraph()
     #     l_graph.add_node("end")
     #
@@ -333,7 +307,7 @@ class Environment(object):
     #                 attr_dict=l_attr_dict
     #             )
     #
-    #     print("edges:", l_graph.number_of_edges(), "nodes:", l_graph.number_of_nodes())
+    #     self._log.info("edges:", l_graph.number_of_edges(), "nodes:", l_graph.number_of_nodes())
     #
     #     l_paths = []
     #     l_pos = dict(
@@ -351,7 +325,7 @@ class Environment(object):
     #             l_edges
     #         )
     #         t_duration = time.time() - t_now
-    #         print("shortest path for speed", i_speed, ":", "paths", list(l_path), "duration", t_duration)
+    #         self._log.info("shortest path for speed", i_speed, ":", "paths", list(l_path), "duration", t_duration)
     #         networkx.draw_networkx_edges(l_graph, l_pos, edgelist=l_edges, width=1, alpha=0.5, edge_color="r")
     #
     #     # networkx.draw_networkx_edges(l_graph, pos=l_pos, width=.5, alpha=0.5, edge_color="b")
@@ -361,7 +335,7 @@ class Environment(object):
     #     return l_graph
 
     # def _connect_cells(self):
-    #     print("connecting cells")
+    #     self._log.info("connecting cells")
     #     l_pos = {}
     #     for x in xrange(len(self.grid)):
     #         for y in xrange(len(self.grid[x])):
@@ -392,7 +366,7 @@ class Environment(object):
     #
     #     networkx.draw_networkx_edges(self.graph,l_pos,width=1.0,alpha=0.5, edge_color="b")
     #     for node in networkx.astar_path(self.graph, self.grid[0][0], self.grid[29][0]):
-    #         print(node.position)
+    #         self._log.info(node.position)
     #
     #     networkx.draw(self.graph, pos=l_pos, node_size=16, alpha=0.4, edge_color="r")
     #     plt.show()
@@ -410,4 +384,3 @@ class Environment(object):
             lambda v: v.get("edgeid") == p_edgeid,
             self._vehicles.items()
         )
-
