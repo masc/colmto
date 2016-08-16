@@ -131,38 +131,94 @@ class Environment(object):
         return type(self._grid.cell(p_position)) is Wall
 
     @staticmethod
-    def _add_links(p_graph, p_node, p_velocities, p_length):
-
+    def _add_links(p_graph, p_node, p_velocities, p_length, p_otl):
         for i_velocity in p_velocities:
             l_x, l_y, l_t = p_node
-            l_destination = (l_x+i_velocity, 0, l_t+1)
-            if not p_graph.has_edge(p_node, l_destination):
-                l_attr_dict = dict(
-                    (
-                        (str(s), 10**12 if i_velocity > s else 1) for s in p_velocities
-                    )
+            l_destination_mainlane = (l_x+i_velocity, 0, l_t+1)
+            l_destination_otl = (l_x+i_velocity, 1, l_t+1)
+
+            # edge weights for A* routing:
+            # each key corresponds to a vehicle's maximum velocity
+            l_attr_dict = dict(
+                (
+                    (str(s), 10**12 if i_velocity > s else 1) for s in p_velocities
                 )
-                if l_x+i_velocity <= p_length:
+            )
+            l_attr_dict["label"] = ", ".join(filter(lambda k: l_attr_dict[k] < 10**12, l_attr_dict.iterkeys()))
+            if not p_graph.has_edge(p_node, l_destination_mainlane) and l_y == 0:
+
+                if l_x+i_velocity < p_length:
                     p_graph.add_edge(
                         u=p_node,
-                        v=l_destination,
+                        v=l_destination_mainlane,
                         attr_dict=l_attr_dict
                     )
-                elif l_x == p_length:
+                elif l_x+i_velocity == p_length:
+                    l_attr_dict["color"] = "gray"
+                    p_graph.add_edge(
+                        u=p_node,
+                        v="end",
+                        attr_dict=l_attr_dict
+                    )
+                elif l_x == p_length-1:
                     l_attr_dict = dict(
                         (
                             (str(s), 1) for s in p_velocities
                         )
                     )
+                    l_attr_dict["label"] = ", ".join(filter(lambda k: l_attr_dict[k] < 10**12, l_attr_dict.iterkeys()))
+                    l_attr_dict["color"] = "gray"
                     p_graph.add_edge(
                         u=p_node,
                         v="end",
                         attr_dict=l_attr_dict
                     )
-                else:
+
+                # main lane -> otl connections
+                # strategy: pulling out later is more expensive
+                if p_otl[0] <= l_x < p_otl[1]:
+                    l_attr_dict = dict(
+                        (
+                            (str(s), l_x-p_otl[0]+1) for s in p_velocities
+                        )
+                    )
+                    l_attr_dict["label"] = ", ".join(filter(lambda k: l_attr_dict[k] < 10**12, l_attr_dict.iterkeys()))
+                    l_attr_dict["style"] = "tapered"
+                    l_attr_dict["color"] = "gray"
+                    p_graph.add_edge(
+                        u=(l_x, 0, l_t),
+                        v=(l_x, 1, l_t),
+                        attr_dict=l_attr_dict
+                    )
+
+            # OTL connections
+            if not p_graph.has_edge(p_node, l_destination_otl) and l_y == 1:
+                if l_x+i_velocity <= p_otl[1]:
+                    l_attr_dict = dict(
+                        (
+                            (str(s), 10**12 if i_velocity > s else 1) for s in p_velocities
+                        )
+                    )
+                    print(l_attr_dict)
+                    l_attr_dict["label"] = ", ".join(filter(lambda k: l_attr_dict[k] < 10**12, l_attr_dict.iterkeys()))
                     p_graph.add_edge(
                         u=p_node,
-                        v="end",
+                        v=l_destination_otl,
+                        attr_dict=l_attr_dict
+                    )
+
+                    # otl -> main lane connections
+                    l_attr_dict = dict(
+                        (
+                            (str(s), l_x-p_otl[0]+1) for s in p_velocities
+                        )
+                    )
+                    l_attr_dict["label"] = ", ".join(filter(lambda k: l_attr_dict[k] < 10**12, l_attr_dict.iterkeys()))
+                    l_attr_dict["style"] = "tapered"
+                    l_attr_dict["color"] = "gray"
+                    p_graph.add_edge(
+                        u=l_destination_otl,
+                        v=l_destination_mainlane,
                         attr_dict=l_attr_dict
                     )
 
@@ -179,58 +235,96 @@ class Environment(object):
         )
         self._log.info("json adjacency_data writing took {} seconds".format(round(time.time()-t_start, 1)))
 
+    @staticmethod
+    def __position_node(p_node, p_length, p_factor=100):
+        if p_node[1] == 0:
+            return "{},{}".format(
+                p_factor * p_node[0],
+                p_factor * p_node[2]
+            )
+        elif p_node[1] == 1:
+            return "{},{}".format(
+                p_factor * (p_node[0] + 0.5),
+                p_factor * (p_node[2] - p_length/1.5)
+            )
+        elif p_node == "end":
+            return "{},{}".format(
+                p_factor * 1.2 * p_length,
+                p_factor * p_length
+            )
+        else:
+            return "0,0"
+
+    @staticmethod
+    def _block_nodes(p_graph, p_nodes, p_velocities):
+        l_attr_dict = dict(
+            (
+                (str(s), 10**12) for s in p_velocities
+            )
+        )
+        l_attr_dict["label"] = ", ".join(filter(lambda k: l_attr_dict[k] < 10**12, l_attr_dict.iterkeys()))
+        l_attr_dict["style"] = "invis" if ", ".join(filter(lambda k: l_attr_dict[k] < 10**12, l_attr_dict.iterkeys())) == "" else ""
+        for i_node in p_nodes:
+            for i_from in p_graph.predecessors_iter(i_node):
+                p_graph.edge[i_from][i_node].update(l_attr_dict)
+            for i_to in p_graph.successors_iter(i_node):
+                p_graph.edge[i_node][i_to].update(l_attr_dict)
+            for i_x in xrange(i_node[0]):
+                for i_x_next in xrange(i_x-1, max(p_velocities)):
+                    print("test", (i_x, i_node[1], i_node[2]), (i_x_next, i_node[1], i_node[2]))
+                    if p_graph.has_edge((i_x, i_node[1], i_node[2]), (i_x_next, i_node[1], i_node[2])):
+                        p_graph.edge[(i_x, i_node[1], i_node[2])][(i_x_next, i_node[1], i_node[2])].update(l_attr_dict)
+
+
     def _draw_graph(self, p_graph, p_velocities, p_start_times, p_length):
         self._log.info("drawing graph")
         t_start = time.time()
-        l_node_positions = dict(
-            (
-                (node, node[0::2] if node != "end" else (p_length+1, 10)) for node in p_graph.nodes()
-            )
-        )
 
-        networkx.draw_networkx_nodes(p_graph,
-                                     pos=l_node_positions,
-                                     node_size=2,
-                                     alpha=1.0
-                                     )
+        self._log.info("drawing took {} seconds".format(round(time.time()-t_start, 1)))
 
-        networkx.draw_networkx_edges(p_graph,
-                                     l_node_positions,
-                                     edgelist=p_graph.edges(),
-                                     width=1,
-                                     alpha=0.5,
-                                     edge_color="gray"
-                                     )
-        self._log.info("drawing took", time.time()-t_start)
+
+        # test some routes
         l_path_colors = ["red", "green", "blue", "purple", "orange"] * int(math.ceil(len(p_start_times)/5+1))
-
         l_paths = []
-
-        for i_start_time in p_start_times:
+        l_vehicle_velocities = (1, 2, 2, 1, 3)
+        for i_start_time in (0, 1, 2, 3):
             t_start = time.time()
             l_path = networkx.astar_path(
                 p_graph,
                 (0, 0, i_start_time),
                 "end",
                 weight=str(
-                    p_velocities[i_start_time % len(p_velocities)]
+                    l_vehicle_velocities[i_start_time]
                 )
             )
+
+            self._block_nodes(p_graph, l_path[:-1], p_velocities)
+
             self._log.info(
-                (0, 0, i_start_time),
-                "->",
-                "end",
-                time.time()-t_start
+                "{} -> {}: {} seconds".format(
+                    (0, 0, i_start_time),
+                    "end",
+                    round(time.time()-t_start, 1)
+                )
             )
+
             l_edges = map(lambda v1, v2: (v1, v2), l_path[:-1], l_path[1:])
+
+            for i_edge in l_edges:
+                l_from, l_to = i_edge
+                p_graph.edge[l_from][l_to]["color"] = l_path_colors[i_start_time]
+                p_graph.edge[l_from][l_to]["style"] = "bold"
+                p_graph.edge[l_from][l_to]["penwidth"] = 10
+                p_graph.edge[l_from][l_to]["arrowsize"] = 0.75
+                p_graph.node[l_from]["fillcolor"] = l_path_colors[i_start_time]
+                p_graph.node[l_from]["style"] = "filled"
+
             l_paths.append(l_edges)
-            networkx.draw_networkx_edges(
-                p_graph, l_node_positions, edgelist=l_edges, width=2, alpha=1.0, edge_color=l_path_colors[i_start_time]
-            )
 
-        plt.show()
+        l_agraph = networkx.nx_agraph.to_agraph(p_graph)
+        l_agraph.draw("test.pdf", prog='neato', args='-n2')
 
-    def _create_graph(self, p_start_times=xrange(20), p_velocities=(1, 2, 3, 4, 5), p_length=100):
+    def _create_graph(self, p_start_times=xrange(5), p_velocities=xrange(1, 4), p_length=32, p_otl=(4, 30)):
         l_pbar_widgets = [
             "Generating Search Space Graph: ",
             Counter(),
@@ -243,33 +337,47 @@ class Environment(object):
             " | ",
             Timer()
         ]
-        l_length_pbar = ProgressBar(
+        l_pbar = ProgressBar(
             widgets=l_pbar_widgets,
             maxval=p_length-1,
         )
-        l_length_pbar.start()
+        l_pbar.start()
 
         l_graph = networkx.DiGraph()
         l_graph.add_node("end")
 
         t_start = time.time()
-        for i_x in range(p_length):
+        for i_x in xrange(p_length):
 
             for i_start_time in p_start_times:
-                l_node = (i_x, 0, i_x+i_start_time)
-                l_graph.add_node(l_node)
+                # right lane
+                l_graph.add_node(
+                    (i_x, 0, i_x + i_start_time),
+                )
+                # overtaking lane
+                if p_otl[0] <= i_x <= p_otl[1]:
+                    l_graph.add_node(
+                        (i_x, 1, i_x + i_start_time),
+                    )
 
             # add links to nodes
             for i_nb, i_node in enumerate(l_graph.nodes()):
                 if type(i_node) is tuple:
-                    self._add_links(l_graph, i_node, p_velocities, p_length)
+                    self._add_links(l_graph, i_node, p_velocities, p_length, p_otl)
 
-            l_length_pbar.update(i_x)
+            l_pbar.update(i_x)
+
+        # one last round to fix missing links and set position attributes
+        for i_nb, i_node in enumerate(l_graph.nodes()):
+            if type(i_node) is tuple:
+                self._add_links(l_graph, i_node, p_velocities, p_length, p_otl)
+            l_graph.node[i_node]["pos"] = self.__position_node(i_node, p_length)
 
         print()
         self._log.info("Generating Search Space Graph took {} seconds".format(round(time.time()-t_start, 1)))
 
         self._write_graph(l_graph, p_velocities, p_start_times, p_length)
+        self._draw_graph(l_graph, p_velocities, p_start_times, p_length)
 
         return l_graph
 
