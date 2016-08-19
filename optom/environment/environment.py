@@ -32,6 +32,7 @@ import matplotlib.pyplot as plt
 import networkx
 from networkx.readwrite import json_graph
 from progressbar import Percentage, Bar, Counter, ProgressBar, AdaptiveETA, Timer
+import numpy as np
 
 import optom.common.io
 import optom.common.log
@@ -199,7 +200,6 @@ class Environment(object):
                             (str(s), 10**12 if i_velocity > s else 1) for s in p_velocities
                         )
                     )
-                    print(l_attr_dict)
                     l_attr_dict["label"] = ", ".join(filter(lambda k: l_attr_dict[k] < 10**12, l_attr_dict.iterkeys()))
                     p_graph.add_edge(
                         u=p_node,
@@ -256,7 +256,42 @@ class Environment(object):
             return "0,0"
 
     @staticmethod
-    def _block_nodes(p_graph, p_nodes, p_velocities):
+    def __edges_cross(p_edge_p, p_edge_q):
+        p = np.array(p_edge_p[0][0::2], dtype=float)
+        q = np.array(p_edge_q[0][0::2], dtype=float)
+        r = np.array(p_edge_p[1][0::2], dtype=float) - p
+        s = np.array(p_edge_q[1][0::2], dtype=float) - q
+        rxs = np.cross(r, s)
+        q_p = q - p
+        q_pxr = np.cross(q_p, r)
+        if rxs == 0.0 and q_pxr == 0.0:
+            # p_edge_p and p_edge_q are collinear
+            return False
+
+        if rxs == 0.0 and q_pxr != 0.0:
+            # p_edge_p and p_edge_q are parallel and non-intersecting
+            return False
+
+        if rxs != 0.0:
+            t = np.divide(
+                np.cross(q_p, s),
+                rxs
+            )
+            u = np.divide(
+                q_pxr,
+                rxs
+            )
+            if 0 <= t <= 1 and 0 <= u <= 1:
+                # p_edge_p and p_edge_q intersect
+                return True
+
+            # p_edge_p and p_edge_q are not parallel but do not intersect
+            return False
+
+        return False
+
+    @staticmethod
+    def _block_nodes(p_graph, p_edges, p_path, p_velocities):
         l_attr_dict = dict(
             (
                 (str(s), 10**12) for s in p_velocities
@@ -264,17 +299,23 @@ class Environment(object):
         )
         l_attr_dict["label"] = ", ".join(filter(lambda k: l_attr_dict[k] < 10**12, l_attr_dict.iterkeys()))
         l_attr_dict["style"] = "invis" if ", ".join(filter(lambda k: l_attr_dict[k] < 10**12, l_attr_dict.iterkeys())) == "" else ""
-        for i_node in p_nodes:
-            for i_from in p_graph.predecessors_iter(i_node):
-                p_graph.edge[i_from][i_node].update(l_attr_dict)
-            for i_to in p_graph.successors_iter(i_node):
-                p_graph.edge[i_node][i_to].update(l_attr_dict)
-            for i_x in xrange(i_node[0]):
-                for i_x_next in xrange(i_x-1, max(p_velocities)):
-                    print("test", (i_x, i_node[1], i_node[2]), (i_x_next, i_node[1], i_node[2]))
-                    if p_graph.has_edge((i_x, i_node[1], i_node[2]), (i_x_next, i_node[1], i_node[2])):
-                        p_graph.edge[(i_x, i_node[1], i_node[2])][(i_x_next, i_node[1], i_node[2])].update(l_attr_dict)
+        for i_edge in p_edges:
+            for i_from in p_graph.predecessors_iter(i_edge[0]):
+                if i_from not in p_path:
+                    p_graph.edge[i_from][i_edge[0]].update(l_attr_dict)
+            # for i_from in p_graph.predecessors_iter(i_edge[1]):
+            #     p_graph.edge[i_from][i_edge[1]].update(l_attr_dict)
+            # for i_to in p_graph.successors_iter(i_edge[0]):
+            #     p_graph.edge[i_edge[0]][i_to].update(l_attr_dict)
+            # for i_to in p_graph.successors_iter(i_edge[1]):
+            #     p_graph.edge[i_edge[1]][i_to].update(l_attr_dict)
 
+            for i_x in xrange(i_edge[0][0]):
+                l_neighbour_node = (i_x, i_edge[0][1], i_edge[0][2])
+                if p_graph.has_node(l_neighbour_node):
+                    for i_neighbour_node_successor in p_graph.successors_iter(l_neighbour_node):
+                        if i_neighbour_node_successor != "end" != i_edge[1] and Environment.__edges_cross((l_neighbour_node, i_neighbour_node_successor), i_edge):
+                            p_graph.edge[l_neighbour_node][i_neighbour_node_successor].update(l_attr_dict)
 
     def _draw_graph(self, p_graph, p_velocities, p_start_times, p_length):
         self._log.info("drawing graph")
@@ -282,12 +323,11 @@ class Environment(object):
 
         self._log.info("drawing took {} seconds".format(round(time.time()-t_start, 1)))
 
-
         # test some routes
         l_path_colors = ["red", "green", "blue", "purple", "orange"] * int(math.ceil(len(p_start_times)/5+1))
         l_paths = []
-        l_vehicle_velocities = (1, 2, 2, 1, 3)
-        for i_start_time in (0, 1, 2, 3):
+        l_vehicle_velocities = (1, 2, 1, 3, 4)
+        for i_start_time in (0, 1, 2, 3, 4):
             t_start = time.time()
             l_path = networkx.astar_path(
                 p_graph,
@@ -297,17 +337,6 @@ class Environment(object):
                     l_vehicle_velocities[i_start_time]
                 )
             )
-
-            self._block_nodes(p_graph, l_path[:-1], p_velocities)
-
-            self._log.info(
-                "{} -> {}: {} seconds".format(
-                    (0, 0, i_start_time),
-                    "end",
-                    round(time.time()-t_start, 1)
-                )
-            )
-
             l_edges = map(lambda v1, v2: (v1, v2), l_path[:-1], l_path[1:])
 
             for i_edge in l_edges:
@@ -319,12 +348,21 @@ class Environment(object):
                 p_graph.node[l_from]["fillcolor"] = l_path_colors[i_start_time]
                 p_graph.node[l_from]["style"] = "filled"
 
+            self._block_nodes(p_graph, l_edges, l_path, p_velocities)
+
+            self._log.info(
+                "{} -> {}: {} seconds".format(
+                    (0, 0, i_start_time),
+                    "end",
+                    round(time.time()-t_start, 1)
+                )
+            )
             l_paths.append(l_edges)
 
         l_agraph = networkx.nx_agraph.to_agraph(p_graph)
         l_agraph.draw("test.pdf", prog='neato', args='-n2')
 
-    def _create_graph(self, p_start_times=xrange(5), p_velocities=xrange(1, 4), p_length=32, p_otl=(4, 30)):
+    def _create_graph(self, p_start_times=xrange(5), p_velocities=xrange(1, 5), p_length=64, p_otl=(8, 56)):
         l_pbar_widgets = [
             "Generating Search Space Graph: ",
             Counter(),
