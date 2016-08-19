@@ -180,7 +180,7 @@ class Environment(object):
                 if p_otl[0] <= l_x < p_otl[1]:
                     l_attr_dict = dict(
                         (
-                            (str(s), l_x-p_otl[0]+1) for s in p_velocities
+                            (str(s), 0) for s in p_velocities
                         )
                     )
                     l_attr_dict["label"] = ", ".join(filter(lambda k: l_attr_dict[k] < 10**12, l_attr_dict.iterkeys()))
@@ -210,7 +210,7 @@ class Environment(object):
                     # otl -> main lane connections
                     l_attr_dict = dict(
                         (
-                            (str(s), l_x-p_otl[0]+1) for s in p_velocities
+                            (str(s), 0) for s in p_velocities
                         )
                     )
                     l_attr_dict["label"] = ", ".join(filter(lambda k: l_attr_dict[k] < 10**12, l_attr_dict.iterkeys()))
