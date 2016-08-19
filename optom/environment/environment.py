@@ -262,7 +262,7 @@ class Environment(object):
         r = np.array(p_edge_p[1][0::2], dtype=float) - p
         s = np.array(p_edge_q[1][0::2], dtype=float) - q
         rxs = np.cross(r, s)
-        q_p = q - p
+        q_p = np.subtract(q, p)
         q_pxr = np.cross(q_p, r)
         if rxs == 0.0 and q_pxr == 0.0:
             # p_edge_p and p_edge_q are collinear
@@ -321,8 +321,6 @@ class Environment(object):
         self._log.info("drawing graph")
         t_start = time.time()
 
-        self._log.info("drawing took {} seconds".format(round(time.time()-t_start, 1)))
-
         # test some routes
         l_path_colors = ["red", "green", "blue", "purple", "orange"] * int(math.ceil(len(p_start_times)/5+1))
         l_paths = []
@@ -361,8 +359,9 @@ class Environment(object):
 
         l_agraph = networkx.nx_agraph.to_agraph(p_graph)
         l_agraph.draw("test.pdf", prog='neato', args='-n2')
+        self._log.info("drawing took {} seconds".format(round(time.time()-t_start, 1)))
 
-    def _create_graph(self, p_start_times=xrange(5), p_velocities=xrange(1, 5), p_length=64, p_otl=(8, 56)):
+def _create_graph(self, p_start_times=xrange(5), p_velocities=xrange(1, 5), p_length=64, p_otl=(8, 56)):
         l_pbar_widgets = [
             "Generating Search Space Graph: ",
             Counter(),
