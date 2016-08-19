@@ -361,7 +361,7 @@ class Environment(object):
         l_agraph.draw("test.pdf", prog='neato', args='-n2')
         self._log.info("drawing took {} seconds".format(round(time.time()-t_start, 1)))
 
-def _create_graph(self, p_start_times=xrange(5), p_velocities=xrange(1, 5), p_length=64, p_otl=(8, 56)):
+    def _create_graph(self, p_start_times=xrange(5), p_velocities=xrange(1, 5), p_length=64, p_otl=(8, 56)):
         l_pbar_widgets = [
             "Generating Search Space Graph: ",
             Counter(),
