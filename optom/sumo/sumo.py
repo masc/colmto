@@ -27,9 +27,7 @@ import os
 from sumolib import checkBinary
 from collections import defaultdict
 from optom.common.io import Writer
-from optom.common.io import Reader
 from optom.common.statistics import Statistics
-from optom.common import visualisation
 from optom.common import log
 import sumocfg
 from sumocfg import SumoConfig
@@ -67,8 +65,11 @@ class Sumo(object):
                 )
                 self._runtime.run(l_runcfg, p_scenarioname, i_run)
                 self._log.debug("Converting induction loop XMLs with etree.XSLT")
-                l_iloopresults[i_initialsorting][i_run] = self._sumocfg.aggregate_iloop_file(
-                                                                                            l_runcfg.get("iloopfile"))
+                l_iloopresults[i_initialsorting]["run{}".format(i_run)] = self._statistics.traveltimes_from_iloops(
+                    l_runcfg.get("vehicles"),
+                    self._sumocfg.scenarioconfig.get(p_scenarioname),
+                    l_runcfg.get("iloopfile")
+                )
                 if i_run % 10 == 0:
                     self._log.info(
                         "Scenario %s, sorting %s: Finished run %d/%d",
@@ -78,73 +79,10 @@ class Sumo(object):
                         len(l_scenarioruns.get("runs").get(i_initialsorting))
                     )
 
-        self._writer.write_yaml(
-            l_iloopresults,
-            os.path.join(self._sumocfg.resultsdir, "iloops-{}.yaml.gz".format(p_scenarioname))
+        self._writer.write_json_pretty(
+            dict(l_iloopresults),
+            os.path.join(self._sumocfg.resultsdir, "{}-TT-TL.json.gz".format(p_scenarioname))
         )
-        # do statistics
-        # l_deltas = ("pre21 to post21", "pre21 to exit", "post21 to exit")
-        # l_stats = self._statistics.compute_sumo_results(p_scenarioname, l_scenarioruns, l_iloopresults,
-        #                                                 p_deltas=l_deltas)
-        #
-        # # dump scenario run cfg to yaml.gz file
-        # self._writer.write_yaml(l_scenarioruns,
-        #                         os.path.join(self._sumocfg.runsdir, "runs-{}.yaml.gz".format(p_scenarioname)))
-        # # dump statistic results to yaml.gz/json.gz file
-        # self._writer.write_yaml(l_stats,
-        #                         os.path.join(self._sumocfg.resultsdir, "results-{}.yaml.gz".format(p_scenarioname)))
-        #
-        # l_vtypedistribution = self._sumocfg.runconfig.get("vtypedistribution")
-        # l_vtypedistribution = ", ".join(
-        #     ["{}: ${}$".format(
-        #               vtype, l_vtypedistribution.get(vtype).get("fraction")) for vtype in l_vtypedistribution]
-        #     )
-        # l_ttscenarioname = "".join(["\\texttt{", p_scenarioname, "}"])
-        #
-        # for i_delta in l_deltas:
-        #     visualisation.boxplot(os.path.join(self._sumocfg.resultsdir,
-        #                                        "Traveltime-{}_{}_vehicles_{}runs_one21segment-{}.{}".format(
-        #                                            p_scenarioname, l_stats.get("nbvehicles"), l_stats.get("nbruns"),
-        #                                            i_delta, "pdf")),
-        #                           l_stats.get("data").get("traveltime").get(i_delta),
-        #                           "{}:\nTravel time for ${}$ vehicles, ${}$ runs for each mode ({}),one 2+1 segment,"+
-        #                           "\nvtype distribution: {}, delta {}".format(
-        #                               l_ttscenarioname, l_stats.get("nbvehicles"), l_stats.get("nbruns"),
-        #                               ", ".join(l_initialsortings), l_vtypedistribution, i_delta.replace("_", "")
-        #                           ),
-        #                           "initial ordering of vehicles (maximum speed)",
-        #                           "travel time in seconds"
-        #                           )
-        #
-        # visualisation.boxplot(os.path.join(self._sumocfg.resultsdir,
-        #                                    "TimeLoss-{}_{}_vehicles_{}runs_one21segment.{}".format(p_scenarioname,
-        #                                                                                            l_stats.get(
-        #                                                                                                "nbvehicles"),
-        #                                                                                            l_stats.get(
-        #                                                                                                "nbruns"),
-        #                                                                                            "pdf")),
-        #                       l_stats.get("data").get("timeLoss"),
-        #                       "{}:\nTime loss for ${}$ vehicles, ${}$ runs for each mode ({}),\none 2+1 segment, " +
-        #                       "vtype distribution: {}".format(
-        #                           l_ttscenarioname, l_stats.get("nbvehicles"), l_stats.get("nbruns"),
-        #                           ", ".join(l_initialsortings), l_vtypedistribution),
-        #                       "initial ordering of vehicles (maximum speed)",
-        #                       "time loss in seconds"
-        #                       )
-        #
-        # visualisation.boxplot(os.path.join(self._sumocfg.resultsdir,
-        #                                    "RelativeTimeLoss-{}_{}_vehicles_{}runs_one21segment.{}".format(
-        #                                        p_scenarioname, l_stats.get("nbvehicles"), l_stats.get("nbruns"),
-        #                                        "pdf")),
-        #                       l_stats.get("data").get("relativeLoss"),
-        #                       "{}:\nRelative time loss for ${}$ vehicles, ${}$ runs for each mode ({})," +
-        #                       "\none 2+1 segment, vtype distribution: {}".format(
-        #                           l_ttscenarioname, l_stats.get("nbvehicles"), l_stats.get("nbruns"),
-        #                           ", ".join(l_initialsortings), l_vtypedistribution),
-        #                       "initial ordering of vehicles (maximum speed)",
-        #                       "relative time loss in percent " +
-        #                       "($\\frac{\\mathrm{Traveltime}}{\\mathrm{Traveltime}-\\mathrm{Timeloss}}*100$)"
-        #                       )
 
     def run_scenarios(self):
         for i_scenarioname in self._sumocfg.runconfig.get("scenarios"):

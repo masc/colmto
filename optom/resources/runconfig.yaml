@@ -14,11 +14,11 @@ vtypedistribution:
   truck:
     fraction: 0.3
     speedDev: 0.0
-    desiredSpeed: [22.0, 23.0, 24.0, 25.0]
+    desiredSpeeds: [22.0, 23.0, 24.0, 25.0]
   passenger:
     fraction: 0.5
     speedDev: 0.0
-    desiredSpeed: [31.0, 32.0, 33.0, 34.0]
+    desiredSpeeds: [31.0, 32.0, 33.0, 34.0]
 starttimedistribution: poisson
 nbvehicles:
   enabled: false

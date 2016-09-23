@@ -20,10 +20,14 @@
 # # along with this program. If not, see http://www.gnu.org/licenses/         #
 # #############################################################################
 # @endcond
-from __future__ import print_function
 from __future__ import division
+from __future__ import print_function
+
+import itertools
+
 import log
 from io import Writer
+
 try:
     from lxml import etree
 except ImportError:
@@ -44,6 +48,20 @@ except ImportError:
                     import elementtree.ElementTree as etree
                 except ImportError:
                     print("Failed to import ElementTree from any known place")
+
+
+s_iloop_template = etree.XML("""
+    <xsl:stylesheet version= "1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+    <xsl:template match="/">
+    <detector>
+    <xsl:for-each select="detector/interval/typedInterval">
+    <vehicle>
+    <xsl:copy-of select="@id|@type|@begin"/>
+    </vehicle>
+    </xsl:for-each>
+    </detector>
+    </xsl:template>
+    </xsl:stylesheet>""")
 
 
 class Statistics(object):
@@ -103,3 +121,31 @@ class Statistics(object):
             "nbvehicles": l_vehicles,
             "nbruns": l_runs
         }
+
+    def traveltimes_from_iloops(self, p_vehicles, p_scenario, p_iloopfile):
+        l_iloopdata = {}
+        self._log.debug("Reading and aggregating induction loop logs")
+
+        l_root = etree.parse(p_iloopfile)
+        l_iloop_detections = etree.XSLT(s_iloop_template)(l_root).iter("vehicle")
+        l_vehicle_data = {}
+        for i_v in l_iloop_detections:
+            if i_v.get("type") in l_vehicle_data:
+                l_vehicle_data.get(i_v.get("type"))[i_v.get("id")] = float(i_v.get("begin"))
+            else:
+                l_vehicle_data[i_v.get("type")] = {
+                    i_v.get("id"): float(i_v.get("begin"))
+                }
+
+        for i_vid, i_vdata in l_vehicle_data.iteritems():
+            for i_pair in itertools.combinations(sorted(i_vdata.iteritems(), key=lambda i: i[1]), 2):
+                l_traveltime = i_pair[1][1] - i_pair[0][1]
+                l_total_length = p_scenario.get("parameters").get("length")
+                l_vehicle_max_speed = p_vehicles.get(i_vid).get("vtype").get("maxSpeed")
+                l_timeloss = l_traveltime - l_total_length / l_vehicle_max_speed
+                i_vdata["-".join((i_pair[0][0], i_pair[1][0]))] = {
+                    "traveltime": l_traveltime,
+                    "timeloss": l_timeloss
+                }
+
+        return l_vehicle_data
