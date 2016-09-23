@@ -11,6 +11,7 @@ import sys
 from setuptools import setup, find_packages
 from setuptools.command.test import test as TestCommand
 
+
 # This is a plug-in for setuptools that will invoke py.test
 # when you run python setup.py test
 class PyTest(TestCommand):
@@ -30,11 +31,11 @@ setup(name="optom",
       version=version,
       description="Overtaking Optimization",
       long_description=open("README.rst").read(),
-      classifiers=[ # Get strings from http://pypi.python.org/pypi?%3Aaction=list_classifiers
+      classifiers=[  # Get strings from http://pypi.python.org/pypi?%3Aaction=list_classifiers
         'Development Status :: 1 - Planning',
         'Programming Language :: Python'
       ],
-      keywords="", # Separate with spaces
+      keywords="",  # Separate with spaces
       author="Malte Aschermann",
       author_email="masc@tu-clausthal.de",
       url="",
@@ -56,12 +57,16 @@ setup(name="optom",
           'python-cjson',
           'pathos',
           'networkx',
-          'progressbar'
+          'networkx',
+          'progressbar',
+          'pygraphviz',
+          'PyNaCl'
       ],
       # NOTE: For pathos use pip2 install git+https://github.com/uqfoundation/pathos
+      # NOTE: For progressbar use pip2 install git+https://github.com/niltonvolpato/python-progressbar.git
       # TODO: List executable scripts, provided by the package (this is just an example)
       entry_points={
         'console_scripts': 
-            ['optom=optom:main']
+        ['optom=optom:main']
       }
 )
