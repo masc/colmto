@@ -59,8 +59,7 @@ setup(name="optom",
           'networkx',
           'networkx',
           'progressbar',
-          'pygraphviz',
-          'PyNaCl'
+          'pygraphviz'
       ],
       # NOTE: For pathos use pip2 install git+https://github.com/uqfoundation/pathos
       # NOTE: For progressbar use pip2 install git+https://github.com/niltonvolpato/python-progressbar.git
