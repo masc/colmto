@@ -85,16 +85,6 @@ class SumoConfig(optom.configuration.configuration.Configuration):
             self._log.debug("--force-rebuild-scenarios set -> rebuilding/overwriting scenarios if already present")
         self._onlyoneotlsegment = p_args.onlyoneotlsegment
 
-        # dump configuration
-        self._writer.write_yaml(
-            {
-                "optomversion": self._optomversion,
-                "runconfig": self.runconfig,
-                "scenarioconfig": self.scenarioconfig,
-                "vtypesconfig": self.vtypesconfig
-            },
-            os.path.join(p_args.outputdir, "SUMO", self._runprefix, "configuration.yaml")
-        )
 
         # generate color map for vehicle max speeds
         l_global_maxspeed = max(
@@ -144,10 +134,20 @@ class SumoConfig(optom.configuration.configuration.Configuration):
         )
 
         self._generate_node_xml(l_scenarioconfig, l_nodefile, self._forcerebuildscenarios)
-        l_scenarioruns["detectorpositions"] = self._generate_edge_xml(l_scenarioconfig, l_edgefile,
-                                                                      self._forcerebuildscenarios)
+        self._generate_edge_xml(p_scenarioname, l_scenarioconfig, l_edgefile, self._forcerebuildscenarios)
         self._generate_settings_xml(l_scenarioconfig, l_runcfg, l_settingsfile, self._forcerebuildscenarios)
         self._generate_net_xml(l_nodefile, l_edgefile, l_netfile, self._forcerebuildscenarios)
+
+        # dump configuration
+        self._writer.write_yaml(
+            {
+                "optomversion": self._optomversion,
+                "runconfig": self.runconfig,
+                "scenarioconfig": self.scenarioconfig,
+                "vtypesconfig": self.vtypesconfig
+            },
+            os.path.join(self.sumoconfigdir, self._runprefix, "configuration.yaml")
+        )
 
         return l_scenarioruns
 
@@ -213,7 +213,7 @@ class SumoConfig(optom.configuration.configuration.Configuration):
             self._forcerebuildscenarios = True
 
         self._generate_additional_xml(
-            l_scenarioconfig, l_detector_positions, l_iloopfile, l_additionalfile,
+            l_scenarioname, l_scenarioconfig, l_iloopfile, l_additionalfile,
             self._forcerebuildscenarios
         )
         self._generate_config_xml(
@@ -273,7 +273,7 @@ class SumoConfig(optom.configuration.configuration.Configuration):
         with open(p_nodefile, "w") as f_pnodesxml:
             f_pnodesxml.write(etree.tostring(l_nodes, pretty_print=True))
 
-    def _generate_edge_xml(self, p_scenarioconfig, p_edgefile, p_forcerebuildscenarios=False):
+    def _generate_edge_xml(self, p_scenario_name, p_scenarioconfig, p_edgefile, p_forcerebuildscenarios=False):
         if os.path.isfile(p_edgefile) and not p_forcerebuildscenarios:
             return
 
@@ -321,13 +321,10 @@ class SumoConfig(optom.configuration.configuration.Configuration):
         )
 
         # add splits and joins
-        l_detector_positions = {
-            "iloop": {
+        self.scenarioconfig.get(p_scenario_name)["detectorpositions"] = {
                 "enter_21start": l_segmentlength-5,
                 "21end_exit": l_segmentlength-5,
                 "switches": []
-            },
-            "otl": []
         }
 
         l_addotllane = True
@@ -343,7 +340,7 @@ class SumoConfig(optom.configuration.configuration.Configuration):
                 }
             )
 
-            l_detector_positions.get("iloop").get("switches").append(i_segmentpos)
+            self.scenarioconfig.get(p_scenario_name).get("detectorpositions").get("switches").append(i_segmentpos)
             l_addotllane ^= True
 
         # Exit lane
@@ -363,9 +360,7 @@ class SumoConfig(optom.configuration.configuration.Configuration):
         with open(p_edgefile, "w") as f_pedgexml:
             f_pedgexml.write(etree.tostring(l_edges, pretty_print=True))
 
-        return l_detector_positions
-
-    def _generate_additional_xml(self, p_scenarioconfig, p_detector_positions, p_iloopfile, p_additionalfile,
+    def _generate_additional_xml(self, p_scenario_name, p_scenarioconfig, p_iloopfile, p_additionalfile,
                                  p_forcerebuildscenarios):
         if os.path.isfile(p_additionalfile) and not p_forcerebuildscenarios:
             return
@@ -385,7 +380,7 @@ class SumoConfig(optom.configuration.configuration.Configuration):
             attrib={
                 "id": "1_pre21",
                 "lane": "enter_21start_0",
-                "pos": str(p_detector_positions.get("iloop").get("enter_21start")),
+                "pos": str(self.scenarioconfig.get(p_scenario_name).get("detectorpositions").get("enter_21start")),
                 "friendlyPos": "true",
                 "splitByType": "true",
                 "freq": "1",
@@ -400,7 +395,7 @@ class SumoConfig(optom.configuration.configuration.Configuration):
             attrib={
                 "id": "2_post21",
                 "lane": "21end_exit_0" if l_nbswitches % 2 == 0 and not self._onlyoneotlsegment
-                else "21segment.{}_0".format(p_detector_positions.get("iloop").get("switches")[-1]),
+                else "21segment.{}_0".format(self.scenarioconfig.get(p_scenario_name).get("switches")[-1]),
                 "pos": "0",
                 "friendlyPos": "true",
                 "splitByType": "true",
@@ -416,9 +411,9 @@ class SumoConfig(optom.configuration.configuration.Configuration):
             attrib={
                 "id": "3_exit",
                 "lane": "21segment.{}_0".format(
-                    p_detector_positions.get("iloop").get("switches")[-1]
+                    self.scenarioconfig.get(p_scenario_name).get("switches")[-1]
                 ) if l_nbswitches % 2 == 1 or self._onlyoneotlsegment else "21end_exit_0",
-                "pos": str(p_detector_positions.get("iloop").get("21end_exit")),
+                "pos": str(self.scenarioconfig.get(p_scenario_name).get("detectorpositions").get("21end_exit")),
                 "friendlyPos": "true",
                 "splitByType": "true",
                 "freq": "1",
