@@ -30,7 +30,6 @@ import datetime
 from configuration.configuration import Configuration
 from common import log
 from sumo.sumo import Sumo
-from cse.runtime import CSERuntime
 
 
 class Optom(object):
@@ -113,18 +112,7 @@ class Optom(object):
             "--sumo", dest="runsumo", action="store_true",
             default=False, help="run SUMO simulation"
         )
-        l_mutexgrouprunchoice.add_argument(
-            "--cse", dest="runcse", action="store_true",
-            default=False, help="run naive cse optimisation"
-        )
-        l_mutexgrouprunchoice.add_argument(
-            "--mip", dest="runmip", action="store_true",
-            default=False, help="run MIP optimisation"
-        )
-        l_mutexgrouprunchoice.add_argument(
-            "--nf", dest="runnf", action="store_true",
-            default=False, help="run network flow optimisation"
-        )
+
         l_sumogroup = l_parser.add_argument_group("SUMO")
         l_mutexsumogroup = l_sumogroup.add_mutually_exclusive_group(required=False)
         l_mutexsumogroup.add_argument(
@@ -159,10 +147,6 @@ class Optom(object):
         if l_configuration.runconfig.get("sumo").get("enabled") or l_args.runsumo:
             l_log.info("---- Starting SUMO Baseline Simulation ----")
             Sumo(l_args).run_scenarios()
-
-        elif l_configuration.runconfig.get("cse").get("enabled") or l_args.runcse:
-            l_log.info("---- Starting Coordination Service Entity Optimisation ----")
-            CSERuntime(l_configuration).run_scenario()
 
 if __name__ == "__main__":
     Optom()
