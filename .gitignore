@@ -1,7 +1,8 @@
 *.*
+!.gitignore
+!.gitmodules
 !buildout.cfg
 !optom.iml
-!.gitignore
 !optom/MANIFEST.in
 !optom/README.rst
 !optom/setup.cfg
