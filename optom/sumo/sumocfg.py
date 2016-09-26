@@ -534,9 +534,11 @@ class SumoConfig(optom.configuration.configuration.Configuration):
         l_timebegin, l_timeend = p_runcfg.get("simtimeinterval")
 
         # number of vehicles = AADT / [seconds of day] * [scenario time in seconds]
+
         l_numberofvehicles = int(round(l_aadt / (24 * 60 * 60) * (l_timeend - l_timebegin))) \
             if not p_runcfg.get("nbvehicles").get("enabled") else p_runcfg.get("nbvehicles").get("value")
 
+        self._log.info("Number of vehicles {} for {} seconds simulation time.".format(l_numberofvehicles, l_timeend-l_timebegin))
         self._log.debug("Scenario's AADT of %d vehicles/average annual day => %d vehicles for %d simulation seconds",
                         l_aadt, l_numberofvehicles, (l_timeend - l_timebegin))
 
@@ -546,14 +548,14 @@ class SumoConfig(optom.configuration.configuration.Configuration):
             p_initialsorting,
             p_scenario_name
         )
+        self._log.debug("Created {} {} objects".format(len(l_vehicles), type(l_vehicles.get("vehicle0"))))
 
         # xml
         l_trips = etree.Element("trips")
 
         # create a sumo vtype for each vehicle
         for i_vid, i_vehicle in l_vehicles.iteritems():
-
-            # filter for relevant attributes
+            # filter for relevant attributes and transform to string
             l_vattr = dict(
                 map(
                     lambda (k, v): (k, str(v)),
@@ -563,7 +565,7 @@ class SumoConfig(optom.configuration.configuration.Configuration):
                     )
                 )
             )
-
+            l_vattr = i_vehicle.vtype_sumo_attr
             l_vattr["id"] = str(i_vid)
             l_vattr["color"] = "{},{},{},{}".format(*i_vehicle.color)
             # override parameters speedDev, desiredSpeed, and length if defined in run config
@@ -584,11 +586,10 @@ class SumoConfig(optom.configuration.configuration.Configuration):
             if l_vattr["vClass"] == "tractor":
                 l_vattr["vClass"] = "trailer"
             l_vattr["type"] = l_vattr.get("vClass")
-
             etree.SubElement(l_trips, "vType", attrib=l_vattr)
 
         # add trips
-        for i_vid, i_vehicle in l_vehicles.iteritems():
+        for i_vid, i_vehicle in sorted(l_vehicles.iteritems(), key=lambda (k, v): v.start_time):
             etree.SubElement(l_trips, "trip", attrib={
                 "id": i_vid,
                 "depart": str(i_vehicle.start_time),

@@ -36,6 +36,7 @@ s_loglevel = {
 
 
 def logger(p_name, p_loglevel=logging.NOTSET, p_quiet=False, p_logfile=os.path.expanduser(u"~/.optom/optom.log")):
+
     if not os.path.exists(os.path.dirname(p_logfile)):
         os.makedirs(os.path.dirname(p_logfile))
 
@@ -54,10 +55,10 @@ def logger(p_name, p_loglevel=logging.NOTSET, p_quiet=False, p_logfile=os.path.e
     # add the handlers to the logger
     l_log.addHandler(l_fhandler)
 
-    # create a stdout handler for info if not set to quiet
+    # create a stdout handler if not set to quiet
     if not p_quiet:
         l_shandler = logging.StreamHandler(sys.stdout)
-        l_shandler.setLevel(logging.INFO)
+        l_shandler.setLevel(l_level)
         l_shandler.setFormatter(l_formatter)
         l_log.addHandler(l_shandler)
 

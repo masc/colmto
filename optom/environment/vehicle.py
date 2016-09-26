@@ -62,7 +62,14 @@ class SUMOVehicle(BaseVehicle):
 
     def __init__(self, **p_kwargs):
         self._vtype = p_kwargs.pop("vtype", None)
-        self._vtype_sumo_attr = p_kwargs.pop("vtype_sumo_attr", None)
+
+        # convert attr values to str for sumo xml handling
+        self._vtype_sumo_attr = dict(
+            map(
+                lambda (k, v): (k, str(v)),
+                p_kwargs.pop("vtype_sumo_attr", {}).iteritems()
+            )
+        )
         self._color = p_kwargs.pop("color", None)
         self._speed_deviation = p_kwargs.pop("speed_deviation", 0.0)
 

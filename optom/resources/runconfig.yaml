@@ -3,7 +3,7 @@ sumo:
   gui-delay: 200
   headless: false
   port: 8873
-simtimeinterval: [0, 3600]
+simtimeinterval: [0, 86400]
 runs: 1
 scenarios: [BW-B292]
 vtypedistribution:
