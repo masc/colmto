@@ -1,3 +1,0 @@
-[submodule "sumo"]
-	path = sumo
-	url = https://github.com/planetsumo/sumo.git
