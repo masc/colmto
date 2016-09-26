@@ -404,22 +404,6 @@ class SumoConfig(optom.configuration.configuration.Configuration):
             }
         )
 
-        # induction loop at the beginning of last one-lane segment (21end_exit)
-        # etree.SubElement(
-        #     l_additional,
-        #     "inductionLoop",
-        #     attrib={
-        #         "id": "2_post21",
-        #         "lane": "21end_exit_0" if l_nbswitches % 2 == 0 and not self._onlyoneotlsegment
-        #         else "21segment.{}_0".format(self.scenarioconfig.get(p_scenario_name).get("switches")[-1]),
-        #         "pos": "5",
-        #         "friendlyPos": "true",
-        #         "splitByType": "true",
-        #         "freq": "1",
-        #         "file": p_iloopfile
-        #     }
-        # )
-
         # induction loops at beginning of each switch
         l_switches = self.scenarioconfig.get(p_scenario_name).get("detectorpositions").get("switches")[1:]
         for i, i_switch_pos in enumerate(l_switches):
