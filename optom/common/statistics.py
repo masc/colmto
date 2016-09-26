@@ -141,7 +141,7 @@ class Statistics(object):
             for i_pair in itertools.combinations(sorted(i_vdata.iteritems(), key=lambda i: i[1]), 2):
                 l_traveltime = i_pair[1][1] - i_pair[0][1]
                 l_total_length = p_scenario.get("parameters").get("length")
-                l_vehicle_max_speed = p_vehicles.get(i_vid).get("vtype").get("maxSpeed")
+                l_vehicle_max_speed = p_vehicles.get(i_vid).speed_max
                 l_timeloss = l_traveltime - l_total_length / l_vehicle_max_speed
                 i_vdata["-".join((i_pair[0][0], i_pair[1][0]))] = {
                     "traveltime": l_traveltime,

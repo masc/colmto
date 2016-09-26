@@ -48,18 +48,17 @@ setup(name="optom",
       
       # TODO: List of packages that this one depends upon:   
       install_requires=[
-          'gurobipy',
-          'matplotlib',
+          # 'gurobipy',
+          # 'matplotlib',
           'sh',
           'lxml',
           'h5py',
           'PyYAML',
           'python-cjson',
-          'pathos',
-          'networkx',
-          'networkx',
+          # 'pathos',
+          # 'networkx',
           'progressbar',
-          'pygraphviz'
+          # 'pygraphviz'
       ],
       # NOTE: For pathos use pip2 install git+https://github.com/uqfoundation/pathos
       # NOTE: For progressbar use pip2 install git+https://github.com/niltonvolpato/python-progressbar.git

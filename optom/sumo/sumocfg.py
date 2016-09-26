@@ -56,6 +56,7 @@ import optom.configuration.configuration
 import optom.common.io
 import optom.common.colormaps
 import optom.common.log
+import optom.environment.vehicle
 
 
 class SumoConfig(optom.configuration.configuration.Configuration):
@@ -221,7 +222,7 @@ class SumoConfig(optom.configuration.configuration.Configuration):
             self._forcerebuildscenarios
         )
         l_vehicles = self._generate_trip_xml(
-            l_scenarioconfig, l_runcfg, p_initialsorting, l_tripfile,
+            l_scenarioconfig, l_runcfg, p_initialsorting, l_tripfile, l_scenarioname,
             self._forcerebuildscenarios
         )
         self._generate_route_xml(
@@ -425,7 +426,8 @@ class SumoConfig(optom.configuration.configuration.Configuration):
             f_paddxml.write(etree.tostring(l_additional, pretty_print=True))
 
     # create sumo config
-    def _generate_config_xml(self, p_configfile, p_netfile, p_routefile, p_additionalfile, p_settingsfile,
+    @staticmethod
+    def _generate_config_xml(p_configfile, p_netfile, p_routefile, p_additionalfile, p_settingsfile,
                              p_simtimeinterval, p_forcerebuildscenarios=False):
         if os.path.isfile(p_configfile) and not p_forcerebuildscenarios:
             return
@@ -443,7 +445,8 @@ class SumoConfig(optom.configuration.configuration.Configuration):
         with open(p_configfile, "w") as f_pconfigxml:
             f_pconfigxml.write(etree.tostring(l_configuration, pretty_print=True))
 
-    def _generate_settings_xml(self, p_scenarioconfig, p_runcfg, p_settingsfile, p_forcerebuildscenarios=False):
+    @staticmethod
+    def _generate_settings_xml(p_scenarioconfig, p_runcfg, p_settingsfile, p_forcerebuildscenarios=False):
         if os.path.isfile(p_settingsfile) and not p_forcerebuildscenarios:
             return
 
@@ -457,7 +460,8 @@ class SumoConfig(optom.configuration.configuration.Configuration):
         with open(p_settingsfile, "w") as f_pconfigxml:
             f_pconfigxml.write(etree.tostring(l_viewsettings, pretty_print=True))
 
-    def _next_timestep(self, p_lambda, p_prevstarttime, p_distribution="poisson"):
+    @staticmethod
+    def _next_timestep(p_lambda, p_prevstarttime, p_distribution="poisson"):
         if p_distribution == "poisson":
             return p_prevstarttime + random.expovariate(p_lambda)
         elif p_distribution == "linear":
@@ -465,60 +469,60 @@ class SumoConfig(optom.configuration.configuration.Configuration):
         else:
             return p_prevstarttime
 
-    def _create_vehicle_distribution(self, p_runcfg, p_scenarioconfig, p_nbvehicles, p_aadt, p_initialsorting,
-                                     p_vtypedistribution):
-        self._log.debug("Create fixed initial vehicle distribution with %s", p_vtypedistribution)
+    def _create_vehicle_distribution(self, p_nbvehicles, p_aadt, p_initialsorting, p_scenario_name):
+        l_cfgvtypedistribution = self._runconfig.get("vtypedistribution")
+        self._log.debug("Create fixed initial vehicle distribution with %s", l_cfgvtypedistribution)
         l_vtypedistribution = list(itertools.chain.from_iterable(
             map(
                 lambda (k, v): [k] * int(round(100 * v.get("fraction"))),
-                p_vtypedistribution.iteritems()
+                l_cfgvtypedistribution.iteritems()
             )
         ))
 
         l_vehps = p_aadt / (24 * 60 * 60) \
-            if not p_runcfg.get("vehiclespersecond").get("enabled") else p_runcfg.get("vehiclespersecond").get("value")
+            if not self._runconfig.get("vehiclespersecond").get("enabled") else self._runconfig.get("vehiclespersecond").get("value")
 
         l_vehicles = dict(
             map(
                 lambda (vid, vtype): ("vehicle{}".format(vid),
-                                      {
-                                          "vtype": self.vtypesconfig.get(vtype),
-                                          "speedDev": p_vtypedistribution.get(vtype).get("speedDev"),
-                                          "maxSpeed": min(
-                                              random.choice(p_vtypedistribution.get(vtype).get("desiredSpeeds")),
-                                              p_scenarioconfig.get("parameters").get("maxSpeed")
+                                      optom.environment.vehicle.SUMOVehicle(
+                                          vtype=vtype,
+                                          vtype_sumo_attr=self.vtypesconfig.get(vtype),
+                                          speed_deviation=l_cfgvtypedistribution.get(vtype).get("speedDev"),
+                                          speed_max=min(
+                                              random.choice(l_cfgvtypedistribution.get(vtype).get("desiredSpeeds")),
+                                              self.scenarioconfig.get(p_scenario_name).get("parameters").get("maxSpeed")
                                           )
-                                      }
-                                      ),
+                                      )),
                 enumerate([random.choice(l_vtypedistribution) for _ in xrange(p_nbvehicles)])
             )
         )
 
         # update colors
         for i_vehicle in l_vehicles.itervalues():
-            i_vehicle["color"] = self._speed_colormap(i_vehicle.get("maxSpeed"))
+            i_vehicle.color = self._speed_colormap(i_vehicle.speed_max)
 
         # sort speeds according to initialsorting flag
         assert p_initialsorting in ["best", "random", "worst"]
 
         l_vehicle_items = l_vehicles.items()
         if p_initialsorting == "best":
-            l_vehicle_items.sort(key=lambda v: v[1].get("maxSpeed"), reverse=True)
+            l_vehicle_items.sort(key=lambda (vid, v): v.speed_max, reverse=True)
         elif p_initialsorting == "worst":
-            l_vehicle_items.sort(key=lambda v: v[1].get("maxSpeed"))
+            l_vehicle_items.sort(key=lambda (vid, v): v.speed_max)
         else:
             random.shuffle(l_vehicle_items)
 
-        # assign start time and id to each vehicle
+        # assign a new id according to sort order and starting time to each vehicle
         for i, i_vehicle in enumerate(l_vehicle_items):
-            i_vehicle[1]["starttime"] = self._next_timestep(l_vehps,
-                                                            l_vehicle_items[i - 1][1].get("starttime") if i > 0 else 0,
-                                                            p_runcfg.get("starttimedistribution")
-                                                            )
-
+            i_vehicle = ("vehicle{}".format(i), i_vehicle[1])
+            i_vehicle[1].start_time = self._next_timestep(l_vehps,
+                                                          l_vehicle_items[i - 1][1].start_time if i > 0 else 0,
+                                                          self.runconfig.get("starttimedistribution")
+                                                          )
         return l_vehicles
 
-    def _generate_trip_xml(self, p_scenarioconfig, p_runcfg, p_initialsorting, p_tripfile,
+    def _generate_trip_xml(self, p_scenarioconfig, p_runcfg, p_initialsorting, p_tripfile, p_scenario_name,
                            p_forcerebuildscenarios=False):
         if os.path.isfile(p_tripfile) and not p_forcerebuildscenarios:
             return
@@ -537,12 +541,10 @@ class SumoConfig(optom.configuration.configuration.Configuration):
                         l_aadt, l_numberofvehicles, (l_timeend - l_timebegin))
 
         l_vehicles = self._create_vehicle_distribution(
-            p_runcfg,
-            p_scenarioconfig,
             l_numberofvehicles,
             l_aadt,
             p_initialsorting,
-            p_runcfg.get("vtypedistribution")
+            p_scenario_name
         )
 
         # xml
@@ -552,13 +554,18 @@ class SumoConfig(optom.configuration.configuration.Configuration):
         for i_vid, i_vehicle in l_vehicles.iteritems():
 
             # filter for relevant attributes
-            l_vattr = dict(map(lambda (k, v): (k, str(v)), filter(
-                lambda (k, v): k in ["vClass", "length", "width", "height", "minGap", "accel", "decel", "speedFactor",
-                                     "speedDev"], i_vehicle.get("vtype").iteritems()
-            )))
+            l_vattr = dict(
+                map(
+                    lambda (k, v): (k, str(v)),
+                    filter(
+                        lambda (k, v): k in ["vClass", "length", "width", "height", "minGap", "accel", "decel", "speedFactor", "speedDev"],
+                        i_vehicle.vtype_sumo_attr.iteritems()
+                    )
+                )
+            )
 
             l_vattr["id"] = str(i_vid)
-            l_vattr["color"] = "{},{},{},{}".format(*i_vehicle.get("color"))
+            l_vattr["color"] = "{},{},{},{}".format(*i_vehicle.color)
             # override parameters speedDev, desiredSpeed, and length if defined in run config
             l_runcfgspeeddev = self.runconfig.get("vtypedistribution").get(l_vattr.get("vClass")).get("speedDev")
             if l_runcfgspeeddev is not None:
@@ -567,7 +574,7 @@ class SumoConfig(optom.configuration.configuration.Configuration):
             l_runcfgdesiredspeed = self.runconfig.get("vtypedistribution").get(l_vattr.get("vClass")).get(
                 "desiredSpeed")
             l_vattr["maxSpeed"] = str(l_runcfgdesiredspeed) if l_runcfgdesiredspeed is not None else str(
-                i_vehicle.get("maxSpeed"))
+                i_vehicle.speed_max)
 
             l_runcfglength = self.runconfig.get("vtypedistribution").get(l_vattr.get("vClass")).get("length")
             if l_runcfglength is not None:
@@ -584,7 +591,7 @@ class SumoConfig(optom.configuration.configuration.Configuration):
         for i_vid, i_vehicle in l_vehicles.iteritems():
             etree.SubElement(l_trips, "trip", attrib={
                 "id": i_vid,
-                "depart": str(i_vehicle.get("starttime")),
+                "depart": str(i_vehicle.start_time),
                 "from": "enter_21start",
                 "to": "21end_exit",
                 "type": i_vid,
