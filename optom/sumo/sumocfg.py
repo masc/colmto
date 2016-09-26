@@ -419,10 +419,10 @@ class SumoConfig(optom.configuration.configuration.Configuration):
         #         "file": p_iloopfile
         #     }
         # )
-        print("SWITCHES", self.scenarioconfig.get(p_scenario_name).get("detectorpositions").get("switches"))
+
         # induction loops at beginning of each switch
-        for i, i_switch_pos in enumerate(
-                self.scenarioconfig.get(p_scenario_name).get("detectorpositions").get("switches")[1:]):
+        l_switches = self.scenarioconfig.get(p_scenario_name).get("detectorpositions").get("switches")[1:]
+        for i, i_switch_pos in enumerate(l_switches):
             # beginning
             if i % 2 == 0:
                 etree.SubElement(
@@ -461,7 +461,7 @@ class SumoConfig(optom.configuration.configuration.Configuration):
             attrib={
                 "id": "3_exit",
                 "lane": "21segment.{}_0".format(
-                    self.scenarioconfig.get(p_scenario_name).get("switches")[-1]
+                    self.scenarioconfig.get(p_scenario_name).get("detectorpositions").get("switches")[-1]
                 ) if l_nbswitches % 2 == 1 or self._onlyoneotlsegment else "21end_exit_0",
                 "pos": str(self.scenarioconfig.get(p_scenario_name).get("detectorpositions").get("exit")),
                 "friendlyPos": "true",
