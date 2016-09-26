@@ -321,13 +321,14 @@ class SumoConfig(optom.configuration.configuration.Configuration):
             }
         )
 
-        # add splits and joins
         self.scenarioconfig.get(p_scenario_name)["detectorpositions"] = {
+                "enter": 5,
                 "enter_21start": l_segmentlength-5,
-                "21end_exit": l_segmentlength-5,
+                "exit": l_segmentlength-5,
                 "switches": []
         }
 
+        # add splits and joins
         l_addotllane = True
         for i_segmentpos in xrange(0, int(l_length), int(l_segmentlength)) \
                 if not self._onlyoneotlsegment else xrange(0, int(2 * l_segmentlength - 1), int(l_segmentlength)):
@@ -373,8 +374,22 @@ class SumoConfig(optom.configuration.configuration.Configuration):
         l_segmentlength = l_length / (l_nbswitches + 1)
 
         l_additional = etree.Element("additional")
+
+        # first induction loop at network enter
+        etree.SubElement(
+            l_additional,
+            "inductionLoop",
+            attrib={
+                "id": "0_enter",
+                "lane": "enter_21start_0",
+                "pos": str(self.scenarioconfig.get(p_scenario_name).get("detectorpositions").get("enter")),
+                "friendlyPos": "true",
+                "splitByType": "true",
+                "freq": "1",
+                "file": p_iloopfile
+            }
+        )
         # place induction loop right before the first split (i.e. end of starting edge)
-        #     <inductionLoop id="myLoop1" lane="foo_0" pos="42" freq="900" file="out.xml"/>
         etree.SubElement(
             l_additional,
             "inductionLoop",
@@ -390,20 +405,54 @@ class SumoConfig(optom.configuration.configuration.Configuration):
         )
 
         # induction loop at the beginning of last one-lane segment (21end_exit)
-        etree.SubElement(
-            l_additional,
-            "inductionLoop",
-            attrib={
-                "id": "2_post21",
-                "lane": "21end_exit_0" if l_nbswitches % 2 == 0 and not self._onlyoneotlsegment
-                else "21segment.{}_0".format(self.scenarioconfig.get(p_scenario_name).get("switches")[-1]),
-                "pos": "0",
-                "friendlyPos": "true",
-                "splitByType": "true",
-                "freq": "1",
-                "file": p_iloopfile
-            }
-        )
+        # etree.SubElement(
+        #     l_additional,
+        #     "inductionLoop",
+        #     attrib={
+        #         "id": "2_post21",
+        #         "lane": "21end_exit_0" if l_nbswitches % 2 == 0 and not self._onlyoneotlsegment
+        #         else "21segment.{}_0".format(self.scenarioconfig.get(p_scenario_name).get("switches")[-1]),
+        #         "pos": "5",
+        #         "friendlyPos": "true",
+        #         "splitByType": "true",
+        #         "freq": "1",
+        #         "file": p_iloopfile
+        #     }
+        # )
+        print("SWITCHES", self.scenarioconfig.get(p_scenario_name).get("detectorpositions").get("switches"))
+        # induction loops at beginning of each switch
+        for i, i_switch_pos in enumerate(
+                self.scenarioconfig.get(p_scenario_name).get("detectorpositions").get("switches")[1:]):
+            # beginning
+            if i % 2 == 0:
+                etree.SubElement(
+                    l_additional,
+                    "inductionLoop",
+                    attrib={
+                        "id": "3_21segment.{}_begin".format(i_switch_pos),
+                        "lane": "21segment.{}_0".format(i_switch_pos),
+                        "pos": "5",
+                        "friendlyPos": "true",
+                        "splitByType": "true",
+                        "freq": "1",
+                        "file": p_iloopfile
+                    }
+                )
+
+                # end
+                etree.SubElement(
+                    l_additional,
+                    "inductionLoop",
+                    attrib={
+                        "id": "3_21segment.{}_end".format(i_switch_pos),
+                        "lane": "21segment.{}_0".format(i_switch_pos),
+                        "pos": str(l_segmentlength-5),
+                        "friendlyPos": "true",
+                        "splitByType": "true",
+                        "freq": "1",
+                        "file": p_iloopfile
+                    }
+                )
 
         # induction loop at the end of last one-lane segment (exit)
         etree.SubElement(
@@ -414,7 +463,7 @@ class SumoConfig(optom.configuration.configuration.Configuration):
                 "lane": "21segment.{}_0".format(
                     self.scenarioconfig.get(p_scenario_name).get("switches")[-1]
                 ) if l_nbswitches % 2 == 1 or self._onlyoneotlsegment else "21end_exit_0",
-                "pos": str(self.scenarioconfig.get(p_scenario_name).get("detectorpositions").get("21end_exit")),
+                "pos": str(self.scenarioconfig.get(p_scenario_name).get("detectorpositions").get("exit")),
                 "friendlyPos": "true",
                 "splitByType": "true",
                 "freq": "1",
@@ -479,8 +528,8 @@ class SumoConfig(optom.configuration.configuration.Configuration):
             )
         ))
 
-        l_vehps = p_aadt / (24 * 60 * 60) \
-            if not self._runconfig.get("vehiclespersecond").get("enabled") else self._runconfig.get("vehiclespersecond").get("value")
+        l_vehps = p_aadt / (24 * 60 * 60) if not self._runconfig.get("vehiclespersecond").get("enabled") \
+            else self._runconfig.get("vehiclespersecond").get("value")
 
         l_vehicles = dict(
             map(
@@ -502,7 +551,7 @@ class SumoConfig(optom.configuration.configuration.Configuration):
         for i_vehicle in l_vehicles.itervalues():
             i_vehicle.color = self._speed_colormap(i_vehicle.speed_max)
 
-        # sort speeds according to initialsorting flag
+        # sort speeds according to initial sorting flag
         assert p_initialsorting in ["best", "random", "worst"]
 
         l_vehicle_items = l_vehicles.items()
