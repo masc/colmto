@@ -3,7 +3,7 @@ sumo:
   gui-delay: 200
   headless: true
   port: 8873
-simtimeinterval: [0, 3600]
+simtimeinterval: [0, 60]
 runs: 10
 scenarios: [BW-B292]
 vtypedistribution:
@@ -18,7 +18,7 @@ vtypedistribution:
   passenger:
     fraction: 0.5
     speedDev: 0.0
-    desiredSpeeds: [31.0, 32.0, 33.0, 34.0]
+    desiredSpeeds: [30.0, 31.0, 32.0, 33.0]
 starttimedistribution: poisson
 nbvehicles:
   enabled: false

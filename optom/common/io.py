@@ -27,6 +27,8 @@ import gzip
 import h5py
 import yaml
 import json
+import fastcsv
+import csv
 
 try:
     from cjson import encode as jsondumps, decode as jsonloads
@@ -60,6 +62,7 @@ except ImportError:
                     print("Failed to import ElementTree from any known place")
 
 
+
 class Reader(object):
     def __init__(self, p_args):
         self._log = log.logger(__name__, p_args.loglevel, p_args.logfile)
@@ -90,6 +93,21 @@ class Writer(object):
         fp = gzip.GzipFile(p_filename, 'w') if p_filename.endswith(".gz") else open(p_filename, mode="w")
         yaml.dump(p_object, fp, Dumper=SafeDumper, default_flow_style=p_default_flow_style)
         fp.close()
+
+    def write_csv(self, p_fieldnames, p_rows, p_filename):
+        self._log.debug("Writing %s", p_filename)
+        with open(p_filename, 'w') as fp:
+            csv_writer = csv.DictWriter(fp, fieldnames=p_fieldnames)
+            csv_writer.writeheader()
+            csv_writer.writerows(p_rows)
+
+    def write_csv_fast(self, p_rows, p_filename):
+        self._log.debug("Writing %s", p_filename)
+        with open(p_filename, 'w', encoding='utf8') as fp:
+            csv_writer = fastcsv.Writer(fp)
+            for i_row in p_rows:
+                csv_writer.writerow(i_row)
+            csv_writer.flush()
 
     def write_hdf5(self, p_filename, p_path, p_objectdict, **kwargs):
         """Write an object to a specific path into an open file, identified by fileid

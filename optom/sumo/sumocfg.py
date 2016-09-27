@@ -51,6 +51,7 @@ import os
 import random
 import subprocess
 import itertools
+from collections import OrderedDict
 
 import optom.configuration.configuration
 import optom.common.io
@@ -241,9 +242,7 @@ class SumoConfig(optom.configuration.configuration.Configuration):
             "additionalfile": l_additionalfile,
             "tripfile": l_tripfile,
             "routefile": l_routefile,
-            # "tripinfofile": l_tripinfofile,
             "configfile": l_configfile,
-            # "fcdfile": l_fcdfile,
             "iloopfile": l_iloopfile
         }
 
@@ -332,8 +331,8 @@ class SumoConfig(optom.configuration.configuration.Configuration):
 
         self.scenarioconfig.get(p_scenario_name)["detectorpositions"] = {
                 "1_enter": 5,
-                "2_21segment.0_0": l_segmentlength-5,
-                "3_exit": l_length+l_segmentlength-5,
+                "2_21segment.0_begin": l_segmentlength-5,
+                "3_exit": l_length+2*l_segmentlength-5,
         }
         self.scenarioconfig.get(p_scenario_name)["switchpositions"] = []
 
@@ -405,9 +404,9 @@ class SumoConfig(optom.configuration.configuration.Configuration):
             l_additional,
             "inductionLoop",
             attrib={
-                "id": "2_21segment.0_0",
+                "id": "2_21segment.0_begin",
                 "lane": "enter_21start_0",
-                "pos": str(self.scenarioconfig.get(p_scenario_name).get("detectorpositions").get("2_21segment.0_0")),
+                "pos": str(self.scenarioconfig.get(p_scenario_name).get("detectorpositions").get("2_21segment.0_begin")),
                 "friendlyPos": "true",
                 "splitByType": "true",
                 "freq": "1",
@@ -419,7 +418,7 @@ class SumoConfig(optom.configuration.configuration.Configuration):
         l_switches = self.scenarioconfig.get(p_scenario_name).get("switchpositions")
         for i, i_switch_pos in list(enumerate(l_switches))[:-1]:
             if i % 2 == 1:
-                l_detector_beginning_id = "2_21segment.{}_beginning".format(l_switches[i+1])
+                l_detector_beginning_id = "2_21segment.{}_begin".format(l_switches[i+1])
                 self.scenarioconfig.\
                     get(p_scenario_name).\
                     get("detectorpositions")[l_detector_beginning_id] = l_segmentlength + i_switch_pos + l_segmentlength - 5
@@ -458,6 +457,11 @@ class SumoConfig(optom.configuration.configuration.Configuration):
                 )
 
         # induction loop at the end of last one-lane segment and exit
+        l_detector_last_id = "2_21segment.{}_end".format(l_switches[-2])
+        self.scenarioconfig \
+            .get(p_scenario_name) \
+            .get("detectorpositions")[l_detector_last_id] = l_length + l_segmentlength
+
         etree.SubElement(
             l_additional,
             "inductionLoop",
@@ -548,44 +552,40 @@ class SumoConfig(optom.configuration.configuration.Configuration):
         l_vehps = p_aadt / (24 * 60 * 60) if not self._runconfig.get("vehiclespersecond").get("enabled") \
             else self._runconfig.get("vehiclespersecond").get("value")
 
-        l_vehicles = dict(
-            map(
-                lambda (vid, vtype): ("vehicle{}".format(vid),
-                                      optom.environment.vehicle.SUMOVehicle(
-                                          vtype=vtype,
-                                          vtype_sumo_attr=self.vtypesconfig.get(vtype),
-                                          speed_deviation=l_cfgvtypedistribution.get(vtype).get("speedDev"),
-                                          speed_max=min(
-                                              random.choice(l_cfgvtypedistribution.get(vtype).get("desiredSpeeds")),
-                                              self.scenarioconfig.get(p_scenario_name).get("parameters").get("maxSpeed")
-                                          )
-                                      )),
-                enumerate([random.choice(l_vtypedistribution) for _ in xrange(p_nbvehicles)])
-            )
+        l_vehicle_list = map(
+            lambda vtype: optom.environment.vehicle.SUMOVehicle(
+                vtype=vtype,
+                vtype_sumo_attr=self.vtypesconfig.get(vtype),
+                speed_deviation=l_cfgvtypedistribution.get(vtype).get("speedDev"),
+                speed_max=min(
+                    random.choice(l_cfgvtypedistribution.get(vtype).get("desiredSpeeds")),
+                    self.scenarioconfig.get(p_scenario_name).get("parameters").get("maxSpeed")
+                )
+            ),
+            [random.choice(l_vtypedistribution) for _ in xrange(p_nbvehicles)]
         )
-
-        # update colors
-        for i_vehicle in l_vehicles.itervalues():
-            i_vehicle.color = self._speed_colormap(i_vehicle.speed_max)
 
         # sort speeds according to initial sorting flag
         assert p_initialsorting in ["best", "random", "worst"]
-
-        l_vehicle_items = l_vehicles.items()
         if p_initialsorting == "best":
-            l_vehicle_items.sort(key=lambda (vid, v): v.speed_max, reverse=True)
+            l_vehicle_list.sort(key=lambda v: v.speed_max, reverse=True)
         elif p_initialsorting == "worst":
-            l_vehicle_items.sort(key=lambda (vid, v): v.speed_max)
-        else:
-            random.shuffle(l_vehicle_items)
+            l_vehicle_list.sort(key=lambda v: v.speed_max)
+        elif p_initialsorting == "random":
+            random.shuffle(l_vehicle_list)
 
         # assign a new id according to sort order and starting time to each vehicle
-        for i, i_vehicle in enumerate(l_vehicle_items):
-            i_vehicle = ("vehicle{}".format(i), i_vehicle[1])
-            i_vehicle[1].start_time = self._next_timestep(l_vehps,
-                                                          l_vehicle_items[i - 1][1].start_time if i > 0 else 0,
-                                                          self.runconfig.get("starttimedistribution")
-                                                          )
+        l_vehicles = OrderedDict()
+        for i, i_vehicle in enumerate(l_vehicle_list):
+            # update colors
+            i_vehicle.color = self._speed_colormap(i_vehicle.speed_max)
+            # update start time
+            i_vehicle.start_time = self._next_timestep(l_vehps,
+                                                       l_vehicle_list[i-1].start_time if i > 0 else 0,
+                                                       self.runconfig.get("starttimedistribution")
+                                                       )
+            l_vehicles["vehicle{}".format(i)] = i_vehicle
+
         return l_vehicles
 
     def _generate_trip_xml(self, p_scenarioconfig, p_runcfg, p_initialsorting, p_tripfile, p_scenario_name,
@@ -643,8 +643,8 @@ class SumoConfig(optom.configuration.configuration.Configuration):
             l_vattr["type"] = l_vattr.get("vClass")
             etree.SubElement(l_trips, "vType", attrib=l_vattr)
 
-        # add trips
-        for i_vid, i_vehicle in sorted(l_vehicles.iteritems(), key=lambda (k, v): v.start_time):
+        # add trip for each vehicle
+        for i_vid, i_vehicle in l_vehicles.iteritems():
             etree.SubElement(l_trips, "trip", attrib={
                 "id": i_vid,
                 "depart": str(i_vehicle.start_time),

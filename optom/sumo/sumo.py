@@ -24,6 +24,8 @@ from __future__ import division
 from __future__ import print_function
 
 import os
+import math
+
 from sumolib import checkBinary
 from collections import defaultdict
 from optom.common.io import Writer
@@ -69,11 +71,11 @@ class Sumo(object):
                 self._runtime.run(l_runcfg, p_scenarioname, i_run)
 
                 self._log.debug("Converting induction loop XMLs with etree.XSLT")
-
-                l_iloopresults = self._statistics.traveltimes_from_iloops(
+                l_iloopresults_json, l_iloopresults_csv = self._statistics.traveltimes_from_iloops(
                     l_runcfg,
                     self._sumocfg.scenarioconfig.get(p_scenarioname)
                 )
+
                 if i_run % 10 == 0:
                     self._log.info(
                         "Scenario %s, sorting %s: Finished run %d/%d",
@@ -83,10 +85,33 @@ class Sumo(object):
                         len(l_scenarioruns.get("runs").get(i_initialsorting))
                     )
                 self._log.debug("Writing {} results".format(p_scenarioname))
-                self._writer.write_json_pretty(
-                    dict(l_iloopresults),
-                    os.path.join(self._sumocfg.resultsdir, "{}-{}-{}-TT-TL.json.gz".format(p_scenarioname, i_initialsorting, i_run))
+                l_aadt = self._sumocfg.scenarioconfig.get("parameters").get("aadt") \
+                    if not self._sumocfg.runconfig.get("aadt").get("enabled") \
+                    else self._sumocfg.runconfig.get("aadt").get("value")
+                self._writer.write_json(
+                    dict(l_iloopresults_json),
+                    os.path.join(
+                        self._sumocfg.resultsdir,
+                        "{}-{}vps-{}-run{}-TT-TL.json.gz".format(
+                            p_scenarioname, l_aadt, i_initialsorting,
+                            str(i_run).zfill(
+                                int(math.ceil(math.log10(self._sumocfg.runconfig.get("runs"))))
+                            )
+                        )
+                    )
                 )
+                self._writer.write_csv(
+                    l_iloopresults_csv[0].keys(),
+                    l_iloopresults_csv,
+                    "{}-{}vps-{}-run{}-TT-TL.csv".format(
+                        p_scenarioname, l_aadt, i_initialsorting,
+                        str(i_run).zfill(
+                            int(math.ceil(math.log10(self._sumocfg.runconfig.get("runs"))))
+                        )
+                    )
+                )
+
+
 
     def run_scenarios(self):
         for i_scenarioname in self._sumocfg.runconfig.get("scenarios"):

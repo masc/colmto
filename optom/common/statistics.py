@@ -23,7 +23,8 @@
 from __future__ import division
 from __future__ import print_function
 
-import itertools
+from collections import defaultdict
+from collections import OrderedDict
 
 import log
 from io import Writer
@@ -128,29 +129,46 @@ class Statistics(object):
         l_total_length = p_scenario.get("parameters").get("length")
         l_nbswitches = p_scenario.get("parameters").get("switches")
         l_segmentlength = l_total_length / (l_nbswitches + 1)
-        print(p_scenario)
         l_iloopfile = p_runconfig.get("iloopfile")
         l_root = etree.parse(l_iloopfile)
         l_iloop_detections = etree.XSLT(s_iloop_template)(l_root).iter("vehicle")
-        l_vehicle_data = {}
+        # create a dictionary with vid -> detectorid -> timestep hierarchy for json output, for csv the same but flat
+        l_vehicle_data_json = defaultdict(dict)
+        l_vehicle_data_csv = []
         for i_v in l_iloop_detections:
-            if i_v.get("type") in l_vehicle_data:
-                l_vehicle_data.get(i_v.get("type"))[i_v.get("id")] = float(i_v.get("begin"))
-            else:
-                l_vehicle_data[i_v.get("type")] = {
-                    i_v.get("id"): float(i_v.get("begin"))
-                }
+            l_vehicle_data_json[i_v.get("type")][i_v.get("id")] = float(i_v.get("begin"))
 
-        for i_vid, i_vdata in l_vehicle_data.iteritems():
-            l_vehicle_max_speed = l_vehicles.get(i_vid).speed_max
-            for i_pair in itertools.combinations(sorted(i_vdata.iteritems(), key=lambda i: i[1]), 2):
-                l_traveltime = i_pair[1][1] - i_pair[0][1]
-                l_opt_travel_time = l_segmentlength / l_vehicle_max_speed
+        # calculate traveltimes and timeloss for each adjacent detector pair
+        # a vehicle passed by using the recorded timestamp
+        for i_vid, i_vdata in l_vehicle_data_json.iteritems():
+            l_vehicle_speed_max = l_vehicles.get(i_vid).speed_max
+            l_detectors = sorted(i_vdata.keys())
+
+            l_vehicle_data_csv_row = OrderedDict({
+                "vehicle": i_vid,
+                "vtype": l_vehicles.get(i_vid).vtype,
+                "speed_max": l_vehicle_speed_max
+            })
+
+            i_vdata["vtype"] = l_vehicles.get(i_vid).vtype
+            i_vdata["speed_max"] = l_vehicle_speed_max
+
+            for i_detector_x, i_detector_y in zip(l_detectors[:-1], l_detectors[1:]):
+                l_traveltime = i_vdata.get(i_detector_y) - i_vdata.get(i_detector_x)
+                l_detector_distance = p_scenario.get("detectorpositions").get(i_detector_y) - p_scenario.get("detectorpositions").get(i_detector_x)
+                l_opt_travel_time = l_detector_distance / l_vehicle_speed_max
                 l_timeloss = l_traveltime - l_opt_travel_time
-                i_vdata["-".join((i_pair[0][0], i_pair[1][0]))] = {
-                    "optimaltraveltime": l_opt_travel_time,
-                    "traveltime": l_traveltime,
-                    "timeloss": l_timeloss
+                i_vdata["{}-{}".format(i_detector_x, i_detector_y)] = {
+                    "distance": l_detector_distance,
+                    "optimal_traveltime": l_opt_travel_time,
+                    "travel_time": l_traveltime,
+                    "time_loss": l_timeloss
                 }
+                l_vehicle_data_csv_row["{}-{}-distance".format(i_detector_x, i_detector_y)] = l_detector_distance
+                l_vehicle_data_csv_row["{}-{}-optimal_traveltime".format(i_detector_x, i_detector_y)] = l_opt_travel_time
+                l_vehicle_data_csv_row["{}-{}-travel_time".format(i_detector_x, i_detector_y)] = l_traveltime
+                l_vehicle_data_csv_row["{}-{}-time_loss".format(i_detector_x, i_detector_y)] = l_timeloss
 
-        return l_vehicle_data
+            l_vehicle_data_csv.append(l_vehicle_data_csv_row)
+
+        return l_vehicle_data_json, l_vehicle_data_csv
