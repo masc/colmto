@@ -115,6 +115,9 @@ class SumoConfig(optom.configuration.configuration.Configuration):
         return self.runconfig.get("sumo").get(p_key)
 
     def generate_scenario(self, p_scenarioname):
+
+        self._log.debug("Generating scenario %s", p_scenarioname)
+
         l_destinationdir = os.path.join(self._runsdir, p_scenarioname)
         if not os.path.exists(os.path.join(l_destinationdir)):
             os.mkdir(l_destinationdir)
@@ -153,6 +156,9 @@ class SumoConfig(optom.configuration.configuration.Configuration):
         return l_scenarioruns
 
     def generate_run(self, p_scenarioruns, p_initialsorting, p_run):
+
+        self._log.debug("Generating run %s for %s sorting", p_run, p_initialsorting)
+
         l_scenarioname = p_scenarioruns.get("scenarioname")
         l_scenarioconfig = self.scenarioconfig.get(l_scenarioname)
         l_detector_positions = p_scenarioruns.get("detectorpositions")
@@ -190,7 +196,6 @@ class SumoConfig(optom.configuration.configuration.Configuration):
         )
         # l_tripinfofile = os.path.join(l_destinationdir, str(p_initialsorting), str(p_run),
         # "{}.tripinfo-output.xml".format(l_scenarioname))
-
 
         l_iloopdir = os.path.join(
             self._resultsdir, l_scenarioname, str(p_initialsorting), str(p_run)
@@ -246,6 +251,8 @@ class SumoConfig(optom.configuration.configuration.Configuration):
         if os.path.isfile(p_nodefile) and not p_forcerebuildscenarios:
             return
 
+        self._log.debug("Generating node xml")
+
         # parameters
         l_length = p_scenarioconfig.get("parameters").get("length")
         l_nbswitches = p_scenarioconfig.get("parameters").get("switches")
@@ -277,6 +284,8 @@ class SumoConfig(optom.configuration.configuration.Configuration):
     def _generate_edge_xml(self, p_scenario_name, p_scenarioconfig, p_edgefile, p_forcerebuildscenarios=False):
         if os.path.isfile(p_edgefile) and not p_forcerebuildscenarios:
             return
+
+        self._log.debug("Generating edge xml for %s", p_scenario_name)
 
         # parameters
         l_length = p_scenarioconfig.get("parameters").get("length")
@@ -322,11 +331,11 @@ class SumoConfig(optom.configuration.configuration.Configuration):
         )
 
         self.scenarioconfig.get(p_scenario_name)["detectorpositions"] = {
-                "enter": 5,
-                "enter_21start": l_segmentlength-5,
-                "exit": l_segmentlength-5,
-                "switches": []
+                "1_enter": 5,
+                "2_21segment.0_0": l_segmentlength-5,
+                "3_exit": l_length+l_segmentlength-5,
         }
+        self.scenarioconfig.get(p_scenario_name)["switchpositions"] = []
 
         # add splits and joins
         l_addotllane = True
@@ -342,7 +351,7 @@ class SumoConfig(optom.configuration.configuration.Configuration):
                 }
             )
 
-            self.scenarioconfig.get(p_scenario_name).get("detectorpositions").get("switches").append(i_segmentpos)
+            self.scenarioconfig.get(p_scenario_name).get("switchpositions").append(i_segmentpos)
             l_addotllane ^= True
 
         # Exit lane
@@ -367,6 +376,8 @@ class SumoConfig(optom.configuration.configuration.Configuration):
         if os.path.isfile(p_additionalfile) and not p_forcerebuildscenarios:
             return
 
+        self._log.debug("Generating additional xml for %s", p_scenario_name)
+
         # parameters
         l_length = p_scenarioconfig.get("parameters").get("length")
         l_nbswitches = p_scenarioconfig.get("parameters").get("switches")
@@ -380,9 +391,9 @@ class SumoConfig(optom.configuration.configuration.Configuration):
             l_additional,
             "inductionLoop",
             attrib={
-                "id": "0_enter",
+                "id": "1_enter",
                 "lane": "enter_21start_0",
-                "pos": str(self.scenarioconfig.get(p_scenario_name).get("detectorpositions").get("enter")),
+                "pos": str(self.scenarioconfig.get(p_scenario_name).get("detectorpositions").get("1_enter")),
                 "friendlyPos": "true",
                 "splitByType": "true",
                 "freq": "1",
@@ -394,9 +405,9 @@ class SumoConfig(optom.configuration.configuration.Configuration):
             l_additional,
             "inductionLoop",
             attrib={
-                "id": "1_pre21",
+                "id": "2_21segment.0_0",
                 "lane": "enter_21start_0",
-                "pos": str(self.scenarioconfig.get(p_scenario_name).get("detectorpositions").get("enter_21start")),
+                "pos": str(self.scenarioconfig.get(p_scenario_name).get("detectorpositions").get("2_21segment.0_0")),
                 "friendlyPos": "true",
                 "splitByType": "true",
                 "freq": "1",
@@ -405,31 +416,25 @@ class SumoConfig(optom.configuration.configuration.Configuration):
         )
 
         # induction loops at beginning of each switch
-        l_switches = self.scenarioconfig.get(p_scenario_name).get("detectorpositions").get("switches")[1:]
-        for i, i_switch_pos in enumerate(l_switches):
-            # beginning
-            if i % 2 == 0:
-                etree.SubElement(
-                    l_additional,
-                    "inductionLoop",
-                    attrib={
-                        "id": "3_21segment.{}_begin".format(i_switch_pos),
-                        "lane": "21segment.{}_0".format(i_switch_pos),
-                        "pos": "5",
-                        "friendlyPos": "true",
-                        "splitByType": "true",
-                        "freq": "1",
-                        "file": p_iloopfile
-                    }
-                )
+        l_switches = self.scenarioconfig.get(p_scenario_name).get("switchpositions")
+        for i, i_switch_pos in list(enumerate(l_switches))[:-1]:
+            if i % 2 == 1:
+                l_detector_beginning_id = "2_21segment.{}_beginning".format(l_switches[i+1])
+                self.scenarioconfig.\
+                    get(p_scenario_name).\
+                    get("detectorpositions")[l_detector_beginning_id] = l_segmentlength + i_switch_pos + l_segmentlength - 5
 
-                # end
+                l_detector_end_id = "2_21segment.{}_end".format(l_switches[i-1])
+                self.scenarioconfig \
+                    .get(p_scenario_name) \
+                    .get("detectorpositions")[l_detector_end_id] = l_segmentlength + i_switch_pos + 5
+
                 etree.SubElement(
                     l_additional,
                     "inductionLoop",
                     attrib={
-                        "id": "3_21segment.{}_end".format(i_switch_pos),
-                        "lane": "21segment.{}_0".format(i_switch_pos),
+                        "id": l_detector_beginning_id,
+                        "lane": "21segment.{}_0".format(l_switches[i]),
                         "pos": str(l_segmentlength-5),
                         "friendlyPos": "true",
                         "splitByType": "true",
@@ -438,16 +443,44 @@ class SumoConfig(optom.configuration.configuration.Configuration):
                     }
                 )
 
-        # induction loop at the end of last one-lane segment (exit)
+                etree.SubElement(
+                    l_additional,
+                    "inductionLoop",
+                    attrib={
+                        "id": l_detector_end_id,
+                        "lane": "21segment.{}_0".format(l_switches[i]),
+                        "pos": "5",
+                        "friendlyPos": "true",
+                        "splitByType": "true",
+                        "freq": "1",
+                        "file": p_iloopfile
+                    }
+                )
+
+        # induction loop at the end of last one-lane segment and exit
+        etree.SubElement(
+            l_additional,
+            "inductionLoop",
+            attrib={
+                "id": "2_21segment.{}_end".format(l_switches[-2]),
+                "lane": "21segment.{}_0".format(l_switches[-1]),
+                "pos": "5",
+                "friendlyPos": "true",
+                "splitByType": "true",
+                "freq": "1",
+                "file": p_iloopfile
+            }
+        )
+
         etree.SubElement(
             l_additional,
             "inductionLoop",
             attrib={
                 "id": "3_exit",
                 "lane": "21segment.{}_0".format(
-                    self.scenarioconfig.get(p_scenario_name).get("detectorpositions").get("switches")[-1]
+                    self.scenarioconfig.get(p_scenario_name).get("switchpositions")[-1]
                 ) if l_nbswitches % 2 == 1 or self._onlyoneotlsegment else "21end_exit_0",
-                "pos": str(self.scenarioconfig.get(p_scenario_name).get("detectorpositions").get("exit")),
+                "pos": str(l_segmentlength-5),
                 "friendlyPos": "true",
                 "splitByType": "true",
                 "freq": "1",
@@ -504,7 +537,7 @@ class SumoConfig(optom.configuration.configuration.Configuration):
 
     def _create_vehicle_distribution(self, p_nbvehicles, p_aadt, p_initialsorting, p_scenario_name):
         l_cfgvtypedistribution = self._runconfig.get("vtypedistribution")
-        self._log.debug("Create fixed initial vehicle distribution with %s", l_cfgvtypedistribution)
+        self._log.debug("Create vehicle distribution with %s", l_cfgvtypedistribution)
         l_vtypedistribution = list(itertools.chain.from_iterable(
             map(
                 lambda (k, v): [k] * int(round(100 * v.get("fraction"))),
@@ -559,7 +592,7 @@ class SumoConfig(optom.configuration.configuration.Configuration):
                            p_forcerebuildscenarios=False):
         if os.path.isfile(p_tripfile) and not p_forcerebuildscenarios:
             return
-
+        self._log.debug("Generating trip xml for %s", p_scenario_name)
         # generate simple traffic demand by considering AADT, Vmax, roadtype etc
         l_aadt = p_scenarioconfig.get("parameters").get("aadt") \
             if not p_runcfg.get("aadt").get("enabled") else p_runcfg.get("aadt").get("value")
@@ -571,9 +604,8 @@ class SumoConfig(optom.configuration.configuration.Configuration):
         l_numberofvehicles = int(round(l_aadt / (24 * 60 * 60) * (l_timeend - l_timebegin))) \
             if not p_runcfg.get("nbvehicles").get("enabled") else p_runcfg.get("nbvehicles").get("value")
 
-        self._log.info("Number of vehicles {} for {} seconds simulation time.".format(l_numberofvehicles, l_timeend-l_timebegin))
-        self._log.debug("Scenario's AADT of %d vehicles/average annual day => %d vehicles for %d simulation seconds",
-                        l_aadt, l_numberofvehicles, (l_timeend - l_timebegin))
+        # self._log.debug("Scenario's AADT of %d vehicles/average annual day => %d vehicles for %d simulation seconds",
+        #                 l_aadt, l_numberofvehicles, (l_timeend - l_timebegin))
 
         l_vehicles = self._create_vehicle_distribution(
             l_numberofvehicles,
@@ -581,7 +613,6 @@ class SumoConfig(optom.configuration.configuration.Configuration):
             p_initialsorting,
             p_scenario_name
         )
-        self._log.debug("Created {} {} objects".format(len(l_vehicles), type(l_vehicles.get("vehicle0"))))
 
         # xml
         l_trips = etree.Element("trips")
@@ -589,15 +620,6 @@ class SumoConfig(optom.configuration.configuration.Configuration):
         # create a sumo vtype for each vehicle
         for i_vid, i_vehicle in l_vehicles.iteritems():
             # filter for relevant attributes and transform to string
-            l_vattr = dict(
-                map(
-                    lambda (k, v): (k, str(v)),
-                    filter(
-                        lambda (k, v): k in ["vClass", "length", "width", "height", "minGap", "accel", "decel", "speedFactor", "speedDev"],
-                        i_vehicle.vtype_sumo_attr.iteritems()
-                    )
-                )
-            )
             l_vattr = i_vehicle.vtype_sumo_attr
             l_vattr["id"] = str(i_vid)
             l_vattr["color"] = "{},{},{},{}".format(*i_vehicle.color)

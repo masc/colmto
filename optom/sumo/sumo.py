@@ -53,22 +53,26 @@ class Sumo(object):
             self._log.error("/!\ scenario %s not found in configuration", p_scenarioname)
             return
 
-        self._allscenarioruns[p_scenarioname] = l_scenarioruns = self._sumocfg.generate_scenario(p_scenarioname)
+        # self._allscenarioruns[p_scenarioname] =
+        l_scenarioruns = self._sumocfg.generate_scenario(p_scenarioname)
         l_initialsortings = self._sumocfg.runconfig.get("initialsortings")
 
         l_iloopresults = defaultdict(dict)
         for i_initialsorting in l_initialsortings:
             l_scenarioruns.get("runs")[i_initialsorting] = {}
             for i_run in xrange(self._sumocfg.runconfig.get("runs")):
-                l_scenarioruns.get("runs").get(i_initialsorting)[i_run] = l_runcfg = self._sumocfg.generate_run(
+                # l_scenarioruns.get("runs").get(i_initialsorting)[i_run] =
+                l_runcfg = self._sumocfg.generate_run(
                     l_scenarioruns, i_initialsorting, i_run
                 )
+
                 self._runtime.run(l_runcfg, p_scenarioname, i_run)
+
                 self._log.debug("Converting induction loop XMLs with etree.XSLT")
-                l_iloopresults[i_initialsorting]["run{}".format(i_run)] = self._statistics.traveltimes_from_iloops(
-                    l_runcfg.get("vehicles"),
-                    self._sumocfg.scenarioconfig.get(p_scenarioname),
-                    l_runcfg.get("iloopfile")
+
+                l_iloopresults = self._statistics.traveltimes_from_iloops(
+                    l_runcfg,
+                    self._sumocfg.scenarioconfig.get(p_scenarioname)
                 )
                 if i_run % 10 == 0:
                     self._log.info(
@@ -78,11 +82,11 @@ class Sumo(object):
                         i_run+1,
                         len(l_scenarioruns.get("runs").get(i_initialsorting))
                     )
-
-        self._writer.write_json_pretty(
-            dict(l_iloopresults),
-            os.path.join(self._sumocfg.resultsdir, "{}-TT-TL.json.gz".format(p_scenarioname))
-        )
+                self._log.debug("Writing {} results".format(p_scenarioname))
+                self._writer.write_json_pretty(
+                    dict(l_iloopresults),
+                    os.path.join(self._sumocfg.resultsdir, "{}-{}-{}-TT-TL.json.gz".format(p_scenarioname, i_initialsorting, i_run))
+                )
 
     def run_scenarios(self):
         for i_scenarioname in self._sumocfg.runconfig.get("scenarios"):

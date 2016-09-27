@@ -1,10 +1,10 @@
 sumo:
   enabled: true
   gui-delay: 200
-  headless: false
+  headless: true
   port: 8873
 simtimeinterval: [0, 3600]
-runs: 1
+runs: 10
 scenarios: [BW-B292]
 vtypedistribution:
   tractor:
