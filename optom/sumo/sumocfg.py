@@ -143,17 +143,6 @@ class SumoConfig(optom.configuration.configuration.Configuration):
         self._generate_settings_xml(l_scenarioconfig, l_runcfg, l_settingsfile, self._forcerebuildscenarios)
         self._generate_net_xml(l_nodefile, l_edgefile, l_netfile, self._forcerebuildscenarios)
 
-        # dump configuration
-        self._writer.write_json(
-            {
-                "optomversion": self._optomversion,
-                "runconfig": self.runconfig,
-                "scenarioconfig": self.scenarioconfig,
-                "vtypesconfig": self.vtypesconfig
-            },
-            os.path.join(self.sumoconfigdir, self._runprefix, "configuration.json")
-        )
-
         return l_scenarioruns
 
     def generate_run(self, p_scenarioruns, p_initialsorting, p_run):

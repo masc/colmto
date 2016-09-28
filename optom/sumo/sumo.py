@@ -90,6 +90,17 @@ class Sumo(object):
                         self._sumocfg.runconfig.get("runs")
                     )
 
+        # dump configuration
+        self._writer.write_json_pretty(
+            {
+                "optomversion": self._sumocfg._optomversion,
+                "runconfig": self._sumocfg.runconfig,
+                "scenarioconfig": self._sumocfg.scenarioconfig,
+                "vtypesconfig": self._sumocfg.vtypesconfig
+            },
+            os.path.join(self._sumocfg.sumoconfigdir, self._sumocfg._runprefix, "configuration.json")
+        )
+
     def run_scenarios(self):
         for i_scenarioname in self._sumocfg.runconfig.get("scenarios"):
             self._run_scenario(i_scenarioname)
