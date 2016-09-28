@@ -144,14 +144,14 @@ class SumoConfig(optom.configuration.configuration.Configuration):
         self._generate_net_xml(l_nodefile, l_edgefile, l_netfile, self._forcerebuildscenarios)
 
         # dump configuration
-        self._writer.write_yaml(
+        self._writer.write_json(
             {
                 "optomversion": self._optomversion,
                 "runconfig": self.runconfig,
                 "scenarioconfig": self.scenarioconfig,
                 "vtypesconfig": self.vtypesconfig
             },
-            os.path.join(self.sumoconfigdir, self._runprefix, "configuration.yaml")
+            os.path.join(self.sumoconfigdir, self._runprefix, "configuration.json")
         )
 
         return l_scenarioruns
@@ -328,11 +328,11 @@ class SumoConfig(optom.configuration.configuration.Configuration):
             }
         )
 
-        self.scenarioconfig.get(p_scenario_name)["detectorpositions"] = {
+        self.scenarioconfig.get(p_scenario_name)["detectorpositions"] = OrderedDict(
+            {
                 "1_enter": 5,
-                "2_21segment.0_begin": l_segmentlength-5,
-                "3_exit": l_length+2*l_segmentlength-5,
-        }
+                "2_21segment.0_begin": l_segmentlength-5
+            })
         self.scenarioconfig.get(p_scenario_name)["switchpositions"] = []
 
         # add splits and joins
@@ -490,6 +490,9 @@ class SumoConfig(optom.configuration.configuration.Configuration):
                 "file": p_iloopfile
             }
         )
+        self.scenarioconfig \
+            .get(p_scenario_name) \
+            .get("detectorpositions")["3_exit"] = l_length+2*l_segmentlength-5
 
         with open(p_additionalfile, "w") as f_paddxml:
             f_paddxml.write(etree.tostring(l_additional, pretty_print=True))

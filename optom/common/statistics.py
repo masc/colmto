@@ -133,6 +133,9 @@ class Statistics(object):
         l_iloopfile = p_run_data.get("iloopfile")
         l_root = etree.parse(l_iloopfile)
         l_iloop_detections = etree.XSLT(s_iloop_template)(l_root).iter("vehicle")
+
+        l_detectors = p_scenario_config.get("detectorpositions").keys()
+
         # create a dictionary with vid -> detectorid -> timestep hierarchy for json output, for csv the same but flat
         l_vehicle_data_json = defaultdict(dict)
         l_vehicle_data_csv = []
@@ -143,7 +146,6 @@ class Statistics(object):
         # a vehicle passed by using the recorded timestamp
         for i_vid, i_vdata in l_vehicle_data_json.iteritems():
             l_vehicle_speed_max = l_vehicles.get(i_vid).speed_max
-            l_detectors = sorted(i_vdata.keys())
 
             l_vehicle_data_csv_row = OrderedDict({
                 "vehicle": i_vid,
@@ -154,11 +156,20 @@ class Statistics(object):
             i_vdata["vtype"] = l_vehicles.get(i_vid).vtype
             i_vdata["speed_max"] = l_vehicle_speed_max
 
-            for i_detector_x, i_detector_y in zip(l_detectors[:-1], l_detectors[1:]):
-                l_traveltime = i_vdata.get(i_detector_y) - i_vdata.get(i_detector_x)
+            l_detector_pairs = zip(l_detectors[:-1], l_detectors[1:])
+            #[(l_detectors[0], l_detectors[-1])] + \
+                               #[(l_detectors[1], l_detectors[-2])] +
+            for i_detector_x, i_detector_y in l_detector_pairs:
+                l_traveltime = None
+                l_opt_travel_time = None
+                l_timeloss = None
                 l_detector_distance = p_scenario_config.get("detectorpositions").get(i_detector_y) - p_scenario_config.get("detectorpositions").get(i_detector_x)
-                l_opt_travel_time = l_detector_distance / l_vehicle_speed_max
-                l_timeloss = l_traveltime - l_opt_travel_time
+
+                if i_vdata.get(i_detector_y) is not None and i_vdata.get(i_detector_x) is not None:
+                    l_traveltime = i_vdata.get(i_detector_y) - i_vdata.get(i_detector_x)
+                    l_opt_travel_time = l_detector_distance / l_vehicle_speed_max
+                    l_timeloss = l_traveltime - l_opt_travel_time
+
                 i_vdata["{}-{}".format(i_detector_x, i_detector_y)] = {
                     "distance": l_detector_distance,
                     "optimal_traveltime": l_opt_travel_time,
@@ -189,8 +200,9 @@ class Statistics(object):
             )
         )
 
+        l_csv_fieldnames = l_vehicle_data_csv[0].keys() if len(l_vehicle_data_csv) > 0 else []
         self._writer.write_csv(
-            l_vehicle_data_csv[0].keys(),
+            l_csv_fieldnames,
             l_vehicle_data_csv,
             os.path.join(
                 p_resultsdir,
