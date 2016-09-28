@@ -296,10 +296,10 @@ class SumoConfig(optom.configuration.configuration.Configuration):
         # create edges xml
         l_edges = etree.Element("edges")
 
-        # find slowest vehicle speed to be used as parameter for entering lane
-        l_lowestspeed = min(
-            map(lambda vtype: min(vtype.get("desiredSpeeds")), self.runconfig.get("vtypedistribution").itervalues())
-        )
+        # # find slowest vehicle speed to be used as parameter for entering lane
+        # l_lowestspeed = min(
+        #     map(lambda vtype: min(vtype.get("desiredSpeeds")), self.runconfig.get("vtypedistribution").itervalues())
+        # )
 
         # Entering edge with one lane, leading to 2+1 Roadway
         etree.SubElement(
@@ -310,7 +310,7 @@ class SumoConfig(optom.configuration.configuration.Configuration):
                 "from": "enter",
                 "to": "21start",
                 "numLanes": "1",
-                "speed": str(l_lowestspeed)
+                "speed": str(l_maxspeed)
             }
         )
 
