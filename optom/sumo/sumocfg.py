@@ -162,7 +162,6 @@ class SumoConfig(optom.configuration.configuration.Configuration):
 
         l_scenarioname = p_scenarioruns.get("scenarioname")
         l_scenarioconfig = self.scenarioconfig.get(l_scenarioname)
-        l_detector_positions = p_scenarioruns.get("detectorpositions")
         l_destinationdir = os.path.join(self._runsdir, p_scenarioruns.get("scenarioname"))
         if not os.path.exists(os.path.join(l_destinationdir)):
             os.mkdir(l_destinationdir)

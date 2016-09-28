@@ -23,6 +23,8 @@
 from __future__ import division
 from __future__ import print_function
 
+import math
+import os
 from collections import defaultdict
 from collections import OrderedDict
 
@@ -123,13 +125,12 @@ class Statistics(object):
             "nbruns": l_runs
         }
 
-    def traveltimes_from_iloops(self, p_runconfig, p_scenario):
+    def dump_traveltimes_from_iloops(self, p_run_data, p_run_config, p_scenario_config, p_scenarioname, p_initialsorting, p_current_run, p_resultsdir):
         self._log.debug("Reading and aggregating induction loop logs")
-        l_vehicles = p_runconfig.get("vehicles")
-        l_total_length = p_scenario.get("parameters").get("length")
-        l_nbswitches = p_scenario.get("parameters").get("switches")
-        l_segmentlength = l_total_length / (l_nbswitches + 1)
-        l_iloopfile = p_runconfig.get("iloopfile")
+        l_vehicles = p_run_data.get("vehicles")
+        l_total_length = p_scenario_config.get("parameters").get("length")
+        l_nbswitches = p_scenario_config.get("parameters").get("switches")
+        l_iloopfile = p_run_data.get("iloopfile")
         l_root = etree.parse(l_iloopfile)
         l_iloop_detections = etree.XSLT(s_iloop_template)(l_root).iter("vehicle")
         # create a dictionary with vid -> detectorid -> timestep hierarchy for json output, for csv the same but flat
@@ -155,7 +156,7 @@ class Statistics(object):
 
             for i_detector_x, i_detector_y in zip(l_detectors[:-1], l_detectors[1:]):
                 l_traveltime = i_vdata.get(i_detector_y) - i_vdata.get(i_detector_x)
-                l_detector_distance = p_scenario.get("detectorpositions").get(i_detector_y) - p_scenario.get("detectorpositions").get(i_detector_x)
+                l_detector_distance = p_scenario_config.get("detectorpositions").get(i_detector_y) - p_scenario_config.get("detectorpositions").get(i_detector_x)
                 l_opt_travel_time = l_detector_distance / l_vehicle_speed_max
                 l_timeloss = l_traveltime - l_opt_travel_time
                 i_vdata["{}-{}".format(i_detector_x, i_detector_y)] = {
@@ -170,5 +171,36 @@ class Statistics(object):
                 l_vehicle_data_csv_row["{}-{}-time_loss".format(i_detector_x, i_detector_y)] = l_timeloss
 
             l_vehicle_data_csv.append(l_vehicle_data_csv_row)
+
+        self._log.debug("Writing {} results".format(p_scenarioname))
+        l_aadt = p_scenario_config.get("parameters").get("aadt") \
+            if not p_run_config.get("aadt").get("enabled") \
+            else p_run_config.get("aadt").get("value")
+        self._writer.write_json(
+            dict(l_vehicle_data_json),
+            os.path.join(
+                p_resultsdir,
+                "{}-{}aadt-{}-run{}-TT-TL.json.gz".format(
+                    p_scenarioname, l_aadt, p_initialsorting,
+                    str(p_current_run).zfill(
+                        int(math.ceil(math.log10(p_run_config.get("runs"))))
+                    )
+                )
+            )
+        )
+
+        self._writer.write_csv(
+            l_vehicle_data_csv[0].keys(),
+            l_vehicle_data_csv,
+            os.path.join(
+                p_resultsdir,
+                "{}-{}aadt-{}-run{}-TT-TL.csv".format(
+                    p_scenarioname, l_aadt, p_initialsorting,
+                    str(p_current_run).zfill(
+                        int(math.ceil(math.log10(p_run_config.get("runs"))))
+                    )
+                )
+            )
+        )
 
         return l_vehicle_data_json, l_vehicle_data_csv
