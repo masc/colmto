@@ -83,8 +83,10 @@ class Sumo(object):
 
                 if i_run % 10 == 0:
                     self._log.info(
-                        "Scenario %s, sorting %s: Finished run %d/%d",
+                        "Scenario %s, AADT %d (%d vps), sorting %s: Finished run %d/%d",
                         p_scenarioname,
+                        self._sumocfg.runconfig.get("aadt").get("value"),
+                        int(self._sumocfg.runconfig.get("aadt").get("value") / 24),
                         i_initialsorting,
                         i_run+1,
                         self._sumocfg.runconfig.get("runs")
@@ -105,5 +107,3 @@ class Sumo(object):
         for i_scenarioname in self._sumocfg.runconfig.get("scenarios"):
             self._run_scenario(i_scenarioname)
 
-    def _clean_runs(self):
-        pass
