@@ -180,15 +180,15 @@ class Statistics(object):
             l_vehicle_data_csv.append(l_vehicle_data_csv_row)
 
         self._log.debug("Writing {} results".format(p_scenarioname))
-        l_aadt = p_scenario_config.get("parameters").get("aadt") \
-            if not p_run_config.get("aadt").get("enabled") \
-            else p_run_config.get("aadt").get("value")
+        l_aadtveh = "{}aadt".format(p_scenario_config.get("parameters").get("aadt")) \
+            if p_run_config.get("aadt").get("enabled") \
+            else "{}veh".format(p_run_config.get("nbvehicles").get("value"))
         self._writer.write_json(
             dict(l_vehicle_data_json),
             os.path.join(
                 p_resultsdir,
-                "{}-{}aadt-{}-run{}-TT-TL.json.gz".format(
-                    p_scenarioname, l_aadt, p_initialsorting,
+                "{}-{}-{}-run{}-TT-TL.json.gz".format(
+                    p_scenarioname, l_aadtveh, p_initialsorting,
                     str(p_current_run).zfill(
                         int(math.ceil(math.log10(p_run_config.get("runs"))))
                     )
@@ -202,8 +202,8 @@ class Statistics(object):
             l_vehicle_data_csv,
             os.path.join(
                 p_resultsdir,
-                "{}-{}aadt-{}-run{}-TT-TL.csv".format(
-                    p_scenarioname, l_aadt, p_initialsorting,
+                "{}-{}-{}-run{}-TT-TL.csv".format(
+                    p_scenarioname, l_aadtveh, p_initialsorting,
                     str(p_current_run).zfill(
                         int(math.ceil(math.log10(p_run_config.get("runs"))))
                     )
