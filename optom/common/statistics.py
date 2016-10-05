@@ -128,8 +128,6 @@ class Statistics(object):
     def dump_traveltimes_from_iloops(self, p_run_data, p_run_config, p_scenario_config, p_scenarioname, p_initialsorting, p_current_run, p_resultsdir):
         self._log.debug("Reading and aggregating induction loop logs")
         l_vehicles = p_run_data.get("vehicles")
-        l_total_length = p_scenario_config.get("parameters").get("length")
-        l_nbswitches = p_scenario_config.get("parameters").get("switches")
         l_iloopfile = p_run_data.get("iloopfile")
         l_root = etree.parse(l_iloopfile)
         l_iloop_detections = etree.XSLT(s_iloop_template)(l_root).iter("vehicle")
@@ -147,11 +145,10 @@ class Statistics(object):
         for i_vid, i_vdata in l_vehicle_data_json.iteritems():
             l_vehicle_speed_max = l_vehicles.get(i_vid).speed_max
 
-            l_vehicle_data_csv_row = OrderedDict({
-                "vehicle": i_vid,
-                "vtype": l_vehicles.get(i_vid).vtype,
-                "speed_max": l_vehicle_speed_max
-            })
+            l_vehicle_data_csv_row = OrderedDict()
+            l_vehicle_data_csv_row["vehicle"] = "a{}".format(i_vid),
+            l_vehicle_data_csv_row["vtype"] = l_vehicles.get(i_vid).vtype,
+            l_vehicle_data_csv_row["speed_max"] = l_vehicle_speed_max
 
             i_vdata["vtype"] = l_vehicles.get(i_vid).vtype
             i_vdata["speed_max"] = l_vehicle_speed_max

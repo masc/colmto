@@ -69,6 +69,12 @@ class Reader(object):
         self._log.debug("Parsing %s with etree", p_fname)
         return etree.parse(p_fname)
 
+    def read_json(self, p_filename):
+        self._log.debug("Reading %s", p_filename)
+        with gzip.GzipFile(p_filename, 'r') if p_filename.endswith(".gz") else open(p_filename, mode="r") as fp:
+            l_file = fp.read()
+        return jsonloads(l_file)
+
 
 class Writer(object):
 
