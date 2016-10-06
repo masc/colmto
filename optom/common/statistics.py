@@ -219,11 +219,14 @@ class Statistics(object):
         Calculate H-Spread of given data points
         Weisstein, Eric W. "H-Spread." From MathWorld--A Wolfram Web Resource. http://mathworld.wolfram.com/H-Spread.html
         Weisstein, Eric W. "Hinge." From MathWorld--A Wolfram Web Resource. http://mathworld.wolfram.com/Hinge.html
-        :param p_data: Iterable set of data elements
-        :return: H_2 - H_1
+        :param p_data: Iterable set of data elements of (preferably) 4n+5 for n=0,1,...,N, i.e. minimum length is 5
+        :return: H_2 - H_1 if p_data contains at least 5 elements, otherwise None
         """
         l_data = sorted(p_data)
         n = len(l_data)
-        h_1 = l_data[int((n+3)/n)]
-        h_2 = l_data[int((3*n+1)/4)]
-        return h_2 - h_1
+        if n >= 5:
+            h_1 = l_data[int((n+3)/n-1)]
+            h_2 = l_data[int((3*n+1)/4-1)]
+            return h_2 - h_1
+
+        return None
