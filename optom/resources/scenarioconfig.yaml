@@ -35,5 +35,70 @@ BW-B33:
     switches: 4
     type: TLE
 
+Irzik1:
+  description:
+    from: OUJever
+    to: OUJever
+    state: NI
+    road: B210
+  parameters:
+    aadt: 13000.0
+    length: 6800.0
+    speedlimit: 27.77777777777778 # m/s = 100 km/h
+    switches: 4
 
-
+Irzik2:
+  description:
+      from: Coelbe
+      to: Kirchhain
+      state: HE
+      road: B62
+    parameters:
+      aadt: 13000.0
+      length: 8200.0
+      speedlimit: 27.77777777777778 # m/s = km/h
+      switches: 6
+Irzik3:
+  description:
+      from: Paderborn
+      to: Schlangen
+      state: NW
+      road: B1
+    parameters:
+      aadt: 17000.0
+      length: 8800.0
+      speedlimit: 27.77777777777778 # m/s = km/h
+      switches: 8
+Irzik4:
+  description:
+      from: Leun
+      to: Niederbiel
+      state: HE
+      road: B49
+    parameters:
+      aadt: 19000.0
+      length: 4500.0
+      speedlimit: 27.77777777777778 # m/s = km/h
+      switches: 4
+Irzik5:
+  description:
+      from: Cham
+      to: Straubing
+      state: BY
+      road: B20
+    parameters:
+      aadt: 20000.0
+      length: 11000.0
+      speedlimit: 27.77777777777778 # m/s = km/h
+      switches: 7
+Irzik6:
+  description:
+      from: OUDachau
+      to: OUDachau
+      state: BY
+      road: B471
+    parameters:
+      aadt: 16000.0
+      length: 6400.0
+      speedlimit: 27.77777777777778 # m/s = km/h
+      switches: 4
