@@ -3,33 +3,33 @@ sumo:
   gui-delay: 200
   headless: true
   port: 8873
-simtimeinterval: [0, 30]
+simtimeinterval: [0, 600]
 runs: 1
-scenarios: [BW-B292]
+scenarios: [Irzik1]
 vtypedistribution:
   tractor:
     fraction: 0.2
     speedDev: 0.0
-    desiredSpeeds: [7.0, 8.0, 9.0, 10.0]
+    desiredSpeeds: [8.0]
   truck:
     fraction: 0.3
     speedDev: 0.0
-    desiredSpeeds: [22.0, 23.0, 24.0, 25.0]
+    desiredSpeeds: [23.0]
   passenger:
     fraction: 0.5
     speedDev: 0.0
-    desiredSpeeds: [30.0, 31.0, 32.0, 33.0]
+    desiredSpeeds: [34.0]
 starttimedistribution: poisson
 nbvehicles:
   enabled: false
-  value: 20
+  value: 30
 aadt:
   enabled: true
-  value: 108000 # = 4500 vehicles/hour
+  value: 13000 # = 541 vehicles/hour
 vehiclespersecond:
   enabled: false
   value: 0.5
-initialsortings: [best, random, worst]
+initialsortings: [random]
 detectors:
   start: true
   splits: true
