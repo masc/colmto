@@ -91,7 +91,7 @@ class SumoConfig(optom.configuration.configuration.Configuration):
         # generate color map for vehicle max speeds
         l_global_maxspeed = max(
             map(
-                lambda i_scenario: i_scenario.get("parameters").get("maxSpeed"),
+                lambda i_scenario: i_scenario.get("parameters").get("speedlimit"),
                 self.scenarioconfig.itervalues()
             )
         )
@@ -277,7 +277,7 @@ class SumoConfig(optom.configuration.configuration.Configuration):
         # parameters
         l_length = p_scenarioconfig.get("parameters").get("length")
         l_nbswitches = p_scenarioconfig.get("parameters").get("switches")
-        l_maxspeed = p_scenarioconfig.get("parameters").get("maxSpeed")
+        l_maxspeed = p_scenarioconfig.get("parameters").get("speedlimit")
 
         # assume even distributed otl segment lengths
         l_segmentlength = l_length / (l_nbswitches + 1)
@@ -550,7 +550,7 @@ class SumoConfig(optom.configuration.configuration.Configuration):
                 speed_deviation=l_cfgvtypedistribution.get(vtype).get("speedDev"),
                 speed_max=min(
                     random.choice(l_cfgvtypedistribution.get(vtype).get("desiredSpeeds")),
-                    self.scenarioconfig.get(p_scenario_name).get("parameters").get("maxSpeed")
+                    self.scenarioconfig.get(p_scenario_name).get("parameters").get("speedlimit")
                 )
             ),
             [random.choice(l_vtypedistribution) for _ in xrange(p_nbvehicles)]
@@ -621,7 +621,7 @@ class SumoConfig(optom.configuration.configuration.Configuration):
 
             l_runcfgdesiredspeed = self.runconfig.get("vtypedistribution").get(l_vattr.get("vClass")).get(
                 "desiredSpeed")
-            l_vattr["maxSpeed"] = str(l_runcfgdesiredspeed) if l_runcfgdesiredspeed is not None else str(
+            l_vattr["speedlimit"] = str(l_runcfgdesiredspeed) if l_runcfgdesiredspeed is not None else str(
                 i_vehicle.speed_max)
 
             l_runcfglength = self.runconfig.get("vtypedistribution").get(l_vattr.get("vClass")).get("length")
