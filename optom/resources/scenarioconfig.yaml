@@ -7,9 +7,10 @@ BW-B292:
   parameters:
     aadt: 12870
     length: 7800.0
-    maxSpeed: 27.77777777777778
+    speedlimit: 27.77777777777778
     switches: 8
     type: GT
+
 BW-B31n:
   description:
     from: Stockach
@@ -19,9 +20,10 @@ BW-B31n:
   parameters:
     aadt: 12700
     length: 10000.0
-    maxSpeed: 33.333333333333336
+    speedlimit: 33.333333333333336
     switches: 4
     type: TLE
+
 BW-B33:
   description:
     from: Gengenbach
@@ -31,9 +33,17 @@ BW-B33:
   parameters:
     aadt: 18000
     length: 5600.0
-    maxSpeed: 27.77777777777778
+    speedlimit: 27.77777777777778
     switches: 4
     type: TLE
+    
+1lane-500:
+  parameters:
+    length: 500.0
+    speedlimit: 27.77777777777778 # m/s = 100 km/h
+    switches: 0
+    measuringpoints: [0.0, 500.0]
+    
 Irzik1:
   description:
     from: OUJever
@@ -48,56 +58,60 @@ Irzik1:
 
 Irzik2:
   description:
-      from: Coelbe
-      to: Kirchhain
-      state: HE
-      road: B62
-    parameters:
-      aadt: 13000.0
-      length: 8200.0
-      speedlimit: 27.77777777777778 # m/s = km/h
-      switches: 6
+    from: Coelbe
+    to: Kirchhain
+    state: HE
+    road: B62
+  parameters:
+    aadt: 13000.0
+    length: 8200.0
+    speedlimit: 27.77777777777778 # m/s = km/h
+    switches: 6
+
 Irzik3:
   description:
-      from: Paderborn
-      to: Schlangen
-      state: NW
-      road: B1
-    parameters:
-      aadt: 17000.0
-      length: 8800.0
-      speedlimit: 27.77777777777778 # m/s = km/h
-      switches: 8
+    from: Paderborn
+    to: Schlangen
+    state: NW
+    road: B1
+  parameters:
+    aadt: 17000.0
+    length: 8800.0
+    speedlimit: 27.77777777777778 # m/s = km/h
+    switches: 8
+
 Irzik4:
   description:
-      from: Leun
-      to: Niederbiel
-      state: HE
-      road: B49
-    parameters:
-      aadt: 19000.0
-      length: 4500.0
-      speedlimit: 27.77777777777778 # m/s = km/h
-      switches: 4
+    from: Leun
+    to: Niederbiel
+    state: HE
+    road: B49
+  parameters:
+    aadt: 19000.0
+    length: 4500.0
+    speedlimit: 27.77777777777778 # m/s = km/h
+    switches: 4
+
 Irzik5:
   description:
-      from: Cham
-      to: Straubing
-      state: BY
-      road: B20
-    parameters:
-      aadt: 20000.0
-      length: 11000.0
-      speedlimit: 27.77777777777778 # m/s = km/h
-      switches: 7
+    from: Cham
+    to: Straubing
+    state: BY
+    road: B20
+  parameters:
+    aadt: 20000.0
+    length: 11000.0
+    speedlimit: 27.77777777777778 # m/s = km/h
+    switches: 7
+
 Irzik6:
   description:
-      from: OUDachau
-      to: OUDachau
-      state: BY
-      road: B471
-    parameters:
-      aadt: 16000.0
-      length: 6400.0
-      speedlimit: 27.77777777777778 # m/s = km/h
-      switches: 4
+    from: OUDachau
+    to: OUDachau
+    state: BY
+    road: B471
+  parameters:
+    aadt: 16000.0
+    length: 6400.0
+    speedlimit: 27.77777777777778 # m/s = km/h
+    switches: 4
