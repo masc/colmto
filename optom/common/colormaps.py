@@ -15,11 +15,6 @@ from matplotlib.colors import ListedColormap
 import matplotlib.colors as colors
 import matplotlib.cm as cm
 
-__all__ = (
-    'magma', 'inferno', 'plasma', 'viridis',
-    'magma_r', 'inferno_r', 'plasma_r', 'viridis_r'
-)
-
 _magma_data = ((0.001462, 0.000466, 0.013866),
                (0.002258, 0.001295, 0.018331),
                (0.003279, 0.002305, 0.023708),
@@ -1048,17 +1043,21 @@ _viridis_data = ((0.267004, 0.004874, 0.329415),
                  (0.983868, 0.904867, 0.136897),
                  (0.993248, 0.906157, 0.143936))
 
-_cmaps = {}
-for (name, data) in (('magma', _magma_data),
-                     ('magma_r', tuple(reversed(_magma_data))),
-                     ('inferno', _inferno_data),
-                     ('inferno_r', tuple(reversed(_inferno_data))),
-                     ('plasma', _plasma_data),
-                     ('plasma_r', tuple(reversed(_plasma_data))),
-                     ('viridis', _viridis_data),
-                     ('viridis_r', tuple(reversed(_viridis_data)))):
-
-    _cmaps[name] = ListedColormap(data, name=name)
+_cmaps = dict(
+    map(
+        lambda (name, data): (name, ListedColormap(data, name=name)),
+        (
+            ('magma', _magma_data),
+            ('magma_r', tuple(reversed(_magma_data))),
+            ('inferno', _inferno_data),
+            ('inferno_r', tuple(reversed(_inferno_data))),
+            ('plasma', _plasma_data),
+            ('plasma_r', tuple(reversed(_plasma_data))),
+            ('viridis', _viridis_data),
+            ('viridis_r', tuple(reversed(_viridis_data)))
+        )
+    )
+)
 
 
 def get_mapped_cmap(p_cmap_name, p_range_max):
