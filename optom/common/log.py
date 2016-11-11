@@ -41,7 +41,14 @@ def logger(p_name, p_loglevel=logging.NOTSET, p_quiet=False, p_logfile=os.path.e
         os.makedirs(os.path.dirname(p_logfile))
 
     l_log = logging.getLogger(p_name)
-    l_level = p_loglevel if type(p_loglevel) is int else s_loglevel.get(p_loglevel.upper())
+    if type(p_loglevel) is int:
+        l_level = p_loglevel
+    elif type(p_loglevel) is str:
+        l_level = s_loglevel.get(str(p_loglevel).upper()) \
+            if s_loglevel.get(str(p_loglevel).upper()) is not None else logging.NOTSET
+    else:
+        l_level = logging.NOTSET
+
     l_log.setLevel(l_level if l_level is not None else logging.NOTSET)
 
     # create a file handler
