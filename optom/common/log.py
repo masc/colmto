@@ -37,16 +37,17 @@ LOGLEVEL = {
 }
 
 
-def logger(p_name, p_loglevel=logging.NOTSET, p_quiet=False, p_logfile=os.path.expanduser(u"~/.optom/optom.log")):
+def logger(p_name, p_loglevel=logging.NOTSET, p_quiet=False,
+           p_logfile=os.path.expanduser(u"~/.optom/optom.log")):
     """Create a logger instance."""
 
     if not os.path.exists(os.path.dirname(p_logfile)):
         os.makedirs(os.path.dirname(p_logfile))
 
     l_log = logging.getLogger(p_name)
-    if type(p_loglevel) is int:
+    if isinstance(p_loglevel, int):
         l_level = p_loglevel
-    elif type(p_loglevel) is str:
+    elif isinstance(p_loglevel, str):
         l_level = LOGLEVEL.get(str(p_loglevel).upper()) \
             if LOGLEVEL.get(str(p_loglevel).upper()) is not None else logging.NOTSET
     else:
@@ -55,7 +56,9 @@ def logger(p_name, p_loglevel=logging.NOTSET, p_quiet=False, p_logfile=os.path.e
     l_log.setLevel(l_level if l_level is not None else logging.NOTSET)
 
     # create a file handler
-    l_fhandler = logging.handlers.RotatingFileHandler(p_logfile, maxBytes=100*1024*1024, backupCount=16)
+    l_fhandler = logging.handlers.RotatingFileHandler(
+        p_logfile, maxBytes=100*1024*1024, backupCount=16
+    )
     l_fhandler.setLevel(l_level if l_level is not None else logging.NOTSET)
 
     # create a logging format
