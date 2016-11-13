@@ -24,20 +24,25 @@ from __future__ import division
 from __future__ import print_function
 
 import os
-import math
+import sys
 
-from sumolib import checkBinary
+try:
+    sys.path.append(os.path.join("sumo", "sumo", "tools"))
+    sys.path.append(os.path.join(os.environ.get("SUMO_HOME", os.path.join("..", "..")), "tools"))
+    from sumolib import checkBinary
+except ImportError:
+    raise ("please declare environment variable 'SUMO_HOME' as the root"
+           "directory of your sumo installation (it should contain folders 'bin',"
+           "'tools' and 'docs')")
 from collections import defaultdict
 from optom.common.io import Writer
 from optom.common.statistics import Statistics
 from optom.common import log
-import sumocfg
 from sumocfg import SumoConfig
 from runtime import Runtime
 
 
 class Sumo(object):
-
     def __init__(self, p_args):
         self._log = log.logger(__name__, p_args.loglevel, p_args.quiet, p_args.logfile)
 
@@ -78,7 +83,8 @@ class Sumo(object):
                     p_scenarioname,
                     i_initialsorting,
                     i_run,
-                    os.path.join(self._sumocfg.resultsdir, p_scenarioname, i_initialsorting, str(i_run))
+                    os.path.join(self._sumocfg.resultsdir, p_scenarioname, i_initialsorting,
+                                 str(i_run))
                 )
 
                 if i_run % 10 == 0:
@@ -88,7 +94,7 @@ class Sumo(object):
                         self._sumocfg.runconfig.get("aadt").get("value"),
                         int(self._sumocfg.runconfig.get("aadt").get("value") / 24),
                         i_initialsorting,
-                        i_run+1,
+                        i_run + 1,
                         self._sumocfg.runconfig.get("runs")
                     )
 
@@ -100,10 +106,10 @@ class Sumo(object):
                 "scenarioconfig": self._sumocfg.scenarioconfig,
                 "vtypesconfig": self._sumocfg.vtypesconfig
             },
-            os.path.join(self._sumocfg.sumoconfigdir, self._sumocfg._runprefix, "configuration.json")
+            os.path.join(self._sumocfg.sumoconfigdir, self._sumocfg._runprefix,
+                         "configuration.json")
         )
 
     def run_scenarios(self):
         for i_scenarioname in self._sumocfg.runconfig.get("scenarios"):
             self._run_scenario(i_scenarioname)
-

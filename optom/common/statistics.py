@@ -25,8 +25,8 @@ from __future__ import print_function
 
 import math
 import os
-from collections import defaultdict
 from collections import OrderedDict
+from collections import defaultdict
 
 import log
 from io import Writer
@@ -52,7 +52,6 @@ except ImportError:
                 except ImportError:
                     print("Failed to import ElementTree from any known place")
 
-
 s_iloop_template = etree.XML("""
     <xsl:stylesheet version= "1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
     <xsl:template match="/">
@@ -68,14 +67,14 @@ s_iloop_template = etree.XML("""
 
 
 class Statistics(object):
-
     def __init__(self, p_args):
         self._log = log.logger(__name__, p_args.loglevel, p_args.logfile)
         self._writer = Writer(p_args)
 
-    def compute_sumo_results(self, p_scenarioname, p_scenarioruns, p_iloopresults, p_deltas=("1_pre21-2_post21",
-                                                                                             "1_pre21-3_exit",
-                                                                                             "2_post21-3_exit")):
+    def compute_sumo_results(self, p_scenarioname, p_scenarioruns, p_iloopresults,
+                             p_deltas=("1_pre21-2_post21",
+                                       "1_pre21-3_exit",
+                                       "2_post21-3_exit")):
         self._log.info("Traveltime statistics for scenario %s", p_scenarioname)
 
         l_data = {
@@ -94,14 +93,16 @@ class Statistics(object):
                 l_tripfname = i_scenariorun.get("tripfile")
                 l_ettripstree = etree.parse(l_tripfname)
                 l_ettrips = l_ettripstree.getroot()
-                l_trips = dict(map(lambda t: (t.attrib.get("id"), t.attrib), l_ettrips.iter("vType")))
+                l_trips = dict(
+                    map(lambda t: (t.attrib.get("id"), t.attrib), l_ettrips.iter("vType")))
 
                 if l_vehicles == 0:
                     l_vehicles = len(p_iloopresults.get(i_sortingmode).get(i_run))
 
                 for i_vid in l_trips:
                     l_vmaxspeed = l_trips.get(i_vid).get("maxSpeed")
-                    l_label = "{}\n({} m/s)".format(i_sortingmode, str(int(float(l_vmaxspeed))).zfill(2))
+                    l_label = "{}\n({} m/s)".format(i_sortingmode,
+                                                    str(int(float(l_vmaxspeed))).zfill(2))
 
                     for i_delta in p_deltas:
                         if l_data.get("traveltime").get(i_delta) is None:
@@ -125,7 +126,8 @@ class Statistics(object):
             "nbruns": l_runs
         }
 
-    def dump_traveltimes_from_iloops(self, p_run_data, p_run_config, p_scenario_config, p_scenarioname, p_initialsorting, p_current_run, p_resultsdir):
+    def dump_traveltimes_from_iloops(self, p_run_data, p_run_config, p_scenario_config,
+                                     p_scenarioname, p_initialsorting, p_current_run, p_resultsdir):
         self._log.debug("Reading and aggregating induction loop logs")
         l_vehicles = p_run_data.get("vehicles")
         l_iloopfile = p_run_data.get("iloopfile")
@@ -134,7 +136,8 @@ class Statistics(object):
 
         l_detectors = sorted(p_scenario_config.get("detectorpositions").keys())
 
-        # create a dictionary with vid -> detectorid -> timestep hierarchy for json output, for csv the same but flat
+        # create a dictionary with vid -> detectorid -> timestep hierarchy for json output,
+        # for csv the same but flat
         l_vehicle_data_json = defaultdict(dict)
         l_vehicle_data_csv = []
         for i_v in l_iloop_detections:
@@ -153,13 +156,16 @@ class Statistics(object):
             i_vdata["vtype"] = l_vehicles.get(i_vid).vtype
             i_vdata["speed_max"] = l_vehicle_speed_max
 
-            l_detector_pairs = [(l_detectors[0], l_detectors[-1]), (l_detectors[1], l_detectors[-2])] + zip(l_detectors[1:-2:2], l_detectors[2:-1:2])
+            l_detector_pairs = [(l_detectors[0], l_detectors[-1]),
+                                (l_detectors[1], l_detectors[-2])] + zip(l_detectors[1:-2:2],
+                                                                         l_detectors[2:-1:2])
 
             for i_detector_x, i_detector_y in l_detector_pairs:
                 l_traveltime = None
                 l_opt_travel_time = None
                 l_timeloss = None
-                l_detector_distance = p_scenario_config.get("detectorpositions").get(i_detector_y) - p_scenario_config.get("detectorpositions").get(i_detector_x)
+                l_detector_distance = p_scenario_config.get("detectorpositions").get(
+                    i_detector_y) - p_scenario_config.get("detectorpositions").get(i_detector_x)
 
                 if i_vdata.get(i_detector_y) is not None and i_vdata.get(i_detector_x) is not None:
                     l_traveltime = i_vdata.get(i_detector_y) - i_vdata.get(i_detector_x)
@@ -172,10 +178,14 @@ class Statistics(object):
                     "travel_time": l_traveltime,
                     "time_loss": l_timeloss
                 }
-                l_vehicle_data_csv_row["{}-{}-distance".format(i_detector_x, i_detector_y)] = l_detector_distance
-                l_vehicle_data_csv_row["{}-{}-optimal_traveltime".format(i_detector_x, i_detector_y)] = l_opt_travel_time
-                l_vehicle_data_csv_row["{}-{}-travel_time".format(i_detector_x, i_detector_y)] = l_traveltime
-                l_vehicle_data_csv_row["{}-{}-time_loss".format(i_detector_x, i_detector_y)] = l_timeloss
+                l_vehicle_data_csv_row[
+                    "{}-{}-distance".format(i_detector_x, i_detector_y)] = l_detector_distance
+                l_vehicle_data_csv_row["{}-{}-optimal_traveltime".format(i_detector_x,
+                                                                         i_detector_y)] = l_opt_travel_time
+                l_vehicle_data_csv_row[
+                    "{}-{}-travel_time".format(i_detector_x, i_detector_y)] = l_traveltime
+                l_vehicle_data_csv_row[
+                    "{}-{}-time_loss".format(i_detector_x, i_detector_y)] = l_timeloss
 
             l_vehicle_data_csv.append(l_vehicle_data_csv_row)
 
@@ -225,8 +235,8 @@ class Statistics(object):
         l_data = sorted(p_data)
         n = len(l_data)
         if n >= 5:
-            h_1 = l_data[int((n+3)/n-1)]
-            h_2 = l_data[int((3*n+1)/4-1)]
+            h_1 = l_data[int((n + 3) / n - 1)]
+            h_2 = l_data[int((3 * n + 1) / 4 - 1)]
             return h_2 - h_1
 
         return None

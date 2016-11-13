@@ -8,7 +8,8 @@ Licensed under LGPL.
 
 def main():
     """
-    Main function of the boilerplate code is the entry point of the 'optom' executable script (defined in setup.py).
+    Main function of the boilerplate code is the entry point of the 'optom' executable script
+    (defined in setup.py).
 
     Use doctests, those are very helpful.
 

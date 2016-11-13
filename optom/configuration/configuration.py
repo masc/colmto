@@ -20,8 +20,8 @@
 # # along with this program. If not, see http://www.gnu.org/licenses/         #
 # #############################################################################
 # @endcond
-from __future__ import print_function
 from __future__ import division
+from __future__ import print_function
 
 try:
     from yaml import CSafeLoader as SafeLoader, CSafeDumper as SafeDumper
@@ -35,7 +35,6 @@ from optom.common import log
 
 
 class Configuration(object):
-
     def __init__(self, p_args):
         self._log = log.logger(__name__, p_args.loglevel, p_args.logfile)
 
@@ -54,7 +53,8 @@ class Configuration(object):
             raise BaseException("run configuration {} is not a file".format(p_args.runconfig))
 
         if not os.path.isfile(p_args.scenarioconfig):
-            raise BaseException("scenario configuration {} is not a file".format(p_args.scenarioconfig))
+            raise BaseException(
+                "scenario configuration {} is not a file".format(p_args.scenarioconfig))
 
         if not os.path.isfile(p_args.vtypesconfig):
             raise BaseException("vtype configuration {} is not a file".format(p_args.vtypesconfig))
@@ -65,11 +65,17 @@ class Configuration(object):
         self._scenarioconfig = yaml.load(open(p_args.scenarioconfig), Loader=SafeLoader)
         self._vtypesconfig = yaml.load(open(p_args.vtypesconfig), Loader=SafeLoader)
         self._runprefix = p_args.runprefix
+
         # store currently running version
-        # inferred from current HEAD if located inside a git project. otherwise set version to "UNKNOWN"
+        # inferred from current HEAD if located inside a git project.
+        # otherwise set version to "UNKNOWN"
         try:
-            self._optomversion = str(sh.git.bake("rev-parse")("HEAD")).replace("\n", "")
+            l_gitcmd = sh.Command("git rev-parse HEAD")
+            self._optomversion = str(l_gitcmd().replace("\n", ""))
         except sh.ErrorReturnCode:
+            self._optomversion = "UNKNOWN"
+        except sh.CommandNotFound:
+            self._log.debug("Git command not found in PATH. Setting commit id to UNKNOWN.")
             self._optomversion = "UNKNOWN"
 
         self._override_cfg_flags(p_args)
