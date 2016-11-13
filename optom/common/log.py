@@ -20,12 +20,14 @@
 # # along with this program. If not, see http://www.gnu.org/licenses/         #
 # #############################################################################
 # @endcond
+"""Logging module"""
+
 import logging
 import logging.handlers
 import os
 import sys
 
-s_loglevel = {
+LOGLEVEL = {
     "CRITICAL": logging.CRITICAL,
     "ERROR": logging.ERROR,
     "WARNING": logging.WARNING,
@@ -36,6 +38,7 @@ s_loglevel = {
 
 
 def logger(p_name, p_loglevel=logging.NOTSET, p_quiet=False, p_logfile=os.path.expanduser(u"~/.optom/optom.log")):
+    """Create a logger instance."""
 
     if not os.path.exists(os.path.dirname(p_logfile)):
         os.makedirs(os.path.dirname(p_logfile))
@@ -44,8 +47,8 @@ def logger(p_name, p_loglevel=logging.NOTSET, p_quiet=False, p_logfile=os.path.e
     if type(p_loglevel) is int:
         l_level = p_loglevel
     elif type(p_loglevel) is str:
-        l_level = s_loglevel.get(str(p_loglevel).upper()) \
-            if s_loglevel.get(str(p_loglevel).upper()) is not None else logging.NOTSET
+        l_level = LOGLEVEL.get(str(p_loglevel).upper()) \
+            if LOGLEVEL.get(str(p_loglevel).upper()) is not None else logging.NOTSET
     else:
         l_level = logging.NOTSET
 
