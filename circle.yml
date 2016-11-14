@@ -26,8 +26,13 @@ dependencies:
         - sudo apt-get install libhdf5-dev
         - pip install pylint
 
+checkout:
+  post:
+    - git submodule sync
+    - git submodule update --init
+
 test:
-    post:
+    override:
         - git checkout master
         - mv -f optom /tmp
         - git checkout gh-pages
