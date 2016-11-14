@@ -33,7 +33,7 @@ checkout:
     - git submodule update --init
 
 test:
-    override:
+    post:
         - git checkout master
         - mv -f optom /tmp
         - git checkout gh-pages
