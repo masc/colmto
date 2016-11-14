@@ -1,6 +1,8 @@
 OPTOM
 ==========================
 
+![Circle CI](https://circleci.com/gh/masc/optom.svg?style=shield)
+
 This is boilerplate code for your project, generated using the `python_boilerplate` paster template. It provides simple starting points for using some of the popular best-practices:
 
   * Proper [setuptools](https://pypi.python.org/pypi/setuptools)-compatible package layout.
