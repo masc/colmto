@@ -1,7 +1,7 @@
 OPTOM
 ==========================
 
-![Circle CI](https://circleci.com/gh/masc/optom.svg?style=shield)
+[![CircleCI](https://circleci.com/gh/masc/optom/tree/master.svg?style=svg&circle-token=ff9f6072df84edef937bff818eb00102157245b4)](https://circleci.com/gh/masc/optom/tree/master)
 
 This is boilerplate code for your project, generated using the `python_boilerplate` paster template. It provides simple starting points for using some of the popular best-practices:
 
