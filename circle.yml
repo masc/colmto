@@ -18,8 +18,12 @@ machine:
         GIT_COMMITTER_NAME: CircleCI
         GIT_COMMITTER_EMAIL: masc@tu-clausthal.de
 
+    python:
+        version: 2.7.12
+
 dependencies:
     pre:
+        - sudo apt-get install libhdf5-dev
         - pip install pylint
 
 test:
