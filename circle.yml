@@ -1,0 +1,42 @@
+general:
+    branches:
+        only:
+            - master
+        ignore:
+            - develop
+            - /dev-.*/
+            - /gh-.*/
+            - /sim-.*/
+
+machine:
+    timezone:
+        Europe/Berlin
+
+    environment:
+        GIT_AUTHOR_NAME: CircleCI
+        GIT_AUTHOR_EMAIL: masc@tu-clausthal.de
+        GIT_COMMITTER_NAME: CircleCI
+        GIT_COMMITTER_EMAIL: masc@tu-clausthal.de
+
+dependencies:
+    pre:
+        - pip install pylint
+
+test:
+    post:
+        - git checkout master
+        - mv -f optom /tmp
+        - git checkout gh-pages
+        - mv -f circle.yml /tmp
+        - mv -f .gitignore /tmp
+        - git checkout master
+        - git push origin :gh-pages
+        - git branch -D gh-pages
+        - git checkout --orphan gh-pages
+        - rm -Rf *
+        - mv -f /tmp/.gitignore .
+        - mv -f /tmp/circle.yml .
+        - pylint optom -f html > pylint.html
+        - git add --all .
+        - git commit -m "current pylint run"
+        - git push origin gh-pages

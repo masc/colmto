@@ -3,6 +3,7 @@
 !.gitmodules
 !buildout.cfg
 !optom.iml
+!circle.yml
 !optom/MANIFEST.in
 !optom/README.rst
 !optom/setup.cfg
