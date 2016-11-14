@@ -24,7 +24,7 @@ machine:
 
 dependencies:
     pre:
-        - sudo apt-get install libhdf5-dev
+        - sudo apt-get install libhdf5-dev pandoc
         - pip install pylint
 
 checkout:
@@ -46,7 +46,8 @@ test:
         - rm -Rf *
         - mv -f /tmp/.gitignore .
         - mv -f /tmp/circle.yml .
-        - pylint optom -f html > pylint.html
+        - pylint optom -f html > pylint.html; true
+        - pandoc -s -r html pylint.html -o pylint.md
         - git add --all .
         - git commit -m "current pylint run"
         - git push origin gh-pages
