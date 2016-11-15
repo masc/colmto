@@ -20,6 +20,7 @@
 # # along with this program. If not, see http://www.gnu.org/licenses/         #
 # #############################################################################
 # @endcond
+"""Optom main module"""
 from __future__ import print_function
 
 import argparse
@@ -27,12 +28,13 @@ import os
 import sys
 import shutil
 import datetime
-from configuration.configuration import Configuration
-from common import log
-from sumo.sumo import Sumo
+from optom.configuration.configuration import Configuration
+from optom.common import log
+from optom.sumo.sumo import Sumo
 
 
 class Optom(object):
+    """Optom main class"""
 
     def __init__(self):
         l_configdir = os.path.expanduser(u"~/.optom")
