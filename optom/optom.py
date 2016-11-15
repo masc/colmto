@@ -126,7 +126,8 @@ class Optom(object):
         l_sumogroup.add_argument(
             "--force-rebuild-scenarios", dest="forcerebuildscenarios", action="store_true",
             default=False,
-            help="Rebuild and overwrite existing SUMO scenarios in configuration directory ({})".format(l_configdir)
+            help="Rebuild and overwrite existing SUMO scenarios in configuration directory "
+                 "({})".format(l_configdir)
         )
         l_sumogroup.add_argument(
             "--only-one-otl-segment", dest="onlyoneotlsegment", action="store_true",
