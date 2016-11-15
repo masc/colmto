@@ -34,6 +34,7 @@ except ImportError:
     raise ("please declare environment variable 'SUMO_HOME' as the root"
            "directory of your sumo installation (it should contain folders 'bin',"
            "'tools' and 'docs')")
+
 from collections import defaultdict
 from optom.common.io import Writer
 from optom.common.statistics import Statistics
@@ -45,7 +46,6 @@ from runtime import Runtime
 class Sumo(object):
     def __init__(self, p_args):
         self._log = log.logger(__name__, p_args.loglevel, p_args.quiet, p_args.logfile)
-
         self._sumocfg = SumoConfig(p_args, checkBinary("netconvert"), checkBinary("duarouter"))
         self._writer = Writer(p_args)
         self._statistics = Statistics(p_args)
