@@ -21,14 +21,17 @@
 # #############################################################################
 # @endcond
 """I/O module"""
-from __future__ import print_function
 from __future__ import division
-import optom.common.log
+from __future__ import print_function
+
+import csv
 import gzip
+import json
+
 import h5py
 import yaml
-import json
-import csv
+
+import optom.common.log
 
 try:
     from cjson import encode as jsondumps, decode as jsonloads
