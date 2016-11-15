@@ -58,6 +58,7 @@ setup(name="optom",
           # 'pathos',
           # 'networkx',
           'progressbar',
+          'matplotlib'
           # 'pygraphviz'
       ],
       # NOTE: For pathos use pip2 install git+https://github.com/uqfoundation/pathos
