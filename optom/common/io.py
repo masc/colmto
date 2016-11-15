@@ -63,7 +63,7 @@ except ImportError:
 
 
 class Reader(object):
-    """Read xml and json files."""
+    """Read xml, json and yaml files."""
 
     def __init__(self, p_args):
         self._log = optom.common.log.logger(__name__, p_args.loglevel, p_args.logfile)
@@ -72,17 +72,31 @@ class Reader(object):
         """Parses xml file with etree. Returns etree object"""
 
         self._log.debug("Parsing %s with etree", p_fname)
+
         return etree.parse(p_fname)
 
     def read_json(self, p_filename):
         """Reads json file. Returns dictionary."""
 
         self._log.debug("Reading %s", p_filename)
+
         with gzip.GzipFile(p_filename, 'r') \
                 if p_filename.endswith(".gz") \
                 else open(p_filename, mode="r") as f_json:
             l_file = f_json.read()
         return jsonloads(l_file)
+
+    def read_yaml(self, p_filename):
+        """
+        Reads yaml file and returns dictionary.
+        If filename ends with .gz treat file as gzipped yaml.
+        """
+        self._log.debug("Reading %s", p_filename)
+
+        if p_filename.endswith(".gz"):
+            return yaml.load(gzip.GzipFile(p_filename, 'r'), Loader=SafeLoader)
+        else:
+            return yaml.load(open(p_filename), Loader=SafeLoader)
 
 
 class Writer(object):
@@ -142,12 +156,12 @@ class Writer(object):
         self._log.debug("Writing %s", p_filename)
 
         # verify whether arguments are sane
-        if type(p_objectdict) is not dict:
+        if not isinstance(p_objectdict, dict):
             raise TypeError(u"p_objectdict is not dict")
 
         f_hdf5 = h5py.File(p_filename, 'a')
 
-        if f_hdf5 and type(f_hdf5) is h5py._hl.files.File:
+        if f_hdf5 and isinstance(f_hdf5, h5py._hl.files.File):
 
             # create group if it doesn't exist
             l_group = f_hdf5[p_path] if p_path in f_hdf5 else f_hdf5.create_group(p_path)
@@ -157,7 +171,7 @@ class Writer(object):
             for i_objname, i_objvalue in p_objectdict.items():
 
                 # remove compression if we have a scalar object, i.e. string, int, float
-                if type(i_objvalue) in [str, int, float]:
+                if isinstance(i_objvalue, (str, int, float)):
                     kwargs.pop("compression", None)
                     kwargs.pop("compression_opts", None)
 
