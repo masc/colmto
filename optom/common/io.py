@@ -26,22 +26,22 @@ from __future__ import print_function
 
 import csv
 import gzip
-import json
 
 import h5py
-import yaml
-
-import optom.common.log
 
 try:
     from cjson import encode as jsondumps, decode as jsonloads
 except ImportError:
     from json import loads as jsonloads, dumps as jsondumps
 
+import json
+
 try:
     from yaml import CSafeLoader as SafeLoader, CSafeDumper as SafeDumper
 except ImportError:
     from yaml import SafeLoader, SafeDumper
+
+import yaml
 
 try:
     from lxml import etree
@@ -63,6 +63,8 @@ except ImportError:
                     import elementtree.ElementTree as etree
                 except ImportError:
                     print("Failed to import ElementTree from any known place")
+
+import optom.common.log
 
 
 class Reader(object):
