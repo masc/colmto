@@ -20,9 +20,11 @@
 # # along with this program. If not, see http://www.gnu.org/licenses/         #
 # #############################################################################
 # @endcond
+"""Vehicle classes for storing vehicle data/attributes/states."""
 
 
 class BaseVehicle(object):
+    """Base Vehicle."""
 
     def __init__(self, p_kwargs):
         self._position = p_kwargs.pop("position", (None,))
@@ -31,34 +33,40 @@ class BaseVehicle(object):
             raise TypeError('Unexpected **p_kwargs: %r' % p_kwargs)
         self._speed = 0
 
-        self._dict = {
+        self._parameters = {
             "position": self.position,
             "speed": self.speed,
             "speed_max": self.speed_max
         }
 
     @property
-    def dict(self):
-        return self._dict
+    def parameters(self):
+        """Returns vehicle parameters as dictionary bundle"""
+        return self._parameters
 
     @property
     def speed_max(self):
+        """Returns maximum capable velocity of vehicle."""
         return self._speed_max
 
     @property
     def speed(self):
+        """Returns current speed."""
         return self._speed
 
     @property
     def position(self):
+        """Returns current position."""
         return self._position
 
     @position.setter
     def position(self, p_position):
+        """Updates current position."""
         self._position = p_position
 
 
 class SUMOVehicle(BaseVehicle):
+    """SUMO vehicle class."""
 
     def __init__(self, **p_kwargs):
         self._vtype = p_kwargs.pop("vtype", None)
@@ -79,7 +87,7 @@ class SUMOVehicle(BaseVehicle):
         self._travel_times = {}
         self._time_losses = {}
 
-        self._dict.update({
+        self._parameters.update({
             "vtype": self.vtype,
             "vtype_sumo_attr": self.vtype_sumo_attr,
             "color": self.color,
