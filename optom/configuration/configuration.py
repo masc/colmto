@@ -23,14 +23,9 @@
 from __future__ import division
 from __future__ import print_function
 
-try:
-    from yaml import CSafeLoader as SafeLoader, CSafeDumper as SafeDumper
-except ImportError:
-    from yaml import SafeLoader, SafeDumper
-import yaml
 import os
 import sh
-
+from optom.common.io import Reader
 from optom.common import log
 
 
@@ -39,6 +34,8 @@ class Configuration(object):
         self._log = log.logger(__name__, p_args.loglevel, p_args.logfile)
 
         self._args = p_args
+
+        self._reader = Reader(p_args)
 
         if p_args.runconfig is None:
             raise BaseException("run configuration flag is None")
@@ -61,9 +58,9 @@ class Configuration(object):
 
         self._outputdir = p_args.outputdir
         self._scenariodir = p_args.scenariodir
-        self._runconfig = yaml.load(open(p_args.runconfig), Loader=SafeLoader)
-        self._scenarioconfig = yaml.load(open(p_args.scenarioconfig), Loader=SafeLoader)
-        self._vtypesconfig = yaml.load(open(p_args.vtypesconfig), Loader=SafeLoader)
+        self._runconfig = self._reader.read_yaml(p_args.runconfig)
+        self._scenarioconfig = self._reader.read_yaml(p_args.scenarioconfig)
+        self._vtypesconfig = self._reader.read_yaml(p_args.vtypesconfig)
         self._runprefix = p_args.runprefix
 
         # store currently running version
