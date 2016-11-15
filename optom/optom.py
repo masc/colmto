@@ -28,9 +28,9 @@ import os
 import sys
 import shutil
 import datetime
-from optom.configuration.configuration import Configuration
-from optom.common import log
-from optom.sumo.sumo import Sumo
+from configuration.configuration import Configuration
+from common import log
+from sumo.sumo import Sumo
 
 
 class Optom(object):
