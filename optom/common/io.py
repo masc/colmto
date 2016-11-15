@@ -63,14 +63,20 @@ except ImportError:
 
 
 class Reader(object):
+    """Read xml and json files."""
+
     def __init__(self, p_args):
         self._log = optom.common.log.logger(__name__, p_args.loglevel, p_args.logfile)
 
     def read_etree(self, p_fname):
+        """Parses xml file with etree. Returns etree object"""
+
         self._log.debug("Parsing %s with etree", p_fname)
         return etree.parse(p_fname)
 
     def read_json(self, p_filename):
+        """Reads json file. Returns dictionary."""
+
         self._log.debug("Reading %s", p_filename)
         with gzip.GzipFile(p_filename, 'r') \
                 if p_filename.endswith(".gz") \
@@ -80,11 +86,14 @@ class Reader(object):
 
 
 class Writer(object):
+    """Class for writing data to json, yaml, csv, hdf5."""
 
     def __init__(self, p_args):
         self._log = optom.common.log.logger(__name__, p_args.loglevel, p_args.logfile)
 
     def write_json_pretty(self, p_object, p_filename):
+        """Write json in human readable form (slow!). If filename ends with .gz, compress file."""
+
         self._log.debug("Writing %s", p_filename)
         fp = gzip.GzipFile(p_filename, 'w') \
             if p_filename.endswith(".gz") \
@@ -93,6 +102,8 @@ class Writer(object):
         fp.close()
 
     def write_json(self, p_object, p_filename):
+        """Write json in compact form, compress file with gzip if filename ends with .gz."""
+
         self._log.debug("Writing %s", p_filename)
         with gzip.GzipFile(p_filename, 'w') \
                 if p_filename.endswith(".gz") \
@@ -100,6 +111,8 @@ class Writer(object):
             fp.write(jsondumps(p_object))
 
     def write_yaml(self, p_object, p_filename, p_default_flow_style=False):
+        """Write yaml, compress file with gzip if filename ends with .gz."""
+
         self._log.debug("Writing %s", p_filename)
         fp = gzip.GzipFile(p_filename, 'w') \
             if p_filename.endswith(".gz") \
@@ -108,6 +121,8 @@ class Writer(object):
         fp.close()
 
     def write_csv(self, p_fieldnames, p_rowdict, p_filename):
+        """Write row dictionary with provided fieldnames as csv with headers."""
+
         self._log.debug("Writing %s", p_filename)
         with open(p_filename, 'w') as fp:
             csv_writer = csv.DictWriter(fp, fieldnames=p_fieldnames)
