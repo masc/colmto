@@ -752,6 +752,7 @@ class SumoConfig(optom.configuration.configuration.Configuration):
     # create net xml using netconvert
     def _generate_net_xml(
             self, p_nodefile, p_edgefile, p_netfile, p_forcerebuildscenarios=False):
+
         if os.path.isfile(p_netfile) and not p_forcerebuildscenarios:
             return
 
