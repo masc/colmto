@@ -80,8 +80,8 @@ class Reader(object):
         self._log.debug("Reading %s", p_filename)
         with gzip.GzipFile(p_filename, 'r') \
                 if p_filename.endswith(".gz") \
-                else open(p_filename, mode="r") as fp:
-            l_file = fp.read()
+                else open(p_filename, mode="r") as f_json:
+            l_file = f_json.read()
         return jsonloads(l_file)
 
 
@@ -95,11 +95,11 @@ class Writer(object):
         """Write json in human readable form (slow!). If filename ends with .gz, compress file."""
 
         self._log.debug("Writing %s", p_filename)
-        fp = gzip.GzipFile(p_filename, 'w') \
+        f_json = gzip.GzipFile(p_filename, 'w') \
             if p_filename.endswith(".gz") \
             else open(p_filename, mode="w")
-        json.dump(p_object, fp, sort_keys=True, indent=4, separators=(', ', ' : '))
-        fp.close()
+        json.dump(p_object, f_json, sort_keys=True, indent=4, separators=(', ', ' : '))
+        f_json.close()
 
     def write_json(self, p_object, p_filename):
         """Write json in compact form, compress file with gzip if filename ends with .gz."""
@@ -107,25 +107,25 @@ class Writer(object):
         self._log.debug("Writing %s", p_filename)
         with gzip.GzipFile(p_filename, 'w') \
                 if p_filename.endswith(".gz") \
-                else open(p_filename, mode="w") as fp:
-            fp.write(jsondumps(p_object))
+                else open(p_filename, mode="w") as f_json:
+            f_json.write(jsondumps(p_object))
 
     def write_yaml(self, p_object, p_filename, p_default_flow_style=False):
         """Write yaml, compress file with gzip if filename ends with .gz."""
 
         self._log.debug("Writing %s", p_filename)
-        fp = gzip.GzipFile(p_filename, 'w') \
+        f_yaml = gzip.GzipFile(p_filename, 'w') \
             if p_filename.endswith(".gz") \
             else open(p_filename, mode="w")
-        yaml.dump(p_object, fp, Dumper=SafeDumper, default_flow_style=p_default_flow_style)
-        fp.close()
+        yaml.dump(p_object, f_yaml, Dumper=SafeDumper, default_flow_style=p_default_flow_style)
+        f_yaml.close()
 
     def write_csv(self, p_fieldnames, p_rowdict, p_filename):
         """Write row dictionary with provided fieldnames as csv with headers."""
 
         self._log.debug("Writing %s", p_filename)
-        with open(p_filename, 'w') as fp:
-            csv_writer = csv.DictWriter(fp, fieldnames=p_fieldnames)
+        with open(p_filename, 'w') as f_csv:
+            csv_writer = csv.DictWriter(f_csv, fieldnames=p_fieldnames)
             csv_writer.writeheader()
             csv_writer.writerows(p_rowdict)
 
@@ -145,13 +145,12 @@ class Writer(object):
         if type(p_objectdict) is not dict:
             raise TypeError(u"p_objectdict is not dict")
 
-        l_file = h5py.File(p_filename, 'a')
-        h5py.File
+        f_hdf5 = h5py.File(p_filename, 'a')
 
-        if l_file and type(l_file) is h5py._hl.files.File:
+        if f_hdf5 and type(f_hdf5) is h5py._hl.files.File:
 
             # create group if it doesn't exist
-            l_group = l_file[p_path] if p_path in l_file else l_file.create_group(p_path)
+            l_group = f_hdf5[p_path] if p_path in f_hdf5 else f_hdf5.create_group(p_path)
 
             # add datasets for each element of p_objectdict,
             # if they already exist by name, overwrite them
@@ -168,4 +167,4 @@ class Writer(object):
 
                 l_group.create_dataset(name=i_objname, data=i_objvalue, **kwargs)
 
-        l_file.close()
+        f_hdf5.close()
