@@ -12,6 +12,8 @@
 # You should have received a copy of the CC0 legalcode along with this
 # work.  If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 """New matplotlib colormaps"""
+# pylint: disable=too-many-lines
+
 from matplotlib.colors import ListedColormap
 import matplotlib.colors as colors
 import matplotlib.cm as cm
