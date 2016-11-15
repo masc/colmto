@@ -160,7 +160,7 @@ class Writer(object):
 
         # verify whether arguments are sane
         if not isinstance(p_objectdict, dict):
-            raise TypeError(u"p_objectdict is not dict")
+            raise TypeError(u"p_objectdict is not parameters")
 
         f_hdf5 = h5py.File(p_filename, 'a')
 
