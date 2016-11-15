@@ -20,9 +20,10 @@
 # # along with this program. If not, see http://www.gnu.org/licenses/         #
 # #############################################################################
 # @endcond
+"""I/O module"""
 from __future__ import print_function
 from __future__ import division
-import log
+import optom.common.log
 import gzip
 import h5py
 import yaml
@@ -63,7 +64,7 @@ except ImportError:
 
 class Reader(object):
     def __init__(self, p_args):
-        self._log = log.logger(__name__, p_args.loglevel, p_args.logfile)
+        self._log = optom.common.log.logger(__name__, p_args.loglevel, p_args.logfile)
 
     def read_etree(self, p_fname):
         self._log.debug("Parsing %s with etree", p_fname)
@@ -71,7 +72,9 @@ class Reader(object):
 
     def read_json(self, p_filename):
         self._log.debug("Reading %s", p_filename)
-        with gzip.GzipFile(p_filename, 'r') if p_filename.endswith(".gz") else open(p_filename, mode="r") as fp:
+        with gzip.GzipFile(p_filename, 'r') \
+                if p_filename.endswith(".gz") \
+                else open(p_filename, mode="r") as fp:
             l_file = fp.read()
         return jsonloads(l_file)
 
@@ -79,22 +82,28 @@ class Reader(object):
 class Writer(object):
 
     def __init__(self, p_args):
-        self._log = log.logger(__name__, p_args.loglevel, p_args.logfile)
+        self._log = optom.common.log.logger(__name__, p_args.loglevel, p_args.logfile)
 
     def write_json_pretty(self, p_object, p_filename):
         self._log.debug("Writing %s", p_filename)
-        fp = gzip.GzipFile(p_filename, 'w') if p_filename.endswith(".gz") else open(p_filename, mode="w")
+        fp = gzip.GzipFile(p_filename, 'w') \
+            if p_filename.endswith(".gz") \
+            else open(p_filename, mode="w")
         json.dump(p_object, fp, sort_keys=True, indent=4, separators=(', ', ' : '))
         fp.close()
 
     def write_json(self, p_object, p_filename):
         self._log.debug("Writing %s", p_filename)
-        with gzip.GzipFile(p_filename, 'w') if p_filename.endswith(".gz") else open(p_filename, mode="w") as fp:
+        with gzip.GzipFile(p_filename, 'w') \
+                if p_filename.endswith(".gz") \
+                else open(p_filename, mode="w") as fp:
             fp.write(jsondumps(p_object))
 
     def write_yaml(self, p_object, p_filename, p_default_flow_style=False):
         self._log.debug("Writing %s", p_filename)
-        fp = gzip.GzipFile(p_filename, 'w') if p_filename.endswith(".gz") else open(p_filename, mode="w")
+        fp = gzip.GzipFile(p_filename, 'w') \
+            if p_filename.endswith(".gz") \
+            else open(p_filename, mode="w")
         yaml.dump(p_object, fp, Dumper=SafeDumper, default_flow_style=p_default_flow_style)
         fp.close()
 
@@ -111,7 +120,8 @@ class Writer(object):
         Args:
             p_filename: The file name
             p_path: Destination path in HDF5 structure, will be created if not existent.
-            p_objectdict: Object(s) to be stored in a named dictionary structure ([name] -> str|int|float|list|numpy)
+            p_objectdict: Object(s) to be stored in a named dictionary structure
+                          ([name] -> str|int|float|list|numpy)
             **kwargs: Optional arguments passed to create_dataset
         """
         self._log.debug("Writing %s", p_filename)
@@ -128,7 +138,8 @@ class Writer(object):
             # create group if it doesn't exist
             l_group = l_file[p_path] if p_path in l_file else l_file.create_group(p_path)
 
-            # add datasets for each element of p_objectdict, if they already exist by name, overwrite them
+            # add datasets for each element of p_objectdict,
+            # if they already exist by name, overwrite them
             for i_objname, i_objvalue in p_objectdict.items():
 
                 # remove compression if we have a scalar object, i.e. string, int, float
