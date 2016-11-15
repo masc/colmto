@@ -67,8 +67,8 @@ class Configuration(object):
         # inferred from current HEAD if located inside a git project.
         # otherwise set version to "UNKNOWN"
         try:
-            l_gitcmd = sh.Command("git rev-parse HEAD")
-            self._optomversion = str(l_gitcmd().replace("\n", ""))
+            l_git_commit_id = sh.Command("git")(["rev-parse", "HEAD"])
+            self._optomversion = str(l_git_commit_id).replace("\n", "")
         except sh.ErrorReturnCode:
             self._optomversion = "UNKNOWN"
         except sh.CommandNotFound:
