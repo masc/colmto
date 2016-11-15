@@ -27,8 +27,6 @@ from __future__ import print_function
 import csv
 import gzip
 
-import h5py
-
 try:
     from cjson import encode as jsondumps, decode as jsonloads
 except ImportError:
@@ -36,12 +34,15 @@ except ImportError:
 
 import json
 
+
 try:
     from yaml import CSafeLoader as SafeLoader, CSafeDumper as SafeDumper
 except ImportError:
     from yaml import SafeLoader, SafeDumper
 
 import yaml
+
+import h5py
 
 try:
     from lxml import etree
