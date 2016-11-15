@@ -47,7 +47,7 @@ test:
         - mv -f /tmp/.gitignore .
         - mv -f /tmp/circle.yml .
         - pylint optom -f html > pylint.html; true
-        - pandoc -s -r html pylint.html -o pylint.md
+        - pandoc --from html --to markdown_github pylint.html -o pylint.md
         - git add --all .
-        - git commit -m "current pylint run"
+        - git commit -m "circleci"
         - git push origin gh-pages
