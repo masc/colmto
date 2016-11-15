@@ -20,13 +20,15 @@
 # # along with this program. If not, see http://www.gnu.org/licenses/         #
 # #############################################################################
 # @endcond
+"""Statistics module"""
 from __future__ import division
 from __future__ import print_function
 
-import math
 import os
 from collections import OrderedDict
 from collections import defaultdict
+
+import math
 
 import log
 from io import Writer
@@ -72,6 +74,8 @@ s_iloop_template = etree.XML("""
 
 
 class Statistics(object):
+    """Statistics class for computing/aggregating SUMO results"""
+
     def __init__(self, p_args):
         self._log = log.logger(__name__, p_args.loglevel, p_args.logfile)
         self._writer = Writer(p_args)
@@ -80,7 +84,9 @@ class Statistics(object):
                              p_deltas=("1_pre21-2_post21",
                                        "1_pre21-3_exit",
                                        "2_post21-3_exit")):
-        self._log.info("Traveltime statistics for scenario %s", p_scenarioname)
+        """Compute travel time statistics for given scenario"""
+
+        self._log.info("Travel time statistics for scenario %s", p_scenarioname)
 
         l_data = {
             "traveltime": {},
@@ -133,7 +139,10 @@ class Statistics(object):
 
     def dump_traveltimes_from_iloops(self, p_run_data, p_run_config, p_scenario_config,
                                      p_scenarioname, p_initialsorting, p_current_run, p_resultsdir):
+        """Reading and aggregating induction loop logs and write them to csv/json files."""
+
         self._log.debug("Reading and aggregating induction loop logs")
+
         l_vehicles = p_run_data.get("vehicles")
         l_iloopfile = p_run_data.get("iloopfile")
         l_root = etree.parse(l_iloopfile)
@@ -183,13 +192,17 @@ class Statistics(object):
                     "time_loss": l_timeloss
                 }
                 l_vehicle_data_csv_row[
-                    "{}-{}-distance".format(i_detector_x, i_detector_y)] = l_detector_distance
-                l_vehicle_data_csv_row["{}-{}-optimal_traveltime".format(i_detector_x,
-                                                                         i_detector_y)] = l_opt_travel_time
+                    "{}-{}-distance".format(i_detector_x, i_detector_y)
+                ] = l_detector_distance
                 l_vehicle_data_csv_row[
-                    "{}-{}-travel_time".format(i_detector_x, i_detector_y)] = l_traveltime
+                    "{}-{}-optimal_traveltime".format(i_detector_x, i_detector_y)
+                ] = l_opt_travel_time
                 l_vehicle_data_csv_row[
-                    "{}-{}-time_loss".format(i_detector_x, i_detector_y)] = l_timeloss
+                    "{}-{}-travel_time".format(i_detector_x, i_detector_y)
+                ] = l_traveltime
+                l_vehicle_data_csv_row[
+                    "{}-{}-time_loss".format(i_detector_x, i_detector_y)
+                ] = l_timeloss
 
             l_vehicle_data_csv.append(l_vehicle_data_csv_row)
 
@@ -231,9 +244,12 @@ class Statistics(object):
     def h_spread(p_data):
         """
         Calculate H-Spread of given data points
-        Weisstein, Eric W. "H-Spread." From MathWorld--A Wolfram Web Resource. http://mathworld.wolfram.com/H-Spread.html
-        Weisstein, Eric W. "Hinge." From MathWorld--A Wolfram Web Resource. http://mathworld.wolfram.com/Hinge.html
-        :param p_data: Iterable set of data elements of (preferably) 4n+5 for n=0,1,...,N, i.e. minimum length is 5
+        Weisstein, Eric W. "H-Spread." From MathWorld--A Wolfram Web Resource.
+        http://mathworld.wolfram.com/H-Spread.html
+        Weisstein, Eric W. "Hinge." From MathWorld--A Wolfram Web Resource.
+        http://mathworld.wolfram.com/Hinge.html
+        :param p_data: Iterable set of data elements of (preferably) 4n+5 for n=0,1,...,N,
+                       i.e. minimum length is 5
         :return: H_2 - H_1 if p_data contains at least 5 elements, otherwise None
         """
         l_data = sorted(p_data)
