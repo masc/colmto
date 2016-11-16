@@ -20,6 +20,8 @@
 # # along with this program. If not, see http://www.gnu.org/licenses/         #
 # #############################################################################
 # @endcond
+"""Configuration super class."""
+
 from __future__ import division
 from __future__ import print_function
 
@@ -30,11 +32,16 @@ from optom.common import log
 
 
 class Configuration(object):
+    """Configuration reads OPTOM's general cfg files."""
+
     def __init__(self, p_args):
+        """
+        C'tor: Read scenario/run/vtype configs and merge with command line arguments.
+        Command line args override cfgs.
+        """
+
         self._log = log.logger(__name__, p_args.loglevel, p_args.logfile)
-
         self._args = p_args
-
         self._reader = Reader(p_args)
 
         if p_args.runconfig is None:
@@ -78,6 +85,8 @@ class Configuration(object):
         self._override_cfg_flags(p_args)
 
     def _override_cfg_flags(self, p_args):
+        """Override the cfs flags."""
+
         if p_args.headless:
             self._runconfig.get("sumo")["headless"] = True
         if p_args.gui:
@@ -92,24 +101,30 @@ class Configuration(object):
 
     @property
     def args(self):
+        """Return command line arguments."""
         return self._args
 
     @property
     def runconfig(self):
+        """Return run config."""
         return self._runconfig
 
     @property
     def scenarioconfig(self):
+        """Return scenario config."""
         return self._scenarioconfig
 
     @property
     def vtypesconfig(self):
+        """Return vehicle type config."""
         return self._vtypesconfig
 
     @property
     def outputdir(self):
+        """Return destination dir."""
         return self._outputdir
 
     @property
     def runprefix(self):
+        """Return run prefix."""
         return self._runprefix
