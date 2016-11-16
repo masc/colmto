@@ -37,7 +37,6 @@ except ImportError:
            "directory of your sumo installation (it should contain folders 'bin',"
            "'tools' and 'docs')")
 
-from collections import defaultdict
 from optom.common.io import Writer
 from optom.common.statistics import Statistics
 from optom.common import log
