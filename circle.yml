@@ -49,9 +49,15 @@ test:
         - mv -f /tmp/.gitignore .
         - mv -f /tmp/circle.yml .
         - mv -f /tmp/radon.sh .
+        - mv -f /tmp/optom .
         - pylint optom -f html > pylint.html; true
         - pandoc --from html --to markdown_github pylint.html -o pylint.md
+        - echo "# OPTOM Statistics" > README.md
         - sh radon.sh > radon.md
+        - rm -Rf optom
+        - cat radon.md >> README.md
+        - echo "\n# Pylint\n" >> README.md
+        - cat pylint.md >> README.md
         - git add --all .
         - git commit -m "circleci"
         - git push origin gh-pages
