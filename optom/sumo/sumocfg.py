@@ -20,7 +20,6 @@
 # # along with this program. If not, see http://www.gnu.org/licenses/         #
 # #############################################################################
 # @endcond
-
 """This module generates static sumo configuration files for later execution."""
 
 from __future__ import division
@@ -150,11 +149,9 @@ class SumoConfig(optom.configuration.configuration.Configuration):
     def generate_run(self, p_scenarioruns, p_initialsorting, p_run_number):
         """generate run configurations
 
-
-        Keyword arguments:
-        p_scenarioruns -- run configuration of scenario
-        p_initialsorting -- initial sorting of vehicles ("best", "random", "worst")
-        p_run_number -- number of current run
+        :param p_scenarioruns: run configuration of scenario
+        :param p_initialsorting: initial sorting of vehicles ("best", "random", "worst")
+        :param p_run_number: number of current run
         """
         self._log.debug("Generating run %s for %s sorting", p_run_number, p_initialsorting)
 
@@ -262,6 +259,14 @@ class SumoConfig(optom.configuration.configuration.Configuration):
         }
 
     def _generate_node_xml(self, p_scenarioconfig, p_nodefile, p_forcerebuildscenarios=False):
+        """
+        Generate SUMO's node configuration file.
+
+        :param p_scenarioconfig: Scenario configuration
+        :param p_nodefile: Destination to write node file
+        :param p_forcerebuildscenarios: rebuild scenarios, even if they already exist for current run
+        """
+
         if os.path.isfile(p_nodefile) and not p_forcerebuildscenarios:
             return
 
@@ -306,6 +311,15 @@ class SumoConfig(optom.configuration.configuration.Configuration):
 
     def _generate_edge_xml(
             self, p_scenario_name, p_scenarioconfig, p_edgefile, p_forcerebuildscenarios=False):
+        """
+        Generate SUMO's edge configuration file.
+
+        :param p_scenario_name: Name of scenario (required to id detector positions)
+        :param p_scenarioconfig: Scenario configuration
+        :param p_edgefile: Destination to write edge file
+        :param p_forcerebuildscenarios: Rebuild scenarios, even if they already exist for current run
+        """
+
         if os.path.isfile(p_edgefile) and not p_forcerebuildscenarios:
             return
 
@@ -399,6 +413,16 @@ class SumoConfig(optom.configuration.configuration.Configuration):
 
     def _generate_additional_xml(self, p_scenario_name, p_scenarioconfig, p_iloopfile,
                                  p_additionalfile, p_forcerebuildscenarios):
+        """
+        Generate SUMO's additional configuration file.
+
+        :param p_scenario_name: Name of scenario (required to id detector positions)
+        :param p_scenarioconfig: Scenario configuration
+        :param p_iloopfile: File to write induction loop detector 'measurements'
+        :param p_additionalfile: Destination to write additional cfg file
+        :param p_forcerebuildscenarios: rebuild scenarios, even if they already exist for current run
+        """
+
         if os.path.isfile(p_additionalfile) and not p_forcerebuildscenarios:
             return
 
@@ -535,10 +559,21 @@ class SumoConfig(optom.configuration.configuration.Configuration):
         with open(p_additionalfile, "w") as f_paddxml:
             f_paddxml.write(optom.common.io.etree.tostring(l_additional, pretty_print=True))
 
-    # create sumo config
     @staticmethod
     def _generate_config_xml(p_configfile, p_netfile, p_routefile, p_additionalfile, p_settingsfile,
                              p_simtimeinterval, p_forcerebuildscenarios=False):
+        """
+        Generate SUMO's main configuration file.
+
+        :param p_configfile: Name of scenario (required to id detector positions)
+        :param p_netfile: Destination to write network file
+        :param p_routefile: Destination to write route file
+        :param p_additionalfile: Destination to write additional cfg file
+        :param p_settingsfile: Destination to write settings file
+        :param p_simtimeinterval: Time interval of simulation
+        :param p_forcerebuildscenarios: Rebuild scenarios, even if they already exist for current run
+        """
+
         if os.path.isfile(p_configfile) and not p_forcerebuildscenarios:
             return
         assert isinstance(p_simtimeinterval, list) and len(p_simtimeinterval) == 2
@@ -578,6 +613,14 @@ class SumoConfig(optom.configuration.configuration.Configuration):
     @staticmethod
     def _generate_settings_xml(
             p_scenarioconfig, p_runcfg, p_settingsfile, p_forcerebuildscenarios=False):
+        """
+        Generate SUMO's settings configuration file.
+
+        :param p_scenarioconfig: Scenario configuration
+        :param p_runcfg: Run configuration
+        :param p_settingsfile: Destination to write settings file
+        :param p_forcerebuildscenarios: Rebuild scenarios, even if they already exist for current run
+        """
         if os.path.isfile(p_settingsfile) and not p_forcerebuildscenarios:
             return
 
@@ -597,6 +640,14 @@ class SumoConfig(optom.configuration.configuration.Configuration):
 
     @staticmethod
     def _next_timestep(p_lambda, p_prevstarttime, p_distribution="poisson"):
+        """
+        Calculate next time step in poission or linear distribution.
+
+        :param p_lambda:
+        :param p_prevstarttime:
+        :param p_distribution:
+        """
+
         if p_distribution == "poisson":
             return p_prevstarttime + random.expovariate(p_lambda)
         elif p_distribution == "linear":
@@ -605,13 +656,14 @@ class SumoConfig(optom.configuration.configuration.Configuration):
             return p_prevstarttime
 
     def _create_vehicle_distribution(self, p_nbvehicles, p_aadt, p_initialsorting, p_scenario_name):
-        """Create a distribution of vehicles based on
+        """
+        Create a distribution of vehicles based on
 
-        Keyword arguments:
-        p_nbvehicles -- number of vehicles
-        p_aadt -- anual average daily traffic (vehicles/day/lane)
-        p_initialsorting -- initial sorting of vehicles (by max speed) ["best", "random", "worst"]
-        p_scenario_name -- name of scenario
+        :param p_nbvehicles: number of vehicles
+        :param p_aadt: anual average daily traffic (vehicles/day/lane)
+        :param p_initialsorting: initial sorting of vehicles (by max speed)
+                                ["best", "random", "worst"]
+        :param p_scenario_name: name of scenario
         """
 
         assert p_initialsorting in ["best", "random", "worst"]
@@ -666,6 +718,18 @@ class SumoConfig(optom.configuration.configuration.Configuration):
 
     def _generate_trip_xml(self, p_scenarioconfig, p_runcfg, p_initialsorting, p_tripfile,
                            p_scenario_name, p_forcerebuildscenarios=False):
+        """
+        Generate SUMO's trip file.
+
+        :param p_scenarioconfig:
+        :param p_runcfg:
+        :param p_initialsorting:
+        :param p_tripfile:
+        :param p_scenario_name:
+        :param p_forcerebuildscenarios:
+        :return:
+        """
+
         if os.path.isfile(p_tripfile) and not p_forcerebuildscenarios:
             return
         self._log.debug("Generating trip xml for %s", p_scenario_name)
@@ -754,6 +818,15 @@ class SumoConfig(optom.configuration.configuration.Configuration):
     # create net xml using netconvert
     def _generate_net_xml(
             self, p_nodefile, p_edgefile, p_netfile, p_forcerebuildscenarios=False):
+        """
+        Generate SUMO's net xml.
+
+        :param p_nodefile:
+        :param p_edgefile:
+        :param p_netfile:
+        :param p_forcerebuildscenarios:
+        :return:
+        """
 
         if os.path.isfile(p_netfile) and not p_forcerebuildscenarios:
             return
@@ -773,6 +846,16 @@ class SumoConfig(optom.configuration.configuration.Configuration):
 
     def _generate_route_xml(
             self, p_netfile, p_tripfile, p_routefile, p_forcerebuildscenarios=False):
+        """
+        Generate SUMO's route xml.
+
+        :param p_netfile:
+        :param p_tripfile:
+        :param p_routefile:
+        :param p_forcerebuildscenarios:
+        :return:
+        """
+
         if os.path.isfile(p_routefile) and not p_forcerebuildscenarios:
             return
 
