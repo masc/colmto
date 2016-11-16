@@ -193,13 +193,14 @@ class Statistics(object):
         http://mathworld.wolfram.com/Hinge.html
         :param p_data: Iterable set of data elements of (preferably) 4n+5 for n=0,1,...,N,
                        i.e. minimum length is 5
-        :return: H_2 - H_1 if p_data contains at least 5 elements, otherwise None
+        :return: H_2 - H_1 if p_data contains at least 5 elements, otherwise raises ArithmeticError
         """
         l_data = sorted(p_data)
-        n = len(l_data)
-        if n >= 5:
-            h_1 = l_data[int((n + 3) / n - 1)]
-            h_2 = l_data[int((3 * n + 1) / 4 - 1)]
-            return h_2 - h_1
+        l_n = len(l_data)
 
-        return None
+        if l_n < 5:
+            raise ArithmeticError
+
+        l_h1 = l_data[int((l_n + 3) / l_n - 1)]
+        l_h2 = l_data[int((3 * l_n + 1) / 4 - 1)]
+        return l_h2 - l_h1
