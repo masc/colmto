@@ -52,11 +52,11 @@ test:
         - mv -f /tmp/optom .
         - pylint optom -f html > pylint.html; true
         - pandoc --from html --to markdown_github pylint.html -o pylint.md
-        - echo "# OPTOM Statistics" > README.md
+        - echo -e "# OPTOM Statistics\n" > README.md
         - sh radon.sh > radon.md
         - rm -Rf optom
         - cat radon.md >> README.md
-        - echo "\n# Pylint\n" >> README.md
+        - echo -e "\n# Pylint\n" >> README.md
         - cat pylint.md >> README.md
         - git add --all .
         - git commit -m "circleci"
