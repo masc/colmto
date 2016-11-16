@@ -20,6 +20,8 @@
 # # along with this program. If not, see http://www.gnu.org/licenses/         #
 # #############################################################################
 # @endcond
+"""Main module to run/initialise SUMO scenarios."""
+
 from __future__ import division
 from __future__ import print_function
 
@@ -44,7 +46,11 @@ from runtime import Runtime
 
 
 class Sumo(object):
+    """Class for initialising/running SUMO scenarios."""
+
     def __init__(self, p_args):
+        """C'tor."""
+
         self._log = log.logger(__name__, p_args.loglevel, p_args.quiet, p_args.logfile)
         self._sumocfg = SumoConfig(p_args, checkBinary("netconvert"), checkBinary("duarouter"))
         self._writer = Writer(p_args)
@@ -56,19 +62,22 @@ class Sumo(object):
                                 else checkBinary("sumo-gui"))
 
     def _run_scenario(self, p_scenarioname):
+        """
+        Run given scenario.
+
+        :param p_scenarioname Scenario name to look up cfgs.
+        """
+
         if self._sumocfg.scenarioconfig.get(p_scenarioname) is None:
-            self._log.error("/!\ scenario %s not found in configuration", p_scenarioname)
+            self._log.error(r"/!\ scenario %s not found in configuration", p_scenarioname)
             return
 
-        # self._allscenarioruns[p_scenarioname] =
         l_scenarioruns = self._sumocfg.generate_scenario(p_scenarioname)
         l_initialsortings = self._sumocfg.runconfig.get("initialsortings")
 
-        l_iloopresults = defaultdict(dict)
         for i_initialsorting in l_initialsortings:
             l_scenarioruns.get("runs")[i_initialsorting] = {}
             for i_run in xrange(self._sumocfg.runconfig.get("runs")):
-                # l_scenarioruns.get("runs").get(i_initialsorting)[i_run] =
                 l_run_data = self._sumocfg.generate_run(
                     l_scenarioruns, i_initialsorting, i_run
                 )
@@ -111,5 +120,7 @@ class Sumo(object):
         )
 
     def run_scenarios(self):
+        """Run all scenarios defined by cfgs/commandline."""
+
         for i_scenarioname in self._sumocfg.runconfig.get("scenarios"):
             self._run_scenario(i_scenarioname)
