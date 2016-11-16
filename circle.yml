@@ -61,4 +61,3 @@ test:
         - git add --all .
         - git commit -m "circleci"
         - git push origin gh-pages
-
