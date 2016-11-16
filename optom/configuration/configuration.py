@@ -34,6 +34,41 @@ from optom.common import log
 class Configuration(object):
     """Configuration reads OPTOM's general cfg files."""
 
+    @property
+    def args(self):
+        """Return command line arguments."""
+        return self._args
+
+    @property
+    def runconfig(self):
+        """Return run config."""
+        return self._runconfig
+
+    @property
+    def scenarioconfig(self):
+        """Return scenario config."""
+        return self._scenarioconfig
+
+    @property
+    def vtypesconfig(self):
+        """Return vehicle type config."""
+        return self._vtypesconfig
+
+    @property
+    def outputdir(self):
+        """Return destination dir."""
+        return self._outputdir
+
+    @property
+    def runprefix(self):
+        """Return run prefix."""
+        return self._runprefix
+
+    @property
+    def optom_version(self):
+        """Return optom version"""
+        return self._optom_version
+
     def __init__(self, p_args):
         """
         C'tor: Read scenario/run/vtype configs and merge with command line arguments.
@@ -75,12 +110,12 @@ class Configuration(object):
         # otherwise set version to "UNKNOWN"
         try:
             l_git_commit_id = sh.Command("git")(["rev-parse", "HEAD"])
-            self._optomversion = str(l_git_commit_id).replace("\n", "")
+            self._optom_version = str(l_git_commit_id).replace("\n", "")
         except sh.ErrorReturnCode:
-            self._optomversion = "UNKNOWN"
+            self._optom_version = "UNKNOWN"
         except sh.CommandNotFound:
             self._log.debug("Git command not found in PATH. Setting commit id to UNKNOWN.")
-            self._optomversion = "UNKNOWN"
+            self._optom_version = "UNKNOWN"
 
         self._override_cfg_flags(p_args)
 
@@ -99,32 +134,4 @@ class Configuration(object):
             else:
                 self._scenarioconfig.keys()
 
-    @property
-    def args(self):
-        """Return command line arguments."""
-        return self._args
 
-    @property
-    def runconfig(self):
-        """Return run config."""
-        return self._runconfig
-
-    @property
-    def scenarioconfig(self):
-        """Return scenario config."""
-        return self._scenarioconfig
-
-    @property
-    def vtypesconfig(self):
-        """Return vehicle type config."""
-        return self._vtypesconfig
-
-    @property
-    def outputdir(self):
-        """Return destination dir."""
-        return self._outputdir
-
-    @property
-    def runprefix(self):
-        """Return run prefix."""
-        return self._runprefix

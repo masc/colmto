@@ -109,12 +109,12 @@ class Sumo(object):
         # dump configuration
         self._writer.write_json_pretty(
             {
-                "optomversion": self._sumocfg._optomversion,
+                "optomversion": self._sumocfg.optom_version,
                 "runconfig": self._sumocfg.runconfig,
                 "scenarioconfig": self._sumocfg.scenarioconfig,
                 "vtypesconfig": self._sumocfg.vtypesconfig
             },
-            os.path.join(self._sumocfg.sumoconfigdir, self._sumocfg._runprefix,
+            os.path.join(self._sumocfg.sumoconfigdir, self._sumocfg.runprefix,
                          "configuration.json")
         )
 
