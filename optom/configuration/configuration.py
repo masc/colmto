@@ -133,5 +133,3 @@ class Configuration(object):
                 self._runconfig["scenarios"] = p_args.scenarios
             else:
                 self._scenarioconfig.keys()
-
-
