@@ -39,9 +39,9 @@ except ImportError:
 
 from optom.common.io import Writer
 from optom.common.statistics import Statistics
-from optom.common import log
-from sumocfg import SumoConfig
-from runtime import Runtime
+import optom.common.log
+from optom.sumo.sumocfg import SumoConfig
+from optom.sumo.runtime import Runtime
 
 
 class Sumo(object):
@@ -50,7 +50,7 @@ class Sumo(object):
     def __init__(self, p_args):
         """C'tor."""
 
-        self._log = log.logger(__name__, p_args.loglevel, p_args.quiet, p_args.logfile)
+        self._log = optom.common.log.logger(__name__, p_args.loglevel, p_args.quiet, p_args.logfile)
         self._sumocfg = SumoConfig(p_args, checkBinary("netconvert"), checkBinary("duarouter"))
         self._writer = Writer(p_args)
         self._statistics = Statistics(p_args)
