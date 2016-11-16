@@ -26,26 +26,6 @@
 from __future__ import division
 from __future__ import print_function
 
-try:
-    from lxml import etree
-except ImportError:
-    try:
-        # Python 2.5
-        import xml.etree.cElementTree as etree
-    except ImportError:
-        try:
-            # Python 2.5
-            import xml.etree.ElementTree as etree
-        except ImportError:
-            try:
-                # normal cElementTree install
-                import cElementTree as etree
-            except ImportError:
-                try:
-                    # normal ElementTree install
-                    import elementtree.ElementTree as etree
-                except ImportError:
-                    print("Failed to import ElementTree from any known place")
 import copy
 import os
 import random
@@ -295,19 +275,19 @@ class SumoConfig(optom.configuration.configuration.Configuration):
         if self._onlyoneotlsegment:
             l_length = 2 * l_segmentlength  # two times segment length
 
-        l_nodes = etree.Element("nodes")
-        etree.SubElement(
+        l_nodes = optom.common.io.etree.Element("nodes")
+        optom.common.io.etree.SubElement(
             l_nodes, "node", attrib={"id": "enter", "x": str(-l_segmentlength), "y": "0"}
         )
-        etree.SubElement(
+        optom.common.io.etree.SubElement(
             l_nodes, "node", attrib={"id": "21start", "x": "0", "y": "0"}
         )
-        etree.SubElement(
+        optom.common.io.etree.SubElement(
             l_nodes, "node", attrib={"id": "21end", "x": str(l_length), "y": "0"}
         )
 
         # dummy node for easier from-to routing
-        etree.SubElement(
+        optom.common.io.etree.SubElement(
             l_nodes,
             "node",
             attrib={
@@ -322,7 +302,7 @@ class SumoConfig(optom.configuration.configuration.Configuration):
         )
 
         with open(p_nodefile, "w") as f_pnodesxml:
-            f_pnodesxml.write(etree.tostring(l_nodes, pretty_print=True))
+            f_pnodesxml.write(optom.common.io.etree.tostring(l_nodes, pretty_print=True))
 
     def _generate_edge_xml(
             self, p_scenario_name, p_scenarioconfig, p_edgefile, p_forcerebuildscenarios=False):
@@ -340,7 +320,7 @@ class SumoConfig(optom.configuration.configuration.Configuration):
         l_segmentlength = l_length / (l_nbswitches + 1)
 
         # create edges xml
-        l_edges = etree.Element("edges")
+        l_edges = optom.common.io.etree.Element("edges")
 
         # # find slowest vehicle speed to be used as parameter for entering lane
         # l_lowestspeed = min(
@@ -349,7 +329,7 @@ class SumoConfig(optom.configuration.configuration.Configuration):
         # )
 
         # Entering edge with one lane, leading to 2+1 Roadway
-        etree.SubElement(
+        optom.common.io.etree.SubElement(
             l_edges,
             "edge",
             attrib={
@@ -362,7 +342,7 @@ class SumoConfig(optom.configuration.configuration.Configuration):
         )
 
         # 2+1 Roadway
-        l_21edge = etree.SubElement(
+        l_21edge = optom.common.io.etree.SubElement(
             l_edges,
             "edge",
             attrib={
@@ -387,7 +367,7 @@ class SumoConfig(optom.configuration.configuration.Configuration):
         for i_segmentpos in xrange(0, int(l_length), int(l_segmentlength)) \
                 if not self._onlyoneotlsegment \
                 else xrange(0, int(2 * l_segmentlength - 1), int(l_segmentlength)):
-            etree.SubElement(
+            optom.common.io.etree.SubElement(
                 l_21edge,
                 "split",
                 attrib={
@@ -401,7 +381,7 @@ class SumoConfig(optom.configuration.configuration.Configuration):
             l_addotllane ^= True
 
         # Exit lane
-        etree.SubElement(
+        optom.common.io.etree.SubElement(
             l_edges,
             "edge",
             attrib={
@@ -415,7 +395,7 @@ class SumoConfig(optom.configuration.configuration.Configuration):
         )
 
         with open(p_edgefile, "w") as f_pedgexml:
-            f_pedgexml.write(etree.tostring(l_edges, pretty_print=True))
+            f_pedgexml.write(optom.common.io.etree.tostring(l_edges, pretty_print=True))
 
     def _generate_additional_xml(self, p_scenario_name, p_scenarioconfig, p_iloopfile,
                                  p_additionalfile, p_forcerebuildscenarios):
@@ -430,10 +410,10 @@ class SumoConfig(optom.configuration.configuration.Configuration):
         # assume even distributed otl segment lengths
         l_segmentlength = l_length / (l_nbswitches + 1)
 
-        l_additional = etree.Element("additional")
+        l_additional = optom.common.io.etree.Element("additional")
 
         # first induction loop at network enter
-        etree.SubElement(
+        optom.common.io.etree.SubElement(
             l_additional,
             "inductionLoop",
             attrib={
@@ -449,7 +429,7 @@ class SumoConfig(optom.configuration.configuration.Configuration):
             }
         )
         # place induction loop right before the first split (i.e. end of starting edge)
-        etree.SubElement(
+        optom.common.io.etree.SubElement(
             l_additional,
             "inductionLoop",
             attrib={
@@ -485,7 +465,7 @@ class SumoConfig(optom.configuration.configuration.Configuration):
                     .get("detectorpositions")[l_detector_end_id] = \
                     l_segmentlength + i_switch_pos + 5
 
-                etree.SubElement(
+                optom.common.io.etree.SubElement(
                     l_additional,
                     "inductionLoop",
                     attrib={
@@ -499,7 +479,7 @@ class SumoConfig(optom.configuration.configuration.Configuration):
                     }
                 )
 
-                etree.SubElement(
+                optom.common.io.etree.SubElement(
                     l_additional,
                     "inductionLoop",
                     attrib={
@@ -519,7 +499,7 @@ class SumoConfig(optom.configuration.configuration.Configuration):
             .get(p_scenario_name) \
             .get("detectorpositions")[l_detector_last_id] = l_length + l_segmentlength
 
-        etree.SubElement(
+        optom.common.io.etree.SubElement(
             l_additional,
             "inductionLoop",
             attrib={
@@ -533,7 +513,7 @@ class SumoConfig(optom.configuration.configuration.Configuration):
             }
         )
 
-        etree.SubElement(
+        optom.common.io.etree.SubElement(
             l_additional,
             "inductionLoop",
             attrib={
@@ -553,7 +533,7 @@ class SumoConfig(optom.configuration.configuration.Configuration):
             .get("detectorpositions")["3_exit"] = l_length + 2 * l_segmentlength - 5
 
         with open(p_additionalfile, "w") as f_paddxml:
-            f_paddxml.write(etree.tostring(l_additional, pretty_print=True))
+            f_paddxml.write(optom.common.io.etree.tostring(l_additional, pretty_print=True))
 
     # create sumo config
     @staticmethod
@@ -563,17 +543,37 @@ class SumoConfig(optom.configuration.configuration.Configuration):
             return
         assert isinstance(p_simtimeinterval, list) and len(p_simtimeinterval) == 2
 
-        l_configuration = etree.Element("configuration")
-        l_input = etree.SubElement(l_configuration, "input")
-        etree.SubElement(l_input, "net-file", attrib={"value": p_netfile})
-        etree.SubElement(l_input, "route-files", attrib={"value": p_routefile})
-        etree.SubElement(l_input, "additional-files", attrib={"value": p_additionalfile})
-        etree.SubElement(l_input, "gui-settings-file", attrib={"value": p_settingsfile})
-        l_time = etree.SubElement(l_configuration, "time")
-        etree.SubElement(l_time, "begin", attrib={"value": str(p_simtimeinterval[0])})
+        l_configuration = optom.common.io.etree.Element("configuration")
+        l_input = optom.common.io.etree.SubElement(l_configuration, "input")
+        optom.common.io.etree.SubElement(
+            l_input,
+            "net-file",
+            attrib={"value": p_netfile}
+        )
+        optom.common.io.etree.SubElement(
+            l_input,
+            "route-files",
+            attrib={"value": p_routefile}
+        )
+        optom.common.io.etree.SubElement(
+            l_input,
+            "additional-files",
+            attrib={"value": p_additionalfile}
+        )
+        optom.common.io.etree.SubElement(
+            l_input,
+            "gui-settings-file",
+            attrib={"value": p_settingsfile}
+        )
+        l_time = optom.common.io.etree.SubElement(l_configuration, "time")
+        optom.common.io.etree.SubElement(
+            l_time,
+            "begin",
+            attrib={"value": str(p_simtimeinterval[0])}
+        )
 
         with open(p_configfile, "w") as f_pconfigxml:
-            f_pconfigxml.write(etree.tostring(l_configuration, pretty_print=True))
+            f_pconfigxml.write(optom.common.io.etree.tostring(l_configuration, pretty_print=True))
 
     @staticmethod
     def _generate_settings_xml(
@@ -581,19 +581,19 @@ class SumoConfig(optom.configuration.configuration.Configuration):
         if os.path.isfile(p_settingsfile) and not p_forcerebuildscenarios:
             return
 
-        l_viewsettings = etree.Element("viewsettings")
-        etree.SubElement(
+        l_viewsettings = optom.common.io.etree.Element("viewsettings")
+        optom.common.io.etree.SubElement(
             l_viewsettings, "viewport",
             attrib={"x": str(p_scenarioconfig.get("parameters").get("length") / 2),
                     "y": "0",
                     "zoom": "100"}
         )
-        etree.SubElement(
+        optom.common.io.etree.SubElement(
             l_viewsettings, "delay", attrib={"value": str(p_runcfg.get("sumo").get("gui-delay"))}
         )
 
         with open(p_settingsfile, "w") as f_pconfigxml:
-            f_pconfigxml.write(etree.tostring(l_viewsettings, pretty_print=True))
+            f_pconfigxml.write(optom.common.io.etree.tostring(l_viewsettings, pretty_print=True))
 
     @staticmethod
     def _next_timestep(p_lambda, p_prevstarttime, p_distribution="poisson"):
@@ -643,9 +643,9 @@ class SumoConfig(optom.configuration.configuration.Configuration):
 
         # sort speeds according to initial sorting flag
         if p_initialsorting == "best":
-            l_vehicle_list.sort(key=lambda v: v.speed_max, reverse=True)
+            l_vehicle_list.sort(key=lambda i_v: i_v.speed_max, reverse=True)
         elif p_initialsorting == "worst":
-            l_vehicle_list.sort(key=lambda v: v.speed_max)
+            l_vehicle_list.sort(key=lambda i_v: i_v.speed_max)
         elif p_initialsorting == "random":
             random.shuffle(l_vehicle_list)
 
@@ -695,7 +695,7 @@ class SumoConfig(optom.configuration.configuration.Configuration):
         )
 
         # xml
-        l_trips = etree.Element("trips")
+        l_trips = optom.common.io.etree.Element("trips")
 
         # create a sumo vtype for each vehicle
         for i_vid, i_vehicle in l_vehicles.iteritems():
@@ -733,11 +733,11 @@ class SumoConfig(optom.configuration.configuration.Configuration):
 
             l_vattr["type"] = l_vattr.get("vClass")
 
-            etree.SubElement(l_trips, "vType", attrib=l_vattr)
+            optom.common.io.etree.SubElement(l_trips, "vType", attrib=l_vattr)
 
         # add trip for each vehicle
         for i_vid, i_vehicle in l_vehicles.iteritems():
-            etree.SubElement(l_trips, "trip", attrib={
+            optom.common.io.etree.SubElement(l_trips, "trip", attrib={
                 "id": i_vid,
                 "depart": str(i_vehicle.start_time),
                 "from": "enter_21start",
@@ -747,7 +747,7 @@ class SumoConfig(optom.configuration.configuration.Configuration):
             })
 
         with open(p_tripfile, "w") as f_ptripxml:
-            f_ptripxml.write(etree.tostring(l_trips, pretty_print=True))
+            f_ptripxml.write(optom.common.io.etree.tostring(l_trips, pretty_print=True))
 
         return l_vehicles
 

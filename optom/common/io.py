@@ -188,3 +188,4 @@ class Writer(object):
                 l_group.create_dataset(name=i_objname, data=i_objvalue, **kwargs)
 
         f_hdf5.close()
+
