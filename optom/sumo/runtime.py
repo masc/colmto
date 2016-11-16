@@ -20,6 +20,7 @@
 # # along with this program. If not, see http://www.gnu.org/licenses/         #
 # #############################################################################
 # @endcond
+"""Runtime to control SUMO."""
 from __future__ import print_function
 from __future__ import division
 import subprocess
@@ -27,13 +28,24 @@ from optom.common import log
 
 
 class Runtime(object):
+    """Runtime class"""
 
     def __init__(self, p_args, p_sumoconfig, p_sumobinary):
+        """C'tor."""
+
         self._sumoconfig = p_sumoconfig
         self._sumobinary = p_sumobinary
         self._log = log.logger(__name__, p_args.loglevel, p_args.quiet, p_args.logfile)
 
     def run(self, p_runcfg, p_scenarioname, p_runnumber):
+        """
+        Run provided scenario.
+
+        :param p_runcfg Run configuration
+        :param p_scenarioname Name of scenario (for logging purpose)
+        :param p_runnumber Number of current run (for logging purpose)
+        """
+
         self._log.info("Running scenario %s: run %d", p_scenarioname, p_runnumber)
         l_sumoprocess = subprocess.check_output(
             [
@@ -42,7 +54,7 @@ class Runtime(object):
                 "--gui-settings-file", p_runcfg.get("settingsfile"),
                 "--time-to-teleport", "-1",
                 "--no-step-log"
-             ],
+            ],
             stderr=subprocess.STDOUT,
             bufsize=-1
         )
