@@ -20,6 +20,7 @@
 # # along with this program. If not, see http://www.gnu.org/licenses/         #
 # #############################################################################
 # @endcond
+"""Visualisation of simulation results."""
 from __future__ import print_function
 from __future__ import division
 
@@ -28,11 +29,22 @@ from matplotlib import rc
 
 import log
 
-s_log = log.logger(__name__)
+_LOG = log.logger(__name__)
 
 
 def boxplot(p_filename, p_data, p_title="", p_xlabel="", p_ylabel=""):
-    s_log.info("Creating boxplot %s", p_filename)
+    """
+    Draw a boxplot of provided data and write result to file.
+
+
+    :param p_filename filename with path
+    :param p_data data as dictionary, key (box) -> [values]
+    :param p_title figure title
+    :param p_xlabel x label
+    :param p_ylabel y label
+    """
+
+    _LOG.info("Creating boxplot %s", p_filename)
     rc("text", usetex=True)
     rc("font", **{"family": "sans-serif", "sans-serif": ["Helvetica"], "size": 10})
     rc("text.latex", preamble=r"\usepackage{cmbright}")
