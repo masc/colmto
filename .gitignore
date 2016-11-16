@@ -12,3 +12,4 @@
 !*.py
 !*.md
 !radon.sh
+!build-sumo-osx.sh
