@@ -26,6 +26,7 @@ dependencies:
     pre:
         - sudo apt-get install libhdf5-dev pandoc
         - pip install pylint
+        - pip install radon
 
 checkout:
   post:
@@ -39,6 +40,7 @@ test:
         - git checkout gh-pages
         - mv -f circle.yml /tmp
         - mv -f .gitignore /tmp
+        - mv -f radon.sh /tmp
         - git checkout master
         - git push origin :gh-pages
         - git branch -D gh-pages
@@ -46,8 +48,11 @@ test:
         - rm -Rf *
         - mv -f /tmp/.gitignore .
         - mv -f /tmp/circle.yml .
+        - mv -f /tmp/radon.sh .
         - pylint optom -f html > pylint.html; true
         - pandoc --from html --to markdown_github pylint.html -o pylint.md
+        - sh radon.sh > radon.md
         - git add --all .
         - git commit -m "circleci"
         - git push origin gh-pages
+
