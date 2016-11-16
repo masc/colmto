@@ -52,7 +52,8 @@ test:
         - pylint optom -f html > pylint.html; true
         - pandoc --from html --to markdown_github pylint.html -o pylint.md
         - sh radon.sh > radon.md
+        - echo "# OPTOM Statistics" > README.md
+        - cat radon.md pylint.md >> README.md
         - git add --all .
         - git commit -m "circleci"
         - git push origin gh-pages
-
