@@ -59,7 +59,7 @@ except ImportError:
                 except ImportError:
                     print("Failed to import ElementTree from any known place")
 
-s_iloop_template = etree.XML("""
+_ILOOP_TEMPLATE = etree.XML("""
     <xsl:stylesheet version= "1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
     <xsl:template match="/">
     <detector>
@@ -89,7 +89,7 @@ class Statistics(object):
         l_vehicles = p_run_data.get("vehicles")
         l_iloopfile = p_run_data.get("iloopfile")
         l_root = etree.parse(l_iloopfile)
-        l_iloop_detections = XSLT(s_iloop_template)(l_root).iter("vehicle")
+        l_iloop_detections = XSLT(_ILOOP_TEMPLATE)(l_root).iter("vehicle")
         l_detectors = sorted(p_scenario_config.get("detectorpositions").keys())
 
         # create a dictionary with vid -> detectorid -> timestep hierarchy for json output,
