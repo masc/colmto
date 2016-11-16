@@ -456,9 +456,11 @@ class SumoConfig(optom.configuration.configuration.Configuration):
                 "id": "2_21segment.0_begin",
                 "lane": "enter_21start_0",
                 "pos": str(
-                    self.scenarioconfig.get(p_scenario_name)
-                        .get("detectorpositions")
-                        .get("2_21segment.0_begin")
+                    self.scenarioconfig.get(
+                        p_scenario_name
+                    ).get(
+                        "detectorpositions"
+                    ).get("2_21segment.0_begin")
                 ),
                 "friendlyPos": "true",
                 "splitByType": "true",
