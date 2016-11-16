@@ -69,15 +69,17 @@ class SUMOVehicle(BaseVehicle):
     """SUMO vehicle class."""
 
     def __init__(self, **p_kwargs):
+        """C'tor"""
+
         self._vtype = p_kwargs.pop("vtype", None)
 
         # convert attr values to str for sumo xml handling
         self._vtype_sumo_attr = dict(
-            map(
-                lambda (k, v): (k, str(v)),
-                p_kwargs.pop("vtype_sumo_attr", {}).iteritems()
-            )
+            [
+                (k, str(v)) for (k, v) in p_kwargs.pop("vtype_sumo_attr", {}).iteritems()
+            ]
         )
+
         self._color = p_kwargs.pop("color", None)
         self._speed_deviation = p_kwargs.pop("speed_deviation", 0.0)
 
@@ -99,38 +101,47 @@ class SUMOVehicle(BaseVehicle):
 
     @property
     def vtype(self):
+        """Return vehicle type."""
         return self._vtype
 
     @property
     def vtype_sumo_attr(self):
+        """Return SUMO specific attributes."""
         return self._vtype_sumo_attr
 
     @property
     def color(self):
+        """Return color."""
         return self._color
 
     @color.setter
     def color(self, p_color):
+        """Update color."""
         self._color = p_color
 
     @property
     def speed_deviation(self):
+        """Return speed deviation."""
         return self._speed_deviation
 
     @property
     def start_time(self):
+        """Return vehicle's start time."""
         return self._start_time
 
     @start_time.setter
     def start_time(self, p_start_time):
+        """Set start time of vehicle."""
         self._start_time = p_start_time
 
     @property
     def travel_times(self):
+        """Return travel times."""
         return self._travel_times
 
     @property
     def time_losses(self):
+        """Return time losses."""
         return self._time_losses
 
 
