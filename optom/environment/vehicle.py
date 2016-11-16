@@ -143,5 +143,3 @@ class SUMOVehicle(BaseVehicle):
     def time_losses(self):
         """Return time losses."""
         return self._time_losses
-
-
