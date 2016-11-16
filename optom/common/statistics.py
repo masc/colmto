@@ -30,8 +30,8 @@ from collections import defaultdict
 
 import math
 
-import log
-from io import Writer
+import optom.common.log
+from optom.common.io import Writer
 
 try:
     from lxml import etree
@@ -77,7 +77,7 @@ class Statistics(object):
     """Statistics class for computing/aggregating SUMO results"""
 
     def __init__(self, p_args):
-        self._log = log.logger(__name__, p_args.loglevel, p_args.logfile)
+        self._log = optom.common.log.logger(__name__, p_args.loglevel, p_args.logfile)
         self._writer = Writer(p_args)
 
     def dump_traveltimes_from_iloops(self, p_run_data, p_run_config, p_scenario_config,
