@@ -27,9 +27,9 @@ from __future__ import division
 import matplotlib.pyplot as plt
 from matplotlib import rc
 
-import log
+import optom.common.log
 
-_LOG = log.logger(__name__)
+_LOG = optom.common.log.logger(__name__)
 
 
 def boxplot(p_filename, p_data, p_title="", p_xlabel="", p_ylabel=""):
