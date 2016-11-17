@@ -264,7 +264,8 @@ class SumoConfig(optom.common.configuration.Configuration):
 
         :param p_scenarioconfig: Scenario configuration
         :param p_nodefile: Destination to write node file
-        :param p_forcerebuildscenarios: rebuild scenarios, even if they already exist for current run
+        :param p_forcerebuildscenarios: rebuild scenarios,
+                                        even if they already exist for current run
         """
 
         if os.path.isfile(p_nodefile) and not p_forcerebuildscenarios:
@@ -317,7 +318,8 @@ class SumoConfig(optom.common.configuration.Configuration):
         :param p_scenario_name: Name of scenario (required to id detector positions)
         :param p_scenarioconfig: Scenario configuration
         :param p_edgefile: Destination to write edge file
-        :param p_forcerebuildscenarios: Rebuild scenarios, even if they already exist for current run
+        :param p_forcerebuildscenarios: Rebuild scenarios,
+                                        even if they already exist for current run
         """
 
         if os.path.isfile(p_edgefile) and not p_forcerebuildscenarios:
@@ -420,7 +422,8 @@ class SumoConfig(optom.common.configuration.Configuration):
         :param p_scenarioconfig: Scenario configuration
         :param p_iloopfile: File to write induction loop detector 'measurements'
         :param p_additionalfile: Destination to write additional cfg file
-        :param p_forcerebuildscenarios: rebuild scenarios, even if they already exist for current run
+        :param p_forcerebuildscenarios: Rebuild scenarios,
+                                        even if they already exist for current run
         """
 
         if os.path.isfile(p_additionalfile) and not p_forcerebuildscenarios:
@@ -571,7 +574,8 @@ class SumoConfig(optom.common.configuration.Configuration):
         :param p_additionalfile: Destination to write additional cfg file
         :param p_settingsfile: Destination to write settings file
         :param p_simtimeinterval: Time interval of simulation
-        :param p_forcerebuildscenarios: Rebuild scenarios, even if they already exist for current run
+        :param p_forcerebuildscenarios: Rebuild scenarios,
+                                        even if they already exist for current run
         """
 
         if os.path.isfile(p_configfile) and not p_forcerebuildscenarios:
@@ -619,7 +623,8 @@ class SumoConfig(optom.common.configuration.Configuration):
         :param p_scenarioconfig: Scenario configuration
         :param p_runcfg: Run configuration
         :param p_settingsfile: Destination to write settings file
-        :param p_forcerebuildscenarios: Rebuild scenarios, even if they already exist for current run
+        :param p_forcerebuildscenarios: Rebuild scenarios,
+                                        even if they already exist for current run
         """
         if os.path.isfile(p_settingsfile) and not p_forcerebuildscenarios:
             return
