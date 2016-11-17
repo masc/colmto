@@ -20,17 +20,19 @@
 # # along with this program. If not, see http://www.gnu.org/licenses/         #
 # #############################################################################
 # @endcond
-"""Optom main module"""
+"""Optom main module."""
+
 from __future__ import print_function
 
 import argparse
-import os
-import sys
-import shutil
 import datetime
-from configuration.configuration import Configuration
-from common import log
-from sumo.sumo import Sumo
+import os
+import shutil
+import sys
+
+import optom.common.log
+import optom.common.configuration
+import optom.sumo.sumosim
 
 
 class Optom(object):
@@ -137,19 +139,19 @@ class Optom(object):
         )
         l_args = l_parser.parse_args()
 
-        l_log = log.logger(
+        l_log = optom.common.log.logger(
             __name__,
             l_args.loglevel,
             l_args.quiet,
             l_args.logfile
         )
         l_log.info("---- Starting OPTOM ----")
-        l_configuration = Configuration(l_args)
+        l_configuration = optom.common.configuration.Configuration(l_args)
         l_log.debug("Initial loading of configuration done")
 
         if l_configuration.runconfig.get("sumo").get("enabled") or l_args.runsumo:
             l_log.info("---- Starting SUMO Baseline Simulation ----")
-            Sumo(l_args).run_scenarios()
+            optom.sumo.sumosim.SumoSim(l_args).run_scenarios()
 
 if __name__ == "__main__":
     Optom()

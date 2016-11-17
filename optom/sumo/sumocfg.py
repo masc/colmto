@@ -26,20 +26,20 @@ from __future__ import division
 from __future__ import print_function
 
 import copy
+import itertools
 import os
 import random
 import subprocess
-import itertools
 from collections import OrderedDict
 
-import optom.configuration.configuration
-import optom.common.io
 import optom.common.colormaps
+import optom.common.configuration
+import optom.common.io
 import optom.common.log
 import optom.environment.vehicle
 
 
-class SumoConfig(optom.configuration.configuration.Configuration):
+class SumoConfig(optom.common.configuration.Configuration):
     """Create SUMO configuration files"""
 
     def __init__(self, p_args, p_netconvertbinary, p_duarouterbinary):

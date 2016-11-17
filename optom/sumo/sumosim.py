@@ -44,7 +44,7 @@ from optom.sumo.sumocfg import SumoConfig
 from optom.sumo.runtime import Runtime
 
 
-class Sumo(object):
+class SumoSim(object):
     """Class for initialising/running SUMO scenarios."""
 
     def __init__(self, p_args):

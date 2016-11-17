@@ -20,7 +20,7 @@
 # # along with this program. If not, see http://www.gnu.org/licenses/                  #
 # ######################################################################################
 # @endcond
-import optom.optom as optom
+import optom.main as optom
 
 if __name__ == "__main__":
     optom.Optom()
