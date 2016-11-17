@@ -137,21 +137,24 @@ class Optom(object):
             "--only-one-otl-segment", dest="onlyoneotlsegment", action="store_true",
             default=False, help="Generate SUMO scenarios with only on OTL segment"
         )
-        l_args = l_parser.parse_args()
+        self._args = l_parser.parse_args()
 
-        l_log = optom.common.log.logger(
+        self._log = optom.common.log.logger(
             __name__,
-            l_args.loglevel,
-            l_args.quiet,
-            l_args.logfile
+            self._args.loglevel,
+            self._args.quiet,
+            self._args.logfile
         )
-        l_log.info("---- Starting OPTOM ----")
-        l_configuration = optom.common.configuration.Configuration(l_args)
-        l_log.debug("Initial loading of configuration done")
 
-        if l_configuration.runconfig.get("sumo").get("enabled") or l_args.runsumo:
-            l_log.info("---- Starting SUMO Baseline Simulation ----")
-            optom.sumo.sumosim.SumoSim(l_args).run_scenarios()
+    def run(self):
+        """Run OPTOM"""
+        self._log.info("---- Starting OPTOM ----")
+        l_configuration = optom.common.configuration.Configuration(self._args)
+        self._log.debug("Initial loading of configuration done")
+
+        if l_configuration.runconfig.get("sumo").get("enabled") or self._args.runsumo:
+            self._log.info("---- Starting SUMO Baseline Simulation ----")
+            optom.sumo.sumosim.SumoSim(self._args).run_scenarios()
 
 if __name__ == "__main__":
-    Optom()
+    Optom().run()

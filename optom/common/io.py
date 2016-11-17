@@ -46,26 +46,36 @@ import h5py
 
 try:
     from lxml import etree
+    from lxml.etree import XSLT
 except ImportError:
     try:
         # Python 2.5
         import xml.etree.cElementTree as etree
+        from xml.etree import XSLT
     except ImportError:
         try:
             # Python 2.5
             import xml.etree.ElementTree as etree
+            from xml.etree import XSLT
         except ImportError:
             try:
                 # normal cElementTree install
                 import cElementTree as etree
+                from xml.etree import XSLT
             except ImportError:
                 try:
                     # normal ElementTree install
                     import elementtree.ElementTree as etree
+                    from xml.etree import XSLT
                 except ImportError:
                     print("Failed to import ElementTree from any known place")
 
 import optom.common.log
+
+
+def xslt(p_template):
+    """apply template to XSLT and return object."""
+    return XSLT(p_template)
 
 
 class Reader(object):

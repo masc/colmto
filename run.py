@@ -23,4 +23,4 @@
 import optom.main as optom
 
 if __name__ == "__main__":
-    optom.Optom()
+    optom.Optom().run()

@@ -31,35 +31,9 @@ from collections import defaultdict
 import math
 
 import optom.common.log
-from optom.common.io import Writer
+import optom.common.io
 
-try:
-    from lxml import etree
-    from lxml.etree import XSLT
-except ImportError:
-    try:
-        # Python 2.5
-        import xml.etree.cElementTree as etree
-        from xml.etree import XSLT
-    except ImportError:
-        try:
-            # Python 2.5
-            import xml.etree.ElementTree as etree
-            from xml.etree import XSLT
-        except ImportError:
-            try:
-                # normal cElementTree install
-                import cElementTree as etree
-                from xml.etree import XSLT
-            except ImportError:
-                try:
-                    # normal ElementTree install
-                    import elementtree.ElementTree as etree
-                    from xml.etree import XSLT
-                except ImportError:
-                    print("Failed to import ElementTree from any known place")
-
-_ILOOP_TEMPLATE = etree.XML("""
+_ILOOP_TEMPLATE = optom.common.io.etree.XML("""
     <xsl:stylesheet version= "1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
     <xsl:template match="/">
     <detector>
@@ -78,7 +52,7 @@ class Statistics(object):
 
     def __init__(self, p_args):
         self._log = optom.common.log.logger(__name__, p_args.loglevel, p_args.logfile)
-        self._writer = Writer(p_args)
+        self._writer = optom.common.io.Writer(p_args)
 
     def dump_traveltimes_from_iloops(self, p_run_data, p_run_config, p_scenario_config,
                                      p_scenarioname, p_initialsorting, p_current_run, p_resultsdir):
@@ -88,8 +62,8 @@ class Statistics(object):
 
         l_vehicles = p_run_data.get("vehicles")
         l_iloopfile = p_run_data.get("iloopfile")
-        l_root = etree.parse(l_iloopfile)
-        l_iloop_detections = XSLT(_ILOOP_TEMPLATE)(l_root).iter("vehicle")
+        l_root = optom.common.io.etree.parse(l_iloopfile)
+        l_iloop_detections = optom.common.io.xslt(_ILOOP_TEMPLATE)(l_root).iter("vehicle")
         l_detectors = sorted(p_scenario_config.get("detectorpositions").keys())
 
         # create a dictionary with vid -> detectorid -> timestep hierarchy for json output,
