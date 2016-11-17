@@ -86,6 +86,7 @@ class Reader(object):
     """Read xml, json and yaml files."""
 
     def __init__(self, p_args):
+        """C'tor."""
         self._log = optom.common.log.logger(__name__, p_args.loglevel, p_args.logfile)
 
     def read_etree(self, p_fname):
