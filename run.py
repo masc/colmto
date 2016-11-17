@@ -4,7 +4,7 @@
 # ######################################################################################
 # # LGPL License                                                                       #
 # #                                                                                    #
-# # This file is part of the Optimisation of Overtaking Manoeuvres (OPTOM) project.                     #
+# # This file is part of the Optimisation of Overtaking Manoeuvres (OPTOM) project.    #
 # # Copyright (c) 2016, Malte Aschermann (malte.aschermann@tu-clausthal.de)            #
 # # This program is free software: you can redistribute it and/or modify               #
 # # it under the terms of the GNU Lesser General Public License as                     #
@@ -20,6 +20,7 @@
 # # along with this program. If not, see http://www.gnu.org/licenses/                  #
 # ######################################################################################
 # @endcond
+"""Run optom module."""
 import optom.main as optom
 
 if __name__ == "__main__":

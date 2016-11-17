@@ -155,6 +155,3 @@ class Optom(object):
         if l_configuration.runconfig.get("sumo").get("enabled") or self._args.runsumo:
             self._log.info("---- Starting SUMO Baseline Simulation ----")
             optom.sumo.sumosim.SumoSim(self._args).run_scenarios()
-
-if __name__ == "__main__":
-    Optom().run()
