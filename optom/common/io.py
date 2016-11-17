@@ -167,24 +167,25 @@ class Writer(object):
 
         f_hdf5 = h5py.File(p_filename, 'a')
 
-        if f_hdf5 and isinstance(f_hdf5, h5py._hl.files.File):
+        if not f_hdf5 and not isinstance(f_hdf5, h5py.File):
+            raise Exception
 
-            # create group if it doesn't exist
-            l_group = f_hdf5[p_path] if p_path in f_hdf5 else f_hdf5.create_group(p_path)
+        # create group if it doesn't exist
+        l_group = f_hdf5[p_path] if p_path in f_hdf5 else f_hdf5.create_group(p_path)
 
-            # add datasets for each element of p_objectdict,
-            # if they already exist by name, overwrite them
-            for i_objname, i_objvalue in p_objectdict.items():
+        # add datasets for each element of p_objectdict,
+        # if they already exist by name, overwrite them
+        for i_objname, i_objvalue in p_objectdict.items():
 
-                # remove compression if we have a scalar object, i.e. string, int, float
-                if isinstance(i_objvalue, (str, int, float)):
-                    kwargs.pop("compression", None)
-                    kwargs.pop("compression_opts", None)
+            # remove compression if we have a scalar object, i.e. string, int, float
+            if isinstance(i_objvalue, (str, int, float)):
+                kwargs.pop("compression", None)
+                kwargs.pop("compression_opts", None)
 
-                if i_objname in l_group:
-                    # remove previous object by i_objname id and add the new one
-                    del l_group[i_objname]
+            if i_objname in l_group:
+                # remove previous object by i_objname id and add the new one
+                del l_group[i_objname]
 
-                l_group.create_dataset(name=i_objname, data=i_objvalue, **kwargs)
+            l_group.create_dataset(name=i_objname, data=i_objvalue, **kwargs)
 
         f_hdf5.close()
