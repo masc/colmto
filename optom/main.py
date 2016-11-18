@@ -20,6 +20,7 @@
 # # along with this program. If not, see http://www.gnu.org/licenses/         #
 # #############################################################################
 # @endcond
+# pylint: disable=too-few-public-methods
 """Optom main module."""
 
 from __future__ import print_function
