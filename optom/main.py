@@ -64,15 +64,15 @@ class Optom(object):
 
         l_parser = argparse.ArgumentParser(description="Process parameters for optom")
         l_parser.add_argument(
-            "--runconfig", dest="runconfig", type=str,
+            "--runconfigfile", dest="runconfigfile", type=str,
             default=os.path.join(l_configdir, u"runconfig.yaml")
         )
         l_parser.add_argument(
-            "--scenarioconfig", dest="scenarioconfig", type=str,
+            "--scenarioconfigfile", dest="scenarioconfigfile", type=str,
             default=os.path.join(l_configdir, u"scenarioconfig.yaml")
         )
         l_parser.add_argument(
-            "--vtypesconfig", dest="vtypesconfig", type=str,
+            "--vtypesconfigfile", dest="vtypesconfigfile", type=str,
             default=os.path.join(l_configdir, u"vtypesconfig.yaml")
         )
         l_parser.add_argument(
