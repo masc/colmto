@@ -24,7 +24,7 @@ machine:
 
 dependencies:
     pre:
-        - sudo apt-get install libhdf5-dev pandoc
+        - sudo apt-get install libhdf5-dev pandoc graphviz
         - pip install pylint
         - pip install radon
 
@@ -50,8 +50,10 @@ test:
         - mv -f /tmp/circle.yml .
         - mv -f /tmp/radon.sh .
         - mv -f /tmp/optom .
-        - pylint optom -f html > pylint.html; true
+        - pylint optom -f html --import-graph=optom-imports.png > pylint.html; true
         - pandoc --from html --to markdown_github pylint.html -o pylint.md
+        - echo -e "\n## Import Graph" >> pylint.md
+        - echo -e "\n![ImportGraph](https://github.com/masc/optom/blob/gh-pages/optom-imports.png)" >> pylint.md
         - echo -e "# OPTOM Statistics\n" > README.md
         - sh radon.sh > radon.md
         - rm -Rf optom
