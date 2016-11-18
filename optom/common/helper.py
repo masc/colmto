@@ -7,7 +7,7 @@ class Enum(tuple):
     __getattr__ = tuple.index
 
 
-class Namespace:
+class Namespace(object):
     """Namespace similar to argparse"""
     def __init__(self, **kwargs):
         """C'tor."""
