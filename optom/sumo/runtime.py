@@ -29,7 +29,7 @@ from optom.common import log
 
 class Runtime(object):
     """Runtime class"""
-
+    # pylint: disable=too-few-public-methods
     def __init__(self, p_args, p_sumoconfig, p_sumobinary):
         """C'tor."""
 
@@ -53,7 +53,8 @@ class Runtime(object):
                 "-c", p_runcfg.get("configfile"),
                 "--gui-settings-file", p_runcfg.get("settingsfile"),
                 "--time-to-teleport", "-1",
-                "--no-step-log"
+                "--no-step-log",
+                "--fcd-output", p_runcfg.get("fcdfile")
             ],
             stderr=subprocess.STDOUT,
             bufsize=-1
