@@ -25,8 +25,10 @@
 from __future__ import division
 from __future__ import print_function
 
+import copy
 import os
 import sh
+
 from optom.common.io import Reader
 from optom.common import log
 
@@ -36,7 +38,7 @@ class Configuration(object):
 
     @property
     def args(self):
-        """Return command line arguments."""
+        """Return config command line arguments."""
         return self._args
 
     @property
@@ -50,6 +52,11 @@ class Configuration(object):
         return self._scenarioconfig
 
     @property
+    def scenariodir(self):
+        """Return scenario directory."""
+        return self._args.scenariodir
+
+    @property
     def vtypesconfig(self):
         """Return vehicle type config."""
         return self._vtypesconfig
@@ -57,12 +64,12 @@ class Configuration(object):
     @property
     def outputdir(self):
         """Return destination dir."""
-        return self._outputdir
+        return self._args.outputdir
 
     @property
     def runprefix(self):
         """Return run prefix."""
-        return self._runprefix
+        return self._args.runprefix
 
     @property
     def optom_version(self):
@@ -76,34 +83,34 @@ class Configuration(object):
         """
 
         self._log = log.logger(__name__, p_args.loglevel, p_args.logfile)
-        self._args = p_args
         self._reader = Reader(p_args)
+        self._args = copy.deepcopy(p_args)
 
-        if p_args.runconfig is None:
-            raise BaseException("run configuration flag is None")
+        if self._args.runconfigfile is None:
+            raise BaseException("run configuration file flag is None")
 
-        if p_args.scenarioconfig is None:
-            raise BaseException("scenario configuration flag is None")
+        if self._args.scenarioconfigfile is None:
+            raise BaseException("scenario configuration file flag is None")
 
-        if p_args.vtypesconfig is None:
-            raise BaseException("vtype configuration flag is None")
+        if self._args.vtypesconfigfile is None:
+            raise BaseException("vtype configuration file flag is None")
 
-        if not os.path.isfile(p_args.runconfig):
-            raise BaseException("run configuration {} is not a file".format(p_args.runconfig))
+        if not os.path.isfile(self._args.runconfigfile):
+            raise BaseException("run configuration {} is not a file".format(self.runconfig))
 
-        if not os.path.isfile(p_args.scenarioconfig):
+        if not os.path.isfile(self._args.scenarioconfigfile):
             raise BaseException(
-                "scenario configuration {} is not a file".format(p_args.scenarioconfig))
+                "scenario configuration {} is not a file".format(self._args.scenarioconfigfile)
+            )
 
-        if not os.path.isfile(p_args.vtypesconfig):
-            raise BaseException("vtype configuration {} is not a file".format(p_args.vtypesconfig))
+        if not os.path.isfile(self._args.vtypesconfigfile):
+            raise BaseException(
+                "vtype configuration {} is not a file".format(self._args.vtypesconfigfile)
+            )
 
-        self._outputdir = p_args.outputdir
-        self._scenariodir = p_args.scenariodir
-        self._runconfig = self._reader.read_yaml(p_args.runconfig)
-        self._scenarioconfig = self._reader.read_yaml(p_args.scenarioconfig)
-        self._vtypesconfig = self._reader.read_yaml(p_args.vtypesconfig)
-        self._runprefix = p_args.runprefix
+        self._runconfig = self._reader.read_yaml(self._args.runconfigfile)
+        self._scenarioconfig = self._reader.read_yaml(self._args.scenarioconfigfile)
+        self._vtypesconfig = self._reader.read_yaml(self._args.vtypesconfigfile)
 
         # store currently running version
         # inferred from current HEAD if located inside a git project.
@@ -117,19 +124,19 @@ class Configuration(object):
             self._log.debug("Git command not found in PATH. Setting commit id to UNKNOWN.")
             self._optom_version = "UNKNOWN"
 
-        self._override_cfg_flags(p_args)
+        self._override_cfg_flags()
 
-    def _override_cfg_flags(self, p_args):
+    def _override_cfg_flags(self):
         """Override the cfs flags."""
 
-        if p_args.headless:
-            self._runconfig.get("sumo")["headless"] = True
-        if p_args.gui:
-            self._runconfig.get("sumo")["headless"] = False
-        if p_args.runs is not None:
-            self._runconfig["runs"] = p_args.runs
-        if p_args.scenarios is not None:
-            if p_args.scenarios != ["all"]:
-                self._runconfig["scenarios"] = p_args.scenarios
+        if self.args.headless:
+            self.runconfig.get("sumo")["headless"] = True
+        if self.args.gui:
+            self.runconfig.get("sumo")["headless"] = False
+        if self.args.runs is not None:
+            self.runconfig["runs"] = self._args.runs
+        if self.args.scenarios is not None:
+            if self.args.scenarios != ["all"]:
+                self.runconfig["scenarios"] = self.args.scenarios
             else:
-                self._scenarioconfig.keys()
+                self.scenarioconfig.keys()
