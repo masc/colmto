@@ -690,13 +690,15 @@ class SumoConfig(optom.common.configuration.Configuration):
 
         assert p_initialsorting in ["best", "random", "worst"]
 
-        l_cfgvtypedistribution = self._runconfig.get("vtypedistribution")
-        self._log.debug("Create vehicle distribution with %s", l_cfgvtypedistribution)
+        self._log.debug(
+            "Create vehicle distribution with %s", self._runconfig.get("vtypedistribution")
+        )
+
         l_vtypedistribution = list(
             itertools.chain.from_iterable(
                 [
                     [k] * int(round(100 * v.get("fraction")))
-                    for (k, v) in l_cfgvtypedistribution.iteritems()
+                    for (k, v) in self._runconfig.get("vtypedistribution").iteritems()
                 ]
             )
         )
@@ -711,9 +713,11 @@ class SumoConfig(optom.common.configuration.Configuration):
             optom.environment.vehicle.SUMOVehicle(
                 vtype=vtype,
                 vtype_sumo_attr=self.vtypesconfig.get(vtype),
-                speed_deviation=l_cfgvtypedistribution.get(vtype).get("speedDev"),
+                speed_deviation=self._runconfig.get("vtypedistribution").get(vtype).get("speedDev"),
                 speed_max=min(
-                    random.choice(l_cfgvtypedistribution.get(vtype).get("desiredSpeeds")),
+                    random.choice(
+                        self._runconfig.get("vtypedistribution").get(vtype).get("desiredSpeeds")
+                    ),
                     self.scenarioconfig.get(p_scenario_name).get("parameters").get("speedlimit")
                 )
             ) for vtype in [random.choice(l_vtypedistribution) for _ in xrange(p_nbvehicles)]
