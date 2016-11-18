@@ -51,8 +51,8 @@ class SumoConfig(optom.common.configuration.Configuration):
         self._args = copy.copy(p_args)
         self._dirs = {
             "sumoconfig": os.path.join(self.outputdir, "SUMO"),
-            "runs": os.path.join(self.outputdir, "SUMO", self._runprefix, "runs"),
-            "results": os.path.join(self.outputdir, "SUMO", self._runprefix, "results")
+            "runs": os.path.join(self.outputdir, "SUMO", self.runprefix, "runs"),
+            "results": os.path.join(self.outputdir, "SUMO", self.runprefix, "results")
         }
         self._binaries = {
             "netconvert": p_netconvertbinary,
