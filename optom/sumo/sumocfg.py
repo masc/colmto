@@ -49,31 +49,26 @@ class SumoConfig(optom.common.configuration.Configuration):
         self._log = optom.common.log.logger(__name__, p_args.loglevel, p_args.quiet, p_args.logfile)
         self._writer = optom.common.io.Writer(p_args)
         self._args = copy.copy(p_args)
-        self._dirs = {
-            "sumoconfig": os.path.join(self.outputdir, "SUMO"),
-            "runs": os.path.join(self.outputdir, "SUMO", self.runprefix, "runs"),
-            "results": os.path.join(self.outputdir, "SUMO", self.runprefix, "results")
-        }
+
         self._binaries = {
             "netconvert": p_netconvertbinary,
             "duarouter": p_duarouterbinary
         }
 
-        if not os.path.exists(self._dirs.get("sumoconfig")):
-            os.makedirs(self._dirs.get("sumoconfig"))
+        if not os.path.exists(self.sumoconfigdir):
+            os.makedirs(self.sumoconfigdir)
 
-        if not os.path.exists(self._dirs.get("runs")):
-            os.makedirs(self._dirs.get("runs"))
+        if not os.path.exists(self.runsdir):
+            os.makedirs(self.runsdir)
 
-        if not os.path.exists(self._dirs.get("results")):
-            os.makedirs(self._dirs.get("results"))
+        if not os.path.exists(self.resultsdir):
+            os.makedirs(self.resultsdir)
 
         if self._args.forcerebuildscenarios:
             self._log.debug(
                 "--force-rebuild-scenarios set "
                 "-> rebuilding/overwriting scenarios if already present"
             )
-        self._onlyoneotlsegment = p_args.onlyoneotlsegment
 
         # generate color map for vehicle max speeds
         l_global_maxspeed = max(
@@ -90,20 +85,20 @@ class SumoConfig(optom.common.configuration.Configuration):
     @property
     def sumoconfigdir(self):
         """return directory of SUMO config"""
-        return self._dirs.get("sumoconfig")
+        return os.path.join(self.outputdir, "SUMO")
 
     @property
     def runsdir(self):
         """return directory of runs"""
-        return self._dirs.get("runs")
+        return os.path.join(self.outputdir, "SUMO", self.runprefix, "runs")
 
     @property
     def resultsdir(self):
         """return directory of results"""
-        return self._dirs.get("results")
+        return os.path.join(self.outputdir, "SUMO", self.runprefix, "results")
 
     def get(self, p_key):
-        """return element of sumo config"""
+        """return element of sumo runconfig"""
         return self.runconfig.get("sumo").get(p_key)
 
     def generate_scenario(self, p_scenarioname):
@@ -111,7 +106,7 @@ class SumoConfig(optom.common.configuration.Configuration):
 
         self._log.debug("Generating scenario %s", p_scenarioname)
 
-        l_destinationdir = os.path.join(self._dirs.get("runs"), p_scenarioname)
+        l_destinationdir = os.path.join(self.runsdir, p_scenarioname)
         if not os.path.exists(os.path.join(l_destinationdir)):
             os.mkdir(l_destinationdir)
 
@@ -135,14 +130,18 @@ class SumoConfig(optom.common.configuration.Configuration):
             l_destinationdir, "{}.settings.xml".format(p_scenarioname)
         )
 
-        self._generate_node_xml(l_scenarioconfig, l_nodefile, self._args.forcerebuildscenarios)
+        self._generate_node_xml(
+            l_scenarioconfig, l_nodefile, self._args.forcerebuildscenarios
+        )
         self._generate_edge_xml(
             p_scenarioname, l_scenarioconfig, l_edgefile, self._args.forcerebuildscenarios
         )
         self._generate_settings_xml(
             l_scenarioconfig, self.runconfig, l_settingsfile, self._args.forcerebuildscenarios
         )
-        self._generate_net_xml(l_nodefile, l_edgefile, l_netfile, self._args.forcerebuildscenarios)
+        self._generate_net_xml(
+            l_nodefile, l_edgefile, l_netfile, self._args.forcerebuildscenarios
+        )
 
         return l_scenarioruns
 
@@ -159,7 +158,7 @@ class SumoConfig(optom.common.configuration.Configuration):
             "name": p_scenarioruns.get("scenarioname"),
             "config": self.scenarioconfig.get(p_scenarioruns.get("scenarioname"))
         }
-        l_destinationdir = os.path.join(self._dirs.get("runs"), l_scenario.get("name"))
+        l_destinationdir = os.path.join(self.runsdir, l_scenario.get("name"))
         if not os.path.exists(os.path.join(l_destinationdir)):
             os.mkdir(l_destinationdir)
 
@@ -204,7 +203,7 @@ class SumoConfig(optom.common.configuration.Configuration):
         # "{}.tripinfo-output.xml".format(l_scenarioname))
 
         l_iloopdir = os.path.join(
-            self._dirs.get("results"),
+            self.resultsdir,
             l_scenario.get("name"),
             str(p_initialsorting),
             str(p_run_number)
@@ -278,7 +277,7 @@ class SumoConfig(optom.common.configuration.Configuration):
         l_nbswitches = p_scenarioconfig.get("parameters").get("switches")
         l_segmentlength = l_length / (l_nbswitches + 1)
 
-        if self._onlyoneotlsegment:
+        if self._args.onlyoneotlsegment:
             l_length = 2 * l_segmentlength  # two times segment length
 
         l_nodes = optom.common.io.etree.Element("nodes")
@@ -300,7 +299,7 @@ class SumoConfig(optom.common.configuration.Configuration):
                 "id": "exit",
                 "x": str(
                     l_length + 0.1
-                    if l_nbswitches % 2 == 1 or self._onlyoneotlsegment
+                    if l_nbswitches % 2 == 1 or self._args.onlyoneotlsegment
                     else l_length + l_segmentlength
                 ),
                 "y": "0"
@@ -381,7 +380,7 @@ class SumoConfig(optom.common.configuration.Configuration):
         # add splits and joins
         l_addotllane = True
         for i_segmentpos in xrange(0, int(l_length), int(l_segmentlength)) \
-                if not self._onlyoneotlsegment \
+                if not self._args.onlyoneotlsegment \
                 else xrange(0, int(2 * l_segmentlength - 1), int(l_segmentlength)):
             optom.common.io.etree.SubElement(
                 l_21edge,
@@ -547,7 +546,7 @@ class SumoConfig(optom.common.configuration.Configuration):
                 "id": "3_exit",
                 "lane": "21segment.{}_0".format(
                     self.scenarioconfig.get(p_scenario_name).get("switchpositions")[-1]
-                ) if l_nbswitches % 2 == 1 or self._onlyoneotlsegment else "21end_exit_0",
+                ) if l_nbswitches % 2 == 1 or self._args.onlyoneotlsegment else "21end_exit_0",
                 "pos": str(l_segmentlength - 5),
                 "friendlyPos": "true",
                 "splitByType": "true",
