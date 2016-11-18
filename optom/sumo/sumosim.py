@@ -60,7 +60,7 @@ class SumoSim(object):
                                 if self._sumocfg.get("headless")
                                 else checkBinary("sumo-gui"))
 
-    def _run_scenario(self, p_scenarioname):
+    def run_scenario(self, p_scenarioname):
         """
         Run given scenario.
 
@@ -122,4 +122,4 @@ class SumoSim(object):
         """Run all scenarios defined by cfgs/commandline."""
 
         for i_scenarioname in self._sumocfg.runconfig.get("scenarios"):
-            self._run_scenario(i_scenarioname)
+            self.run_scenario(i_scenarioname)
