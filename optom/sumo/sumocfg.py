@@ -493,23 +493,26 @@ class SumoConfig(optom.common.configuration.Configuration):
         l_switches = self.scenarioconfig.get(p_scenario.get("name")).get("switchpositions")
         for i, i_switch_pos in list(enumerate(l_switches))[:-1]:
             if i % 2 == 1:
-                l_detector_beginning_id = "2_21segment.{}_begin".format(l_switches[i + 1])
-                self.scenarioconfig \
-                    .get(p_scenario.get("name")) \
-                    .get("detectorpositions")[l_detector_beginning_id] = \
-                    l_segmentlength + i_switch_pos + l_segmentlength - 5
+                self.scenarioconfig.get(
+                    p_scenario.get("name")
+                ).get(
+                    "detectorpositions"
+                )[
+                    "2_21segment.{}_begin".format(l_switches[i + 1])
+                ] = l_segmentlength + i_switch_pos + l_segmentlength - 5
 
                 l_detector_end_id = "2_21segment.{}_end".format(l_switches[i - 1])
-                self.scenarioconfig \
-                    .get(p_scenario.get("name")) \
-                    .get("detectorpositions")[l_detector_end_id] = \
-                    l_segmentlength + i_switch_pos + 5
+                self.scenarioconfig.get(
+                    p_scenario.get("name")
+                ).get(
+                    "detectorpositions"
+                )[l_detector_end_id] = l_segmentlength + i_switch_pos + 5
 
                 optom.common.io.etree.SubElement(
                     l_additional,
                     "inductionLoop",
                     attrib={
-                        "id": l_detector_beginning_id,
+                        "id": "2_21segment.{}_begin".format(l_switches[i + 1]),
                         "lane": "21segment.{}_0".format(l_switches[i]),
                         "pos": str(l_segmentlength - 5),
                         "friendlyPos": "true",
@@ -534,10 +537,13 @@ class SumoConfig(optom.common.configuration.Configuration):
                 )
 
         # induction loop at the end of last one-lane segment and exit
-        l_detector_last_id = "2_21segment.{}_end".format(l_switches[-2])
-        self.scenarioconfig \
-            .get(p_scenario.get("name")) \
-            .get("detectorpositions")[l_detector_last_id] = l_length + l_segmentlength
+        self.scenarioconfig.get(
+            p_scenario.get("name")
+        ).get(
+            "detectorpositions"
+        )[
+            "2_21segment.{}_end".format(l_switches[-2])
+        ] = l_length + l_segmentlength
 
         optom.common.io.etree.SubElement(
             l_additional,
@@ -686,16 +692,20 @@ class SumoConfig(optom.common.configuration.Configuration):
 
         l_cfgvtypedistribution = self._runconfig.get("vtypedistribution")
         self._log.debug("Create vehicle distribution with %s", l_cfgvtypedistribution)
-        l_vtypedistribution = list(itertools.chain.from_iterable(
-            [
-                [k] * int(round(100 * v.get("fraction")))
-                for (k, v) in l_cfgvtypedistribution.iteritems()
+        l_vtypedistribution = list(
+            itertools.chain.from_iterable(
+                [
+                    [k] * int(round(100 * v.get("fraction")))
+                    for (k, v) in l_cfgvtypedistribution.iteritems()
                 ]
-        ))
+            )
+        )
 
-        l_vehps = p_aadt / (24 * 60 * 60) \
-            if not self._runconfig.get("vehiclespersecond").get("enabled") \
-            else self._runconfig.get("vehiclespersecond").get("value")
+        l_vehps = p_aadt / (24 * 60 * 60) if not self._runconfig.get(
+            "vehiclespersecond"
+        ).get(
+            "enabled"
+        ) else self._runconfig.get("vehiclespersecond").get("value")
 
         l_vehicle_list = [
             optom.environment.vehicle.SUMOVehicle(
