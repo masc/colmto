@@ -153,11 +153,7 @@ class SumoConfig(optom.common.configuration.Configuration):
         """
         self._log.debug("Generating run %s for %s sorting", p_run_number, p_initialsorting)
 
-        l_scenario = {
-            "name": p_scenarioruns.get("scenarioname"),
-            "config": self.scenarioconfig.get(p_scenarioruns.get("scenarioname"))
-        }
-        l_destinationdir = os.path.join(self.runsdir, l_scenario.get("name"))
+        l_destinationdir = os.path.join(self.runsdir, p_scenarioruns.get("scenarioname"))
         if not os.path.exists(os.path.join(l_destinationdir)):
             os.mkdir(l_destinationdir)
 
@@ -176,34 +172,31 @@ class SumoConfig(optom.common.configuration.Configuration):
 
         self._log.debug(
             "Generating SUMO run configuration for scenario %s / sorting %s / run %d",
-            l_scenario.get("name"), p_initialsorting, p_run_number
+            p_scenarioruns.get("scenarioname"), p_initialsorting, p_run_number
         )
-
-        l_netfile = p_scenarioruns.get("netfile")
-        l_settingsfile = p_scenarioruns.get("settingsfile")
 
         l_additionalfile = os.path.join(
             l_destinationdir, str(p_initialsorting), str(p_run_number),
-            "{}.add.xml".format(l_scenario.get("name"))
+            "{}.add.xml".format(p_scenarioruns.get("scenarioname"))
         )
         l_tripfile = os.path.join(
             l_destinationdir, str(p_initialsorting), str(p_run_number),
-            "{}.trip.xml".format(l_scenario.get("name"))
+            "{}.trip.xml".format(p_scenarioruns.get("scenarioname"))
         )
         l_routefile = os.path.join(
             l_destinationdir, str(p_initialsorting), str(p_run_number),
-            "{}.rou.xml".format(l_scenario.get("name"))
+            "{}.rou.xml".format(p_scenarioruns.get("scenarioname"))
         )
         l_configfile = os.path.join(
             l_destinationdir, str(p_initialsorting), str(p_run_number),
-            "{}.sumo.cfg".format(l_scenario.get("name"))
+            "{}.sumo.cfg".format(p_scenarioruns.get("scenarioname"))
         )
         # l_tripinfofile = os.path.join(l_destinationdir, str(p_initialsorting), str(p_run_number),
         # "{}.tripinfo-output.xml".format(l_scenarioname))
 
         l_output_measurements_dir = os.path.join(
             self.resultsdir,
-            l_scenario.get("name"),
+            p_scenarioruns.get("scenarioname"),
             str(p_initialsorting),
             str(p_run_number)
         )
@@ -212,11 +205,13 @@ class SumoConfig(optom.common.configuration.Configuration):
             os.makedirs(l_output_measurements_dir)
 
         l_iloopfile = os.path.join(
-            l_output_measurements_dir, "{}.inductionLoops.xml".format(l_scenario.get("name"))
+            l_output_measurements_dir,
+            "{}.inductionLoops.xml".format(p_scenarioruns.get("scenarioname"))
         )
 
         l_fcdfile = os.path.join(
-            l_output_measurements_dir, "{}.fcd-output.xml".format(l_scenario.get("name"))
+            l_output_measurements_dir,
+            "{}.fcd-output.xml".format(p_scenarioruns.get("scenarioname"))
         )
 
         l_runcfgfiles = [l_tripfile, l_additionalfile, l_routefile, l_configfile]
@@ -224,39 +219,39 @@ class SumoConfig(optom.common.configuration.Configuration):
         if len([fname for fname in l_runcfgfiles if not os.path.isfile(fname)]) > 0:
             self._log.debug(
                 "Incomplete/non-existing SUMO run configuration for %s, %s, %d -> (re)building",
-                l_scenario.get("name"), p_initialsorting, p_run_number
+                p_scenarioruns.get("scenarioname"), p_initialsorting, p_run_number
             )
             self._args.forcerebuildscenarios = True
 
         self._generate_additional_xml(
-            l_scenario, l_iloopfile, l_additionalfile,
+            p_scenarioruns, l_iloopfile, l_additionalfile,
             self._args.forcerebuildscenarios
         )
 
         self._generate_config_xml(
             {
                 "configfile": l_configfile,
-                "netfile": l_netfile,
+                "netfile": p_scenarioruns.get("netfile"),
                 "routefile": l_routefile,
                 "additionalfile": l_additionalfile,
-                "settingsfile": l_settingsfile
+                "settingsfile": p_scenarioruns.get("settingsfile")
             },
             self.runconfig.get("simtimeinterval"), self._args.forcerebuildscenarios
         )
 
         l_vehicles = self._generate_trip_xml(
-            l_scenario, self.runconfig, p_initialsorting, l_tripfile,
+            p_scenarioruns, self.runconfig, p_initialsorting, l_tripfile,
             self._args.forcerebuildscenarios
         )
 
         self._generate_route_xml(
-            l_netfile, l_tripfile, l_routefile,
+            p_scenarioruns.get("netfile"), l_tripfile, l_routefile,
             self._args.forcerebuildscenarios
         )
 
         return {
             "vehicles": l_vehicles,
-            "settingsfile": l_settingsfile,
+            "settingsfile": p_scenarioruns.get("settingsfile"),
             "additionalfile": l_additionalfile,
             "tripfile": l_tripfile,
             "routefile": l_routefile,
@@ -345,12 +340,6 @@ class SumoConfig(optom.common.configuration.Configuration):
         # create edges xml
         l_edges = optom.common.io.etree.Element("edges")
 
-        # # find slowest vehicle speed to be used as parameter for entering lane
-        # l_lowestspeed = min(
-        #     map(lambda vtype: min(vtype.get("desiredSpeeds")),
-        #         self.runconfig.get("vtypedistribution").itervalues())
-        # )
-
         # Entering edge with one lane, leading to 2+1 Roadway
         optom.common.io.etree.SubElement(
             l_edges,
@@ -379,17 +368,11 @@ class SumoConfig(optom.common.configuration.Configuration):
         )
 
         if self.scenarioconfig.get(
-                    p_scenario_name
-                ).get(
-                    "parameters"
-                ).get(
-                    "detectorpositions"
-                ) is None:
+                p_scenario_name
+        ).get("parameters").get("detectorpositions") is None:
             self.scenarioconfig.get(
                 p_scenario_name
-            ).get(
-                "parameters"
-            )["detectorpositions"] = [0, l_segmentlength]
+            ).get("parameters")["detectorpositions"] = [0, l_segmentlength]
 
         self.scenarioconfig.get(p_scenario_name).get("parameters")["ilooppositions"] = OrderedDict(
             {
@@ -471,11 +454,11 @@ class SumoConfig(optom.common.configuration.Configuration):
                 l_add_otl_lane ^= True
 
     def _generate_additional_xml(
-            self, p_scenario, p_iloopfile, p_additionalfile, p_forcerebuildscenarios):
+            self, p_scenario_runs, p_iloopfile, p_additionalfile, p_forcerebuildscenarios):
         """
         Generate SUMO's additional configuration file.
 
-        :param p_scenario: Dictionary containing "name" and "config" of scenario
+        :param p_scenario_runs: Containing "name" and "config" of scenario
         :param p_iloopfile: File to write induction loop detector 'measurements'
         :param p_additionalfile: Destination to write additional cfg file
         :param p_forcerebuildscenarios: Rebuild scenarios,
@@ -485,15 +468,23 @@ class SumoConfig(optom.common.configuration.Configuration):
         if os.path.isfile(p_additionalfile) and not p_forcerebuildscenarios:
             return
 
-        self._log.debug("Generating additional xml for %s", p_scenario.get("name"))
+        self._log.debug("Generating additional xml for %s", p_scenario_runs.get("scenarioname"))
 
         # parameters
-        l_length = p_scenario.get("config").get("parameters").get("length")
-        l_nbswitches = p_scenario.get("config").get("parameters").get("switches")
+        l_length = self.scenarioconfig.get(
+            p_scenario_runs.get("scenarioname")
+        ).get("parameters").get("length")
+        l_nbswitches = self.scenarioconfig.get(
+            p_scenario_runs.get("scenarioname")
+        ).get("parameters").get("switches")
+
         # assume even distributed otl segment lengths
         l_segmentlength = l_length / (l_nbswitches + 1)
 
         l_additional = optom.common.io.etree.Element("additional")
+        l_iloop_positions = self.scenarioconfig.get(
+            p_scenario_runs.get("scenarioname")
+        ).get("parameters").get("ilooppositions")
 
         # first induction loop at network enter
         optom.common.io.etree.SubElement(
@@ -502,17 +493,7 @@ class SumoConfig(optom.common.configuration.Configuration):
             attrib={
                 "id": "1_enter",
                 "lane": "enter_21start_0",
-                "pos": str(
-                    self.scenarioconfig.get(
-                        p_scenario.get("name")
-                    ).get(
-                        "parameters"
-                    ).get(
-                        "ilooppositions"
-                    ).get(
-                        "1_enter"
-                    )
-                ),
+                "pos": str(l_iloop_positions.get("1_enter")),
                 "friendlyPos": "true",
                 "splitByType": "true",
                 "freq": "1",
@@ -526,17 +507,7 @@ class SumoConfig(optom.common.configuration.Configuration):
             attrib={
                 "id": "2_21segment.0_begin",
                 "lane": "enter_21start_0",
-                "pos": str(
-                    self.scenarioconfig.get(
-                        p_scenario.get("name")
-                    ).get(
-                        "parameters"
-                    ).get(
-                        "ilooppositions"
-                    ).get(
-                        "2_21segment.0_begin"
-                    )
-                ),
+                "pos": str(l_iloop_positions.get("2_21segment.0_begin")),
                 "friendlyPos": "true",
                 "splitByType": "true",
                 "freq": "1",
@@ -546,7 +517,7 @@ class SumoConfig(optom.common.configuration.Configuration):
 
         # induction loops at beginning of each switch
         l_switches = self.scenarioconfig.get(
-            p_scenario.get("name")
+            p_scenario_runs.get("scenarioname")
         ).get(
             "parameters"
         ).get(
@@ -555,24 +526,12 @@ class SumoConfig(optom.common.configuration.Configuration):
 
         for i, i_switch_pos in list(enumerate(l_switches))[:-1]:
             if i % 2 == 1:
-                self.scenarioconfig.get(
-                    p_scenario.get("name")
-                ).get(
-                    "parameters"
-                ).get(
-                    "ilooppositions"
-                )[
+                l_iloop_positions[
                     "2_21segment.{}_begin".format(l_switches[i + 1])
                 ] = l_segmentlength + i_switch_pos + l_segmentlength - 5
 
                 l_detector_end_id = "2_21segment.{}_end".format(l_switches[i - 1])
-                self.scenarioconfig.get(
-                    p_scenario.get("name")
-                ).get(
-                    "parameters"
-                ).get(
-                    "ilooppositions"
-                )[l_detector_end_id] = l_segmentlength + i_switch_pos + 5
+                l_iloop_positions[l_detector_end_id] = l_segmentlength + i_switch_pos + 5
 
                 optom.common.io.etree.SubElement(
                     l_additional,
@@ -603,13 +562,7 @@ class SumoConfig(optom.common.configuration.Configuration):
                 )
 
         # induction loop at the end of last one-lane segment and exit
-        self.scenarioconfig.get(
-            p_scenario.get("name")
-        ).get(
-            "parameters"
-        ).get(
-            "ilooppositions"
-        )[
+        l_iloop_positions[
             "2_21segment.{}_end".format(l_switches[-2])
         ] = l_length + l_segmentlength
 
@@ -633,7 +586,9 @@ class SumoConfig(optom.common.configuration.Configuration):
             attrib={
                 "id": "3_exit",
                 "lane": "21segment.{}_0".format(
-                    self.scenarioconfig.get(p_scenario.get("name")).get("switchpositions")[-1]
+                    self.scenarioconfig.get(
+                        p_scenario_runs.get("scenarioname")
+                    ).get("switchpositions")[-1]
                 ) if l_nbswitches % 2 == 1 or self._args.onlyoneotlsegment else "21end_exit_0",
                 "pos": str(l_segmentlength - 5),
                 "friendlyPos": "true",
@@ -642,13 +597,7 @@ class SumoConfig(optom.common.configuration.Configuration):
                 "file": p_iloopfile
             }
         )
-        self.scenarioconfig.get(
-            p_scenario.get("name")
-        ).get(
-            "parameters"
-        ).get(
-            "ilooppositions"
-        )["3_exit"] = l_length + 2 * l_segmentlength - 5
+        l_iloop_positions["3_exit"] = l_length + 2 * l_segmentlength - 5
 
         with open(p_additionalfile, "w") as f_paddxml:
             f_paddxml.write(optom.common.io.etree.tostring(l_additional, pretty_print=True))
@@ -816,12 +765,12 @@ class SumoConfig(optom.common.configuration.Configuration):
 
         return l_vehicles
 
-    def _generate_trip_xml(self, p_scenario, p_runcfg, p_initialsorting, p_tripfile,
+    def _generate_trip_xml(self, p_scenario_runs, p_runcfg, p_initialsorting, p_tripfile,
                            p_forcerebuildscenarios=False):
         """
         Generate SUMO's trip file.
 
-        :param p_scenario:
+        :param p_scenario_runs:
         :param p_runcfg:
         :param p_initialsorting:
         :param p_tripfile:
@@ -831,10 +780,10 @@ class SumoConfig(optom.common.configuration.Configuration):
 
         if os.path.isfile(p_tripfile) and not p_forcerebuildscenarios:
             return
-        self._log.debug("Generating trip xml for %s", p_scenario.get("name"))
+        self._log.debug("Generating trip xml for %s", p_scenario_runs.get("scenarioname"))
         # generate simple traffic demand by considering AADT, Vmax, roadtype etc
-        l_aadt = p_scenario.get(
-            "config"
+        l_aadt = self.scenarioconfig.get(
+            p_scenario_runs.get("scenarioname")
         ).get(
             "parameters"
         ).get(
@@ -859,7 +808,7 @@ class SumoConfig(optom.common.configuration.Configuration):
             l_numberofvehicles,
             l_aadt,
             p_initialsorting,
-            p_scenario.get("name")
+            p_scenario_runs.get("scenarioname")
         )
 
         # xml
