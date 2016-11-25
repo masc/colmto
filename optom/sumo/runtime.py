@@ -34,7 +34,6 @@ class Runtime(object):
     # pylint: disable=too-few-public-methods
     def __init__(self, p_args, p_sumoconfig, p_sumobinary):
         """C'tor."""
-
         self._sumoconfig = p_sumoconfig
         self._sumobinary = p_sumobinary
         self._log = log.logger(__name__, p_args.loglevel, p_args.quiet, p_args.logfile)
