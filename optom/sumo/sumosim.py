@@ -36,11 +36,11 @@ except ImportError:
            "directory of your sumo installation (it should contain folders 'bin',"
            "'tools' and 'docs')")
 
-from optom.common.io import Writer
-from optom.common.statistics import Statistics
+import optom.common.io
+import optom.common.statistics
 import optom.common.log
-from optom.sumo.sumocfg import SumoConfig
-from optom.sumo.runtime import Runtime
+import optom.sumo.sumocfg
+import optom.sumo.runtime
 
 
 class SumoSim(object):
@@ -50,57 +50,61 @@ class SumoSim(object):
         """C'tor."""
 
         self._log = optom.common.log.logger(__name__, p_args.loglevel, p_args.quiet, p_args.logfile)
-        self._sumocfg = SumoConfig(p_args, checkBinary("netconvert"), checkBinary("duarouter"))
-        self._writer = Writer(p_args)
-        self._statistics = Statistics(p_args)
+        self._sumocfg = optom.sumo.sumocfg.SumoConfig(
+            p_args, checkBinary("netconvert"), checkBinary("duarouter")
+        )
+        self._writer = optom.common.io.Writer(p_args)
+        self._statistics = optom.common.statistics.Statistics(p_args)
         self._allscenarioruns = {}  # map scenarios -> runid -> files
-        self._runtime = Runtime(p_args, self._sumocfg,
-                                checkBinary("sumo")
-                                if self._sumocfg.get("headless")
-                                else checkBinary("sumo-gui"))
+        self._runtime = optom.sumo.runtime.Runtime(
+            p_args, self._sumocfg,
+            checkBinary("sumo")
+            if self._sumocfg.get("headless")
+            else checkBinary("sumo-gui")
+        )
 
-    def run_scenario(self, p_scenarioname):
+    def run_scenario(self, p_scenario_name):
         """
         Run given scenario.
 
-        :param p_scenarioname Scenario name to look up cfgs.
+        :param p_scenario_name Scenario name to look up cfgs.
         """
 
-        if self._sumocfg.scenarioconfig.get(p_scenarioname) is None:
-            self._log.error(r"/!\ scenario %s not found in configuration", p_scenarioname)
+        if self._sumocfg.scenarioconfig.get(p_scenario_name) is None:
+            self._log.error(r"/!\ scenario %s not found in configuration", p_scenario_name)
             return
 
-        l_scenarioruns = self._sumocfg.generate_scenario(p_scenarioname)
-        l_initialsortings = self._sumocfg.runconfig.get("initialsortings")
+        l_scenario_runs = self._sumocfg.generate_scenario(p_scenario_name)
+        l_initial_sortings = self._sumocfg.runconfig.get("initialsortings")
 
-        for i_initialsorting in l_initialsortings:
-            l_scenarioruns.get("runs")[i_initialsorting] = {}
+        for i_initial_sorting in l_initial_sortings:
+            l_scenario_runs.get("runs")[i_initial_sorting] = {}
             for i_run in xrange(self._sumocfg.runconfig.get("runs")):
                 l_run_data = self._sumocfg.generate_run(
-                    l_scenarioruns, i_initialsorting, i_run
+                    l_scenario_runs, i_initial_sorting, i_run
                 )
 
-                self._runtime.run(l_run_data, p_scenarioname, i_run)
+                self._runtime.run(l_run_data, p_scenario_name, i_run)
 
                 self._log.debug("Converting induction loop XMLs with etree.XSLT")
                 self._statistics.dump_traveltimes_from_iloops(
                     l_run_data,
                     self._sumocfg.runconfig,
-                    self._sumocfg.scenarioconfig.get(p_scenarioname),
-                    p_scenarioname,
-                    i_initialsorting,
+                    self._sumocfg.scenarioconfig.get(p_scenario_name),
+                    p_scenario_name,
+                    i_initial_sorting,
                     i_run,
-                    os.path.join(self._sumocfg.resultsdir, p_scenarioname, i_initialsorting,
+                    os.path.join(self._sumocfg.resultsdir, p_scenario_name, i_initial_sorting,
                                  str(i_run))
                 )
 
                 if i_run % 10 == 0:
                     self._log.info(
                         "Scenario %s, AADT %d (%d vps), sorting %s: Finished run %d/%d",
-                        p_scenarioname,
+                        p_scenario_name,
                         self._sumocfg.runconfig.get("aadt").get("value"),
                         int(self._sumocfg.runconfig.get("aadt").get("value") / 24),
-                        i_initialsorting,
+                        i_initial_sorting,
                         i_run + 1,
                         self._sumocfg.runconfig.get("runs")
                     )
