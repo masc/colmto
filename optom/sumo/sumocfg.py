@@ -397,7 +397,7 @@ class SumoConfig(optom.common.configuration.Configuration):
                 "2_21segment.0_begin": l_segmentlength - 5
             })
 
-        self._generate_switches(l_21edge, p_scenario_config, p_scenario_name)
+        self._generate_switches(l_21edge, p_scenario_config)
 
         # Exit lane
         optom.common.io.etree.SubElement(
@@ -416,7 +416,7 @@ class SumoConfig(optom.common.configuration.Configuration):
         with open(p_edgefile, "w") as f_pedgexml:
             f_pedgexml.write(optom.common.io.etree.tostring(l_edges, pretty_print=True))
 
-    def _generate_switches(self, p_21edge, p_scenario_config, p_scenario_name):
+    def _generate_switches(self, p_21edge, p_scenario_config):
         """
         Generate switches if not pre-defined in scenario config.
 
@@ -424,38 +424,53 @@ class SumoConfig(optom.common.configuration.Configuration):
         :return:
         """
         self._log.info("########### generating switches ###########")
-        self.scenarioconfig.get(p_scenario_name).get("parameters")["switchpositions"] = []
 
         l_length = p_scenario_config.get("parameters").get("length")
         l_nbswitches = p_scenario_config.get("parameters").get("switches")
         l_segmentlength = l_length / (l_nbswitches + 1)
+        l_parameters = p_scenario_config.get("parameters")
 
-        # add splits and joins
-        l_addotllane = True
-        for i_segmentpos in xrange(0, int(l_length), int(l_segmentlength)) \
-                if not self._args.onlyoneotlsegment \
-                else xrange(0, int(2 * l_segmentlength - 1), int(l_segmentlength)):
-            optom.common.io.etree.SubElement(
-                p_21edge,
-                "split",
-                attrib={
-                    "pos": str(i_segmentpos),
-                    "lanes": "0 1" if l_addotllane else "0",
-                    "speed": str(p_scenario_config.get("parameters").get("speedlimit"))
-                }
-            )
+        if isinstance(l_parameters.get("switchpositions"), (list, tuple)):
+            # add splits and joins
+            for i_segmentpos in l_parameters.get("switchpositions"):
 
-            self.scenarioconfig.get(
-                p_scenario_name
-            ).get(
-                "parameters"
-            ).get(
-                "switchpositions"
-            ).append(
-                i_segmentpos
-            )
+                l_add_otl_lane = True
+                optom.common.io.etree.SubElement(
+                    p_21edge,
+                    "split",
+                    attrib={
+                        "pos": str(i_segmentpos),
+                        "lanes": "0 1" if l_add_otl_lane else "0",
+                        "speed": str(p_scenario_config.get("parameters").get("speedlimit"))
+                    }
+                )
+        else:
+            self._log.info("Rebuilding switches")
+            self.scenarioconfig.get(p_scenario_name).get("parameters")["switchpositions"] = []
+            # compute and add splits and joins
+            l_add_otl_lane = True
+            for i_segmentpos in xrange(0, int(l_length), int(l_segmentlength)) \
+                    if not self._args.onlyoneotlsegment \
+                    else xrange(0, int(2 * l_segmentlength - 1), int(l_segmentlength)):
+                optom.common.io.etree.SubElement(
+                    p_21edge,
+                    "split",
+                    attrib={
+                        "pos": str(i_segmentpos),
+                        "lanes": "0 1" if l_add_otl_lane else "0",
+                        "speed": str(p_scenario_config.get("parameters").get("speedlimit"))
+                    }
+                )
 
-            l_addotllane ^= True
+                self.scenarioconfig.get(
+                    p_scenario_name
+                ).get(
+                    "parameters"
+                ).get(
+                    "switchpositions"
+                ).append(i_segmentpos)
+
+                l_add_otl_lane ^= True
 
     def _generate_additional_xml(
             self, p_scenario, p_iloopfile, p_additionalfile, p_forcerebuildscenarios):
