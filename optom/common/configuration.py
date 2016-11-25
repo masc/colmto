@@ -139,4 +139,4 @@ class Configuration(object):
             if self.args.scenarios != ["all"]:
                 self.runconfig["scenarios"] = self.args.scenarios
             else:
-                self.scenarioconfig.keys()
+                self.runconfig["scenarios"] = self.scenarioconfig.keys()
