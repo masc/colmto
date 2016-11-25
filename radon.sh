@@ -19,4 +19,3 @@ radon mi -x F -s optom | sed \
 -e 's/ - /`|/g' \
 -e '/^[a-zA-Z]/ s/^/|`/' \
 -e '/^|`[a-zA-Z]/ s/$/|/'
-
