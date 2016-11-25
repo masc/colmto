@@ -1,0 +1,9 @@
+pre-commit
+reorder-python-imports
+sh
+lxml
+h5py
+PyYAML
+python-cjson
+progressbar
+matplotlib
