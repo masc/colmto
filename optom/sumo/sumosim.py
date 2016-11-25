@@ -30,7 +30,7 @@ import sys
 try:
     sys.path.append(os.path.join("sumo", "sumo", "tools"))
     sys.path.append(os.path.join(os.environ.get("SUMO_HOME", os.path.join("..", "..")), "tools"))
-    from sumolib import checkBinary
+    import sumolib
 except ImportError:
     raise ("please declare environment variable 'SUMO_HOME' as the root"
            "directory of your sumo installation (it should contain folders 'bin',"
@@ -51,16 +51,19 @@ class SumoSim(object):
 
         self._log = optom.common.log.logger(__name__, p_args.loglevel, p_args.quiet, p_args.logfile)
         self._sumocfg = optom.sumo.sumocfg.SumoConfig(
-            p_args, checkBinary("netconvert"), checkBinary("duarouter")
+            p_args,
+            sumolib.checkBinary("netconvert"),
+            sumolib.checkBinary("duarouter")
         )
         self._writer = optom.common.io.Writer(p_args)
         self._statistics = optom.common.statistics.Statistics(p_args)
         self._allscenarioruns = {}  # map scenarios -> runid -> files
         self._runtime = optom.sumo.runtime.Runtime(
-            p_args, self._sumocfg,
-            checkBinary("sumo")
+            p_args,
+            self._sumocfg,
+            sumolib.checkBinary("sumo")
             if self._sumocfg.get("headless")
-            else checkBinary("sumo-gui")
+            else sumolib.checkBinary("sumo-gui")
         )
 
     def run_scenario(self, p_scenario_name):
