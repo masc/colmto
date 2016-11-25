@@ -53,7 +53,7 @@ class Statistics(object):
         self._log = optom.common.log.logger(__name__, p_args.loglevel, p_args.logfile)
         self._writer = optom.common.io.Writer(p_args)
 
-    def dump_traveltimes_from_iloops(self, p_run_data, p_run_config, p_scenario_config,
+    def dump_traveltimes_from_iloops(self, p_run_data, p_configs,
                                      p_scenarioname, p_initialsorting, p_current_run, p_resultsdir):
         """Reading and aggregating induction loop logs and write them to csv/json files."""
 
@@ -63,7 +63,9 @@ class Statistics(object):
         l_iloopfile = p_run_data.get("iloopfile")
         l_root = optom.common.io.etree.parse(l_iloopfile)
         l_iloop_detections = optom.common.io.xslt(_ILOOP_TEMPLATE)(l_root).iter("vehicle")
-        l_detectors = sorted(p_scenario_config.get("parameters").get("ilooppositions").keys())
+        l_detectors = sorted(
+            p_configs.get("scenario").get("parameters").get("ilooppositions").keys()
+        )
 
         # create a dictionary with vid -> detectorid -> timestep hierarchy for json output,
         # for csv the same but flat
@@ -93,13 +95,15 @@ class Statistics(object):
                 l_traveltime = None
                 l_opt_travel_time = None
                 l_timeloss = None
-                l_detector_distance = p_scenario_config.get(
+                l_detector_distance = p_configs.get("scenario").get(
                     "parameters"
                 ).get(
                     "ilooppositions"
                 ).get(
                     i_detector_y
-                ) - p_scenario_config.get(
+                ) - p_configs.get(
+                    "scenario"
+                ).get(
                     "parameters"
                 ).get(
                     "ilooppositions"
@@ -134,9 +138,9 @@ class Statistics(object):
             l_vehicle_data_csv.append(l_vehicle_data_csv_row)
 
         self._log.debug("Writing %s results", p_scenarioname)
-        l_aadtveh = "{}aadt".format(p_scenario_config.get("parameters").get("aadt")) \
-            if p_run_config.get("aadt").get("enabled") \
-            else "{}veh".format(p_run_config.get("nbvehicles").get("value"))
+        l_aadtveh = "{}aadt".format(p_configs.get("scenario").get("parameters").get("aadt")) \
+            if p_configs.get("run").get("aadt").get("enabled") \
+            else "{}veh".format(p_configs.get("run").get("nbvehicles").get("value"))
         self._writer.write_json(
             dict(l_vehicle_data_json),
             os.path.join(
@@ -144,7 +148,7 @@ class Statistics(object):
                 "{}-{}-{}-run{}-TT-TL.json.gz".format(
                     p_scenarioname, l_aadtveh, p_initialsorting,
                     str(p_current_run).zfill(
-                        int(math.ceil(math.log10(p_run_config.get("runs"))))
+                        int(math.ceil(math.log10(p_configs.get("run").get("runs"))))
                     )
                 )
             )
@@ -159,7 +163,7 @@ class Statistics(object):
                 "{}-{}-{}-run{}-TT-TL.csv".format(
                     p_scenarioname, l_aadtveh, p_initialsorting,
                     str(p_current_run).zfill(
-                        int(math.ceil(math.log10(p_run_config.get("runs"))))
+                        int(math.ceil(math.log10(p_configs.get("run").get("runs"))))
                     )
                 )
             )
