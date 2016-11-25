@@ -378,17 +378,26 @@ class SumoConfig(optom.common.configuration.Configuration):
             }
         )
 
-        if self.scenarioconfig.get(p_scenario_name).get("detectorpositions") is None:
-            self.scenarioconfig.get(p_scenario_name)["detectorpositions"] = [0, l_segmentlength]
+        if self.scenarioconfig.get(
+                    p_scenario_name
+                ).get(
+                    "parameters"
+                ).get(
+                    "detectorpositions"
+                ) is None:
+            self.scenarioconfig.get(
+                p_scenario_name
+            ).get(
+                "parameters"
+            )["detectorpositions"] = [0, l_segmentlength]
 
-        self.scenarioconfig.get(p_scenario_name)["ilooppositions"] = OrderedDict(
+        self.scenarioconfig.get(p_scenario_name).get("parameters")["ilooppositions"] = OrderedDict(
             {
                 "1_enter": 5,
                 "2_21segment.0_begin": l_segmentlength - 5
             })
 
-        if self.scenarioconfig.get(p_scenario_name).get("switchpositions") is None:
-            self._generate_switches(l_21edge, p_scenario_config, p_scenario_name)
+        self._generate_switches(l_21edge, p_scenario_config, p_scenario_name)
 
         # Exit lane
         optom.common.io.etree.SubElement(
@@ -414,7 +423,8 @@ class SumoConfig(optom.common.configuration.Configuration):
         :param p_21edge:
         :return:
         """
-        self.scenarioconfig.get(p_scenario_name)["switchpositions"] = []
+        self._log.info("########### generating switches ###########")
+        self.scenarioconfig.get(p_scenario_name).get("parameters")["switchpositions"] = []
 
         l_length = p_scenario_config.get("parameters").get("length")
         l_nbswitches = p_scenario_config.get("parameters").get("switches")
@@ -435,7 +445,16 @@ class SumoConfig(optom.common.configuration.Configuration):
                 }
             )
 
-            self.scenarioconfig.get(p_scenario_name).get("switchpositions").append(i_segmentpos)
+            self.scenarioconfig.get(
+                p_scenario_name
+            ).get(
+                "parameters"
+            ).get(
+                "switchpositions"
+            ).append(
+                i_segmentpos
+            )
+
             l_addotllane ^= True
 
     def _generate_additional_xml(
@@ -474,6 +493,8 @@ class SumoConfig(optom.common.configuration.Configuration):
                     self.scenarioconfig.get(
                         p_scenario.get("name")
                     ).get(
+                        "parameters"
+                    ).get(
                         "ilooppositions"
                     ).get(
                         "1_enter"
@@ -496,8 +517,12 @@ class SumoConfig(optom.common.configuration.Configuration):
                     self.scenarioconfig.get(
                         p_scenario.get("name")
                     ).get(
+                        "parameters"
+                    ).get(
                         "ilooppositions"
-                    ).get("2_21segment.0_begin")
+                    ).get(
+                        "2_21segment.0_begin"
+                    )
                 ),
                 "friendlyPos": "true",
                 "splitByType": "true",
@@ -507,11 +532,20 @@ class SumoConfig(optom.common.configuration.Configuration):
         )
 
         # induction loops at beginning of each switch
-        l_switches = self.scenarioconfig.get(p_scenario.get("name")).get("switchpositions")
+        l_switches = self.scenarioconfig.get(
+            p_scenario.get("name")
+        ).get(
+            "parameters"
+        ).get(
+            "switchpositions"
+        )
+
         for i, i_switch_pos in list(enumerate(l_switches))[:-1]:
             if i % 2 == 1:
                 self.scenarioconfig.get(
                     p_scenario.get("name")
+                ).get(
+                    "parameters"
                 ).get(
                     "ilooppositions"
                 )[
@@ -521,6 +555,8 @@ class SumoConfig(optom.common.configuration.Configuration):
                 l_detector_end_id = "2_21segment.{}_end".format(l_switches[i - 1])
                 self.scenarioconfig.get(
                     p_scenario.get("name")
+                ).get(
+                    "parameters"
                 ).get(
                     "ilooppositions"
                 )[l_detector_end_id] = l_segmentlength + i_switch_pos + 5
@@ -556,6 +592,8 @@ class SumoConfig(optom.common.configuration.Configuration):
         # induction loop at the end of last one-lane segment and exit
         self.scenarioconfig.get(
             p_scenario.get("name")
+        ).get(
+            "parameters"
         ).get(
             "ilooppositions"
         )[
@@ -593,6 +631,8 @@ class SumoConfig(optom.common.configuration.Configuration):
         )
         self.scenarioconfig.get(
             p_scenario.get("name")
+        ).get(
+            "parameters"
         ).get(
             "ilooppositions"
         )["3_exit"] = l_length + 2 * l_segmentlength - 5

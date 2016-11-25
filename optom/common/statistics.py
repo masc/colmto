@@ -63,7 +63,7 @@ class Statistics(object):
         l_iloopfile = p_run_data.get("iloopfile")
         l_root = optom.common.io.etree.parse(l_iloopfile)
         l_iloop_detections = optom.common.io.xslt(_ILOOP_TEMPLATE)(l_root).iter("vehicle")
-        l_detectors = sorted(p_scenario_config.get("ilooppositions").keys())
+        l_detectors = sorted(p_scenario_config.get("parameters").get("ilooppositions").keys())
 
         # create a dictionary with vid -> detectorid -> timestep hierarchy for json output,
         # for csv the same but flat
@@ -93,8 +93,19 @@ class Statistics(object):
                 l_traveltime = None
                 l_opt_travel_time = None
                 l_timeloss = None
-                l_detector_distance = p_scenario_config.get("ilooppositions").get(
-                    i_detector_y) - p_scenario_config.get("ilooppositions").get(i_detector_x)
+                l_detector_distance = p_scenario_config.get(
+                    "parameters"
+                ).get(
+                    "ilooppositions"
+                ).get(
+                    i_detector_y
+                ) - p_scenario_config.get(
+                    "parameters"
+                ).get(
+                    "ilooppositions"
+                ).get(
+                    i_detector_x
+                )
 
                 if i_vdata.get(i_detector_y) is not None and i_vdata.get(i_detector_x) is not None:
                     l_traveltime = i_vdata.get(i_detector_y) - i_vdata.get(i_detector_x)
