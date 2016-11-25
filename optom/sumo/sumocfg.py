@@ -446,7 +446,7 @@ class SumoConfig(optom.common.configuration.Configuration):
                 )
         else:
             self._log.info("Rebuilding switches")
-            self.scenarioconfig.get(p_scenario_name).get("parameters")["switchpositions"] = []
+            p_scenario_config.get("parameters")["switchpositions"] = []
             # compute and add splits and joins
             l_add_otl_lane = True
             for i_segmentpos in xrange(0, int(l_length), int(l_segmentlength)) \
@@ -462,9 +462,7 @@ class SumoConfig(optom.common.configuration.Configuration):
                     }
                 )
 
-                self.scenarioconfig.get(
-                    p_scenario_name
-                ).get(
+                p_scenario_config.get(
                     "parameters"
                 ).get(
                     "switchpositions"
