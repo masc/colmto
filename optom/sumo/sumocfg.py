@@ -318,12 +318,12 @@ class SumoConfig(optom.common.configuration.Configuration):
             f_pnodesxml.write(optom.common.io.etree.tostring(l_nodes, pretty_print=True))
 
     def _generate_edge_xml(
-            self, p_scenario_name, p_scenarioconfig, p_edgefile, p_forcerebuildscenarios=False):
+            self, p_scenario_name, p_scenario_config, p_edgefile, p_forcerebuildscenarios=False):
         """
         Generate SUMO's edge configuration file.
 
         :param p_scenario_name: Name of scenario (required to id detector positions)
-        :param p_scenarioconfig: Scenario configuration
+        :param p_scenario_config: Scenario configuration
         :param p_edgefile: Destination to write edge file
         :param p_forcerebuildscenarios: Rebuild scenarios,
                                         even if they already exist for current run
@@ -335,9 +335,9 @@ class SumoConfig(optom.common.configuration.Configuration):
         self._log.debug("Generating edge xml for %s", p_scenario_name)
 
         # parameters
-        l_length = p_scenarioconfig.get("parameters").get("length")
-        l_nbswitches = p_scenarioconfig.get("parameters").get("switches")
-        l_maxspeed = p_scenarioconfig.get("parameters").get("speedlimit")
+        l_length = p_scenario_config.get("parameters").get("length")
+        l_nbswitches = p_scenario_config.get("parameters").get("switches")
+        l_maxspeed = p_scenario_config.get("parameters").get("speedlimit")
 
         # assume even distributed otl segment lengths
         l_segmentlength = l_length / (l_nbswitches + 1)
@@ -378,30 +378,17 @@ class SumoConfig(optom.common.configuration.Configuration):
             }
         )
 
-        self.scenarioconfig.get(p_scenario_name)["detectorpositions"] = OrderedDict(
+        if self.scenarioconfig.get(p_scenario_name).get("detectorpositions") is None:
+            self.scenarioconfig.get(p_scenario_name)["detectorpositions"] = [0, l_segmentlength]
+
+        self.scenarioconfig.get(p_scenario_name)["ilooppositions"] = OrderedDict(
             {
                 "1_enter": 5,
                 "2_21segment.0_begin": l_segmentlength - 5
             })
-        self.scenarioconfig.get(p_scenario_name)["switchpositions"] = []
 
-        # add splits and joins
-        l_addotllane = True
-        for i_segmentpos in xrange(0, int(l_length), int(l_segmentlength)) \
-                if not self._args.onlyoneotlsegment \
-                else xrange(0, int(2 * l_segmentlength - 1), int(l_segmentlength)):
-            optom.common.io.etree.SubElement(
-                l_21edge,
-                "split",
-                attrib={
-                    "pos": str(i_segmentpos),
-                    "lanes": "0 1" if l_addotllane else "0",
-                    "speed": str(l_maxspeed)
-                }
-            )
-
-            self.scenarioconfig.get(p_scenario_name).get("switchpositions").append(i_segmentpos)
-            l_addotllane ^= True
+        if self.scenarioconfig.get(p_scenario_name).get("switchpositions") is None:
+            self._generate_switches(l_21edge, p_scenario_config, p_scenario_name)
 
         # Exit lane
         optom.common.io.etree.SubElement(
@@ -419,6 +406,37 @@ class SumoConfig(optom.common.configuration.Configuration):
 
         with open(p_edgefile, "w") as f_pedgexml:
             f_pedgexml.write(optom.common.io.etree.tostring(l_edges, pretty_print=True))
+
+    def _generate_switches(self, p_21edge, p_scenario_config, p_scenario_name):
+        """
+        Generate switches if not pre-defined in scenario config.
+
+        :param p_21edge:
+        :return:
+        """
+        self.scenarioconfig.get(p_scenario_name)["switchpositions"] = []
+
+        l_length = p_scenario_config.get("parameters").get("length")
+        l_nbswitches = p_scenario_config.get("parameters").get("switches")
+        l_segmentlength = l_length / (l_nbswitches + 1)
+
+        # add splits and joins
+        l_addotllane = True
+        for i_segmentpos in xrange(0, int(l_length), int(l_segmentlength)) \
+                if not self._args.onlyoneotlsegment \
+                else xrange(0, int(2 * l_segmentlength - 1), int(l_segmentlength)):
+            optom.common.io.etree.SubElement(
+                p_21edge,
+                "split",
+                attrib={
+                    "pos": str(i_segmentpos),
+                    "lanes": "0 1" if l_addotllane else "0",
+                    "speed": str(p_scenario_config.get("parameters").get("speedlimit"))
+                }
+            )
+
+            self.scenarioconfig.get(p_scenario_name).get("switchpositions").append(i_segmentpos)
+            l_addotllane ^= True
 
     def _generate_additional_xml(
             self, p_scenario, p_iloopfile, p_additionalfile, p_forcerebuildscenarios):
@@ -456,7 +474,7 @@ class SumoConfig(optom.common.configuration.Configuration):
                     self.scenarioconfig.get(
                         p_scenario.get("name")
                     ).get(
-                        "detectorpositions"
+                        "ilooppositions"
                     ).get(
                         "1_enter"
                     )
@@ -478,7 +496,7 @@ class SumoConfig(optom.common.configuration.Configuration):
                     self.scenarioconfig.get(
                         p_scenario.get("name")
                     ).get(
-                        "detectorpositions"
+                        "ilooppositions"
                     ).get("2_21segment.0_begin")
                 ),
                 "friendlyPos": "true",
@@ -495,7 +513,7 @@ class SumoConfig(optom.common.configuration.Configuration):
                 self.scenarioconfig.get(
                     p_scenario.get("name")
                 ).get(
-                    "detectorpositions"
+                    "ilooppositions"
                 )[
                     "2_21segment.{}_begin".format(l_switches[i + 1])
                 ] = l_segmentlength + i_switch_pos + l_segmentlength - 5
@@ -504,7 +522,7 @@ class SumoConfig(optom.common.configuration.Configuration):
                 self.scenarioconfig.get(
                     p_scenario.get("name")
                 ).get(
-                    "detectorpositions"
+                    "ilooppositions"
                 )[l_detector_end_id] = l_segmentlength + i_switch_pos + 5
 
                 optom.common.io.etree.SubElement(
@@ -539,7 +557,7 @@ class SumoConfig(optom.common.configuration.Configuration):
         self.scenarioconfig.get(
             p_scenario.get("name")
         ).get(
-            "detectorpositions"
+            "ilooppositions"
         )[
             "2_21segment.{}_end".format(l_switches[-2])
         ] = l_length + l_segmentlength
@@ -576,7 +594,7 @@ class SumoConfig(optom.common.configuration.Configuration):
         self.scenarioconfig.get(
             p_scenario.get("name")
         ).get(
-            "detectorpositions"
+            "ilooppositions"
         )["3_exit"] = l_length + 2 * l_segmentlength - 5
 
         with open(p_additionalfile, "w") as f_paddxml:
