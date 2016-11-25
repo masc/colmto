@@ -57,7 +57,7 @@ Irzik1:
     speedlimit: 27.77777777777778 # m/s = 100 km/h
     switches: 4
     switchpositions: [0, 1360, 2720, 4080, 5440]
-    sensorpositions: [0, 1360, 2720, 4080, 5440]
+    detectorpositions: [0, 1360, 2720, 4080, 5440]
 
 Irzik2:
   description:
@@ -71,7 +71,7 @@ Irzik2:
     speedlimit: 27.77777777777778 # m/s = km/h
     switches: 6
     switchpositions: [0, 1171, 2342, 3513, 4684, 5855, 7026, 8197]
-    sensorpositions: [0, 1171, 2342, 3513, 4684, 5855, 7026, 8197]
+    detectorpositions: [0, 1171, 2342, 3513, 4684, 5855, 7026, 8197]
 
 Irzik3:
   description:
@@ -85,7 +85,7 @@ Irzik3:
     speedlimit: 27.77777777777778 # m/s = km/h
     switches: 8
     switchpositions: [0, 977, 1954, 2931, 3908, 4885, 5862, 6839, 7816, 8793]
-    sensorpositions: [0, 977, 1954, 2931, 3908, 4885, 5862, 6839, 7816, 8793]
+    detectorpositions: [0, 977, 1954, 2931, 3908, 4885, 5862, 6839, 7816, 8793]
 
 Irzik4:
   description:
@@ -99,7 +99,7 @@ Irzik4:
     speedlimit: 27.77777777777778 # m/s = km/h
     switches: 4
     switchpositions: [0, 900, 1800, 2700, 3600]
-    sensorpositions: [0, 900, 1800, 2700, 3600]
+    detectorpositions: [0, 900, 1800, 2700, 3600]
 
 Irzik5:
   description:
@@ -113,7 +113,7 @@ Irzik5:
     speedlimit: 27.77777777777778 # m/s = km/h
     switches: 7
     switchpositions: [0, 1375, 2750, 4125, 5500, 6875, 8250, 9625]
-    sensorpositions: [0, 1375, 2750, 4125, 5500, 6875, 8250, 9625]
+    detectorpositions: [0, 1375, 2750, 4125, 5500, 6875, 8250, 9625]
 
 Irzik6:
   description:
@@ -127,4 +127,4 @@ Irzik6:
     speedlimit: 27.77777777777778 # m/s = km/h
     switches: 4
     switchpositions: [0, 1280, 2560, 3840, 5120]
-    sensorpositions: [0, 1280, 2560, 3840, 5120]
+    detectorpositions: [0, 1280, 2560, 3840, 5120]
