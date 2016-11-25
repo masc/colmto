@@ -92,8 +92,10 @@ class SumoSim(object):
                 self._log.debug("Converting induction loop XMLs with etree.XSLT")
                 self._statistics.dump_traveltimes_from_iloops(
                     l_run_data,
-                    self._sumocfg.runconfig,
-                    self._sumocfg.scenarioconfig.get(p_scenario_name),
+                    {
+                        "run": self._sumocfg.runconfig,
+                        "scenario": self._sumocfg.scenarioconfig.get(p_scenario_name)
+                    },
                     p_scenario_name,
                     i_initial_sorting,
                     i_run,
