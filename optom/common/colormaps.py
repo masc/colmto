@@ -13,10 +13,9 @@
 # work.  If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 """New matplotlib colormaps"""
 # pylint: disable=too-many-lines
-
-from matplotlib.colors import ListedColormap
-import matplotlib.colors as colors
 import matplotlib.cm as cm
+import matplotlib.colors as colors
+from matplotlib.colors import ListedColormap
 
 _MAGMA_DATA = ((0.001462, 0.000466, 0.013866),
                (0.002258, 0.001295, 0.018331),

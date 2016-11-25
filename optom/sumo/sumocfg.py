@@ -21,7 +21,6 @@
 # #############################################################################
 # @endcond
 """This module generates static sumo configuration files for later execution."""
-
 from __future__ import division
 from __future__ import print_function
 

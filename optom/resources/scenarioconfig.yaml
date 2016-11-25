@@ -36,14 +36,14 @@ BW-B33:
     speedlimit: 27.77777777777778
     switches: 4
     type: TLE
-    
+
 1lane-500:
   parameters:
     length: 500.0
     speedlimit: 27.77777777777778 # m/s = 100 km/h
     switches: 0
     measuringpoints: [0.0, 500.0]
-    
+
 Irzik1:
   description:
     from: OUJever

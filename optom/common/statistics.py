@@ -24,14 +24,13 @@
 from __future__ import division
 from __future__ import print_function
 
-import os
-from collections import OrderedDict
-from collections import defaultdict
-
 import math
+import os
+from collections import defaultdict
+from collections import OrderedDict
 
-import optom.common.log
 import optom.common.io
+import optom.common.log
 
 _ILOOP_TEMPLATE = optom.common.io.etree.XML("""
     <xsl:stylesheet version= "1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">

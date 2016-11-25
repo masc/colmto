@@ -21,16 +21,16 @@
 # #############################################################################
 # @endcond
 """Configuration super class."""
-
 from __future__ import division
 from __future__ import print_function
 
 import copy
 import os
+
 import sh
 
-from optom.common.io import Reader
 from optom.common import log
+from optom.common.io import Reader
 
 
 class Configuration(object):

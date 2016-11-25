@@ -21,7 +21,6 @@
 # #############################################################################
 # @endcond
 """Main module to run/initialise SUMO scenarios."""
-
 from __future__ import division
 from __future__ import print_function
 

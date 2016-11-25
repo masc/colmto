@@ -22,7 +22,6 @@
 # @endcond
 # pylint: disable=too-few-public-methods
 """Optom main module."""
-
 from __future__ import print_function
 
 import argparse
@@ -31,8 +30,8 @@ import os
 import shutil
 import sys
 
-import optom.common.log
 import optom.common.configuration
+import optom.common.log
 import optom.sumo.sumosim
 
 

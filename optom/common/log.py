@@ -21,7 +21,6 @@
 # #############################################################################
 # @endcond
 """Logging module"""
-
 import logging
 import logging.handlers
 import os

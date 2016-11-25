@@ -21,8 +21,8 @@
 # #############################################################################
 # @endcond
 """Visualisation of simulation results."""
-from __future__ import print_function
 from __future__ import division
+from __future__ import print_function
 
 import matplotlib.pyplot as plt
 from matplotlib import rc
