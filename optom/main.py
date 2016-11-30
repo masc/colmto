@@ -39,52 +39,52 @@ class Optom(object):
     """Optom main class"""
 
     def __init__(self):
-        l_configdir = os.path.expanduser(u"~/.optom")
+        l_config_dir = os.path.expanduser(u"~/.optom")
 
         # place default config in ~/.optom if there exists none
-        if not os.path.exists(l_configdir):
-            os.mkdir(l_configdir)
+        if not os.path.exists(l_config_dir):
+            os.mkdir(l_config_dir)
         l_cwd = os.path.realpath(os.path.dirname(sys.argv[0]))
-        if not os.path.isfile(os.path.join(l_configdir, u"runconfig.yaml")):
+        if not os.path.isfile(os.path.join(l_config_dir, u"runconfig.yaml")):
             shutil.copy(
                 os.path.join(l_cwd, "optom/resources/runconfig.yaml"),
-                os.path.join(l_configdir, u"runconfig.yaml")
+                os.path.join(l_config_dir, u"runconfig.yaml")
             )
-        if not os.path.isfile(os.path.join(l_configdir, u"vtypesconfig.yaml")):
+        if not os.path.isfile(os.path.join(l_config_dir, u"vtypesconfig.yaml")):
             shutil.copy(
                 os.path.join(l_cwd, "optom/resources/vtypesconfig.yaml"),
-                os.path.join(l_configdir, u"vtypesconfig.yaml")
+                os.path.join(l_config_dir, u"vtypesconfig.yaml")
             )
-        if not os.path.isfile(os.path.join(l_configdir, u"scenarioconfig.yaml")):
+        if not os.path.isfile(os.path.join(l_config_dir, u"scenarioconfig.yaml")):
             shutil.copy(
                 os.path.join(l_cwd, "optom/resources/scenarioconfig.yaml"),
-                os.path.join(l_configdir, u"scenarioconfig.yaml")
+                os.path.join(l_config_dir, u"scenarioconfig.yaml")
             )
 
         l_parser = argparse.ArgumentParser(description="Process parameters for optom")
         l_parser.add_argument(
             "--runconfigfile", dest="runconfigfile", type=str,
-            default=os.path.join(l_configdir, u"runconfig.yaml")
+            default=os.path.join(l_config_dir, u"runconfig.yaml")
         )
         l_parser.add_argument(
             "--scenarioconfigfile", dest="scenarioconfigfile", type=str,
-            default=os.path.join(l_configdir, u"scenarioconfig.yaml")
+            default=os.path.join(l_config_dir, u"scenarioconfig.yaml")
         )
         l_parser.add_argument(
             "--vtypesconfigfile", dest="vtypesconfigfile", type=str,
-            default=os.path.join(l_configdir, u"vtypesconfig.yaml")
+            default=os.path.join(l_config_dir, u"vtypesconfig.yaml")
         )
         l_parser.add_argument(
-            "--output-dir", dest="outputdir", type=str,
-            default=l_configdir
+            "--output-dir", dest="output_dir", type=str,
+            default=l_config_dir
         )
         l_parser.add_argument(
-            "--output-scenario-dir", dest="scenariodir", type=str,
-            default=l_configdir, help="target directory scenario files will be written to"
+            "--output-scenario-dir", dest="scenario_dir", type=str,
+            default=l_config_dir, help="target directory scenario files will be written to"
         )
         l_parser.add_argument(
-            "--output-results-dir", dest="resultsdir", type=str,
-            default=l_configdir, help="target directory results will be written to"
+            "--output-results-dir", dest="results_dir", type=str,
+            default=l_config_dir, help="target directory results will be written to"
         )
         l_parser.add_argument(
             "--scenarios", dest="scenarios", type=str, nargs="*",
@@ -95,12 +95,12 @@ class Optom(object):
             default=None
         )
         l_parser.add_argument(
-            "--runprefix", dest="runprefix", type=str,
+            "--run_prefix", dest="run_prefix", type=str,
             default=datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
         )
         l_parser.add_argument(
             "--logfile", dest="logfile", type=str,
-            default=os.path.join(l_configdir, u"optom.log")
+            default=os.path.join(l_config_dir, u"optom.log")
         )
         l_parser.add_argument(
             "--loglevel", dest="loglevel", type=str,
@@ -131,7 +131,7 @@ class Optom(object):
             "--force-rebuild-scenarios", dest="forcerebuildscenarios", action="store_true",
             default=False,
             help="Rebuild and overwrite existing SUMO scenarios in configuration directory "
-                 "({})".format(l_configdir)
+                 "({})".format(l_config_dir)
         )
         l_sumogroup.add_argument(
             "--only-one-otl-segment", dest="onlyoneotlsegment", action="store_true",
@@ -152,6 +152,6 @@ class Optom(object):
         l_configuration = optom.common.configuration.Configuration(self._args)
         self._log.debug("Initial loading of configuration done")
 
-        if l_configuration.runconfig.get("sumo").get("enabled") or self._args.runsumo:
+        if l_configuration.run_config.get("sumo").get("enabled") or self._args.runsumo:
             self._log.info("---- Starting SUMO Baseline Simulation ----")
             optom.sumo.sumosim.SumoSim(self._args).run_scenarios()

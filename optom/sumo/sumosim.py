@@ -62,7 +62,7 @@ class SumoSim(object):
             p_args,
             self._sumocfg,
             sumolib.checkBinary("sumo")
-            if self._sumocfg.get("headless")
+            if self._sumocfg.sumo_run_config.get("headless")
             else sumolib.checkBinary("sumo-gui")
         )
 
@@ -73,16 +73,16 @@ class SumoSim(object):
         :param p_scenario_name Scenario name to look up cfgs.
         """
 
-        if self._sumocfg.scenarioconfig.get(p_scenario_name) is None:
+        if self._sumocfg.scenario_config.get(p_scenario_name) is None:
             self._log.error(r"/!\ scenario %s not found in configuration", p_scenario_name)
             return
 
         l_scenario_runs = self._sumocfg.generate_scenario(p_scenario_name)
-        l_initial_sortings = self._sumocfg.runconfig.get("initialsortings")
+        l_initial_sortings = self._sumocfg.run_config.get("initialsortings")
 
         for i_initial_sorting in l_initial_sortings:
             l_scenario_runs.get("runs")[i_initial_sorting] = {}
-            for i_run in xrange(self._sumocfg.runconfig.get("runs")):
+            for i_run in xrange(self._sumocfg.run_config.get("runs")):
                 l_run_data = self._sumocfg.generate_run(
                     l_scenario_runs, i_initial_sorting, i_run
                 )
@@ -93,8 +93,8 @@ class SumoSim(object):
                 self._statistics.dump_traveltimes_from_iloops(
                     l_run_data,
                     {
-                        "run": self._sumocfg.runconfig,
-                        "scenario": self._sumocfg.scenarioconfig.get(p_scenario_name)
+                        "run": self._sumocfg.run_config,
+                        "scenario": self._sumocfg.scenario_config.get(p_scenario_name)
                     },
                     p_scenario_name,
                     i_initial_sorting,
@@ -107,27 +107,27 @@ class SumoSim(object):
                     self._log.info(
                         "Scenario %s, AADT %d (%d vps), sorting %s: Finished run %d/%d",
                         p_scenario_name,
-                        self._sumocfg.runconfig.get("aadt").get("value"),
-                        int(self._sumocfg.runconfig.get("aadt").get("value") / 24),
+                        self._sumocfg.run_config.get("aadt").get("value"),
+                        int(self._sumocfg.run_config.get("aadt").get("value") / 24),
                         i_initial_sorting,
                         i_run + 1,
-                        self._sumocfg.runconfig.get("runs")
+                        self._sumocfg.run_config.get("runs")
                     )
 
         # dump configuration
         self._writer.write_json_pretty(
             {
-                "optomversion": self._sumocfg.optom_version,
-                "runconfig": self._sumocfg.runconfig,
-                "scenarioconfig": self._sumocfg.scenarioconfig,
-                "vtypesconfig": self._sumocfg.vtypesconfig
+                "optom_version": self._sumocfg.optom_version,
+                "run_config": self._sumocfg.run_config,
+                "scenario_config": self._sumocfg.scenario_config,
+                "vtypes_config": self._sumocfg.vtypes_config
             },
-            os.path.join(self._sumocfg.sumoconfigdir, self._sumocfg.runprefix,
+            os.path.join(self._sumocfg.sumo_config_dir, self._sumocfg.run_prefix,
                          "configuration.json")
         )
 
     def run_scenarios(self):
         """Run all scenarios defined by cfgs/commandline."""
 
-        for i_scenarioname in self._sumocfg.runconfig.get("scenarios"):
+        for i_scenarioname in self._sumocfg.run_config.get("scenarios"):
             self.run_scenario(i_scenarioname)

@@ -47,15 +47,14 @@ class SumoConfig(optom.common.configuration.Configuration):
 
         self._log = optom.common.log.logger(__name__, p_args.loglevel, p_args.quiet, p_args.logfile)
         self._writer = optom.common.io.Writer(p_args)
-        self._args = copy.copy(p_args)
 
         self._binaries = {
             "netconvert": p_netconvertbinary,
             "duarouter": p_duarouterbinary
         }
 
-        if not os.path.exists(self.sumoconfigdir):
-            os.makedirs(self.sumoconfigdir)
+        if not os.path.exists(self.sumo_config_dir):
+            os.makedirs(self.sumo_config_dir)
 
         if not os.path.exists(self.runsdir):
             os.makedirs(self.runsdir)
@@ -73,7 +72,7 @@ class SumoConfig(optom.common.configuration.Configuration):
         l_global_maxspeed = max(
             [
                 i_scenario.get("parameters").get("speedlimit")
-                for i_scenario in self.scenarioconfig.itervalues()
+                for i_scenario in self.scenario_config.itervalues()
                 ]
         )
         self._speed_colormap = optom.common.colormaps.get_mapped_cmap(
@@ -82,23 +81,26 @@ class SumoConfig(optom.common.configuration.Configuration):
         )
 
     @property
-    def sumoconfigdir(self):
+    def sumo_config_dir(self):
         """return directory of SUMO config"""
-        return os.path.join(self.outputdir, "SUMO")
+        return os.path.join(self.output_dir, "SUMO")
 
     @property
     def runsdir(self):
         """return directory of runs"""
-        return os.path.join(self.outputdir, "SUMO", self.runprefix, "runs")
+        return os.path.join(self.output_dir, "SUMO", self.run_prefix, "runs")
 
     @property
     def resultsdir(self):
         """return directory of results"""
-        return os.path.join(self.outputdir, "SUMO", self.runprefix, "results")
+        return os.path.join(self.output_dir, "SUMO", self.run_prefix, "results")
 
-    def get(self, p_key):
-        """return element of sumo runconfig"""
-        return self.runconfig.get("sumo").get(p_key)
+    @property
+    def sumo_run_config(self):
+        """returns copy of sumo run config"""
+        return copy.copy(
+            self.run_config.get("sumo")
+        )
 
     def generate_scenario(self, p_scenarioname):
         """generate SUMO scenario based on scenario name"""
@@ -109,7 +111,7 @@ class SumoConfig(optom.common.configuration.Configuration):
         if not os.path.exists(os.path.join(l_destinationdir)):
             os.mkdir(l_destinationdir)
 
-        l_scenarioconfig = self.scenarioconfig.get(p_scenarioname)
+        l_scenarioconfig = self.scenario_config.get(p_scenarioname)
 
         l_scenarioruns = {
             "scenarioname": p_scenarioname,
@@ -136,7 +138,7 @@ class SumoConfig(optom.common.configuration.Configuration):
             p_scenarioname, l_scenarioconfig, l_edgefile, self._args.forcerebuildscenarios
         )
         self._generate_settings_xml(
-            l_scenarioconfig, self.runconfig, l_settingsfile, self._args.forcerebuildscenarios
+            l_scenarioconfig, self.run_config, l_settingsfile, self._args.forcerebuildscenarios
         )
         self._generate_net_xml(
             l_nodefile, l_edgefile, l_netfile, self._args.forcerebuildscenarios
@@ -236,11 +238,11 @@ class SumoConfig(optom.common.configuration.Configuration):
                 "additionalfile": l_additionalfile,
                 "settingsfile": p_scenarioruns.get("settingsfile")
             },
-            self.runconfig.get("simtimeinterval"), self._args.forcerebuildscenarios
+            self.run_config.get("simtimeinterval"), self._args.forcerebuildscenarios
         )
 
         l_vehicles = self._generate_trip_xml(
-            p_scenarioruns, self.runconfig, p_initialsorting, l_tripfile,
+            p_scenarioruns, self.run_config, p_initialsorting, l_tripfile,
             self._args.forcerebuildscenarios
         )
 
@@ -367,14 +369,14 @@ class SumoConfig(optom.common.configuration.Configuration):
             }
         )
 
-        if self.scenarioconfig.get(
+        if self.scenario_config.get(
                 p_scenario_name
         ).get("parameters").get("detectorpositions") is None:
-            self.scenarioconfig.get(
+            self.scenario_config.get(
                 p_scenario_name
             ).get("parameters")["detectorpositions"] = [0, l_segmentlength]
 
-        self.scenarioconfig.get(p_scenario_name).get("parameters")["ilooppositions"] = OrderedDict(
+        self.scenario_config.get(p_scenario_name).get("parameters")["ilooppositions"] = OrderedDict(
             {
                 "1_enter": 5,
                 "2_21segment.0_begin": l_segmentlength - 5
@@ -471,10 +473,10 @@ class SumoConfig(optom.common.configuration.Configuration):
         self._log.debug("Generating additional xml for %s", p_scenario_runs.get("scenarioname"))
 
         # parameters
-        l_length = self.scenarioconfig.get(
+        l_length = self.scenario_config.get(
             p_scenario_runs.get("scenarioname")
         ).get("parameters").get("length")
-        l_nbswitches = self.scenarioconfig.get(
+        l_nbswitches = self.scenario_config.get(
             p_scenario_runs.get("scenarioname")
         ).get("parameters").get("switches")
 
@@ -482,7 +484,7 @@ class SumoConfig(optom.common.configuration.Configuration):
         l_segmentlength = l_length / (l_nbswitches + 1)
 
         l_additional = optom.common.io.etree.Element("additional")
-        l_iloop_positions = self.scenarioconfig.get(
+        l_iloop_positions = self.scenario_config.get(
             p_scenario_runs.get("scenarioname")
         ).get("parameters").get("ilooppositions")
 
@@ -516,7 +518,7 @@ class SumoConfig(optom.common.configuration.Configuration):
         )
 
         # induction loops at beginning of each switch
-        l_switches = self.scenarioconfig.get(
+        l_switches = self.scenario_config.get(
             p_scenario_runs.get("scenarioname")
         ).get(
             "parameters"
@@ -586,7 +588,7 @@ class SumoConfig(optom.common.configuration.Configuration):
             attrib={
                 "id": "3_exit",
                 "lane": "21segment.{}_0".format(
-                    self.scenarioconfig.get(
+                    self.scenario_config.get(
                         p_scenario_runs.get("scenarioname")
                     ).get("switchpositions")[-1]
                 ) if l_nbswitches % 2 == 1 or self._args.onlyoneotlsegment else "21end_exit_0",
@@ -710,34 +712,34 @@ class SumoConfig(optom.common.configuration.Configuration):
         assert p_initialsorting in ["best", "random", "worst"]
 
         self._log.debug(
-            "Create vehicle distribution with %s", self._runconfig.get("vtypedistribution")
+            "Create vehicle distribution with %s", self._run_config.get("vtypedistribution")
         )
 
         l_vtypedistribution = list(
             itertools.chain.from_iterable(
                 [
                     [k] * int(round(100 * v.get("fraction")))
-                    for (k, v) in self._runconfig.get("vtypedistribution").iteritems()
+                    for (k, v) in self._run_config.get("vtypedistribution").iteritems()
                 ]
             )
         )
 
-        l_vehps = p_aadt / (24 * 60 * 60) if not self._runconfig.get(
+        l_vehps = p_aadt / (24 * 60 * 60) if not self._run_config.get(
             "vehiclespersecond"
         ).get(
             "enabled"
-        ) else self._runconfig.get("vehiclespersecond").get("value")
+        ) else self._run_config.get("vehiclespersecond").get("value")
 
         l_vehicle_list = [
             optom.environment.vehicle.SUMOVehicle(
                 vtype=vtype,
-                vtype_sumo_attr=self.vtypesconfig.get(vtype),
-                speed_deviation=self._runconfig.get("vtypedistribution").get(vtype).get("speedDev"),
+                vtype_sumo_attr=self.vtypes_config.get(vtype),
+                speed_deviation=self._run_config.get("vtypedistribution").get(vtype).get("speedDev"),
                 speed_max=min(
                     random.choice(
-                        self._runconfig.get("vtypedistribution").get(vtype).get("desiredSpeeds")
+                        self._run_config.get("vtypedistribution").get(vtype).get("desiredSpeeds")
                     ),
-                    self.scenarioconfig.get(p_scenario_name).get("parameters").get("speedlimit")
+                    self.scenario_config.get(p_scenario_name).get("parameters").get("speedlimit")
                 )
             ) for vtype in [random.choice(l_vtypedistribution) for _ in xrange(p_nbvehicles)]
             ]
@@ -759,7 +761,7 @@ class SumoConfig(optom.common.configuration.Configuration):
             i_vehicle.start_time = self._next_timestep(
                 l_vehps,
                 l_vehicle_list[i - 1].start_time if i > 0 else 0,
-                self.runconfig.get("starttimedistribution")
+                self.run_config.get("starttimedistribution")
             )
             l_vehicles["vehicle{}".format(i)] = i_vehicle
 
@@ -782,7 +784,7 @@ class SumoConfig(optom.common.configuration.Configuration):
             return
         self._log.debug("Generating trip xml for %s", p_scenario_runs.get("scenarioname"))
         # generate simple traffic demand by considering AADT, Vmax, roadtype etc
-        l_aadt = self.scenarioconfig.get(
+        l_aadt = self.scenario_config.get(
             p_scenario_runs.get("scenarioname")
         ).get(
             "parameters"
@@ -821,14 +823,14 @@ class SumoConfig(optom.common.configuration.Configuration):
             l_vattr["id"] = str(i_vid)
             l_vattr["color"] = "{},{},{},{}".format(*i_vehicle.color)
             # override parameters speedDev, desiredSpeed, and length if defined in run config
-            l_runcfgspeeddev = self.runconfig \
+            l_runcfgspeeddev = self.run_config \
                 .get("vtypedistribution") \
                 .get(l_vattr.get("vClass")) \
                 .get("speedDev")
             if l_runcfgspeeddev is not None:
                 l_vattr["speedDev"] = str(l_runcfgspeeddev)
 
-            l_runcfgdesiredspeed = self.runconfig \
+            l_runcfgdesiredspeed = self.run_config \
                 .get("vtypedistribution"). \
                 get(l_vattr.get("vClass")). \
                 get("desiredSpeed")
@@ -836,7 +838,7 @@ class SumoConfig(optom.common.configuration.Configuration):
             l_vattr["speedlimit"] = str(l_runcfgdesiredspeed) \
                 if l_runcfgdesiredspeed is not None else str(i_vehicle.speed_max)
 
-            l_runcfglength = self.runconfig \
+            l_runcfglength = self.run_config \
                 .get("vtypedistribution") \
                 .get(l_vattr.get("vClass")) \
                 .get("length")
