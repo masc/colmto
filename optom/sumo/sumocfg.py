@@ -734,7 +734,9 @@ class SumoConfig(optom.common.configuration.Configuration):
             optom.environment.vehicle.SUMOVehicle(
                 vtype=vtype,
                 vtype_sumo_attr=self.vtypes_config.get(vtype),
-                speed_deviation=self._run_config.get("vtypedistribution").get(vtype).get("speedDev"),
+                speed_deviation=self._run_config.get(
+                    "vtypedistribution"
+                ).get(vtype).get("speedDev"),
                 speed_max=min(
                     random.choice(
                         self._run_config.get("vtypedistribution").get(vtype).get("desiredSpeeds")
