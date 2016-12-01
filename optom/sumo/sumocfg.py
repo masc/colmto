@@ -242,7 +242,7 @@ class SumoConfig(optom.common.configuration.Configuration):
         )
 
         l_vehicles = self._generate_trip_xml(
-            p_scenarioruns, self.run_config, p_initialsorting, l_tripfile,
+            p_scenarioruns, p_initialsorting, l_tripfile,
             self._args.forcerebuildscenarios
         )
 
@@ -769,13 +769,12 @@ class SumoConfig(optom.common.configuration.Configuration):
 
         return l_vehicles
 
-    def _generate_trip_xml(self, p_scenario_runs, p_runcfg, p_initialsorting, p_tripfile,
+    def _generate_trip_xml(self, p_scenario_runs, p_initialsorting, p_tripfile,
                            p_forcerebuildscenarios=False):
         """
         Generate SUMO's trip file.
 
         :param p_scenario_runs:
-        :param p_runcfg:
         :param p_initialsorting:
         :param p_tripfile:
         :param p_forcerebuildscenarios:
@@ -792,15 +791,16 @@ class SumoConfig(optom.common.configuration.Configuration):
             "parameters"
         ).get(
             "aadt"
-        ) if not p_runcfg.get("aadt").get("enabled") else p_runcfg.get("aadt").get("value")
+        ) if not self.run_config.get("aadt").get("enabled") \
+            else self.run_config.get("aadt").get("value")
 
-        l_timebegin, l_timeend = p_runcfg.get("simtimeinterval")
+        l_timebegin, l_timeend = self.run_config.get("simtimeinterval")
 
         # number of vehicles = AADT / [seconds of day] * [scenario time in seconds]
 
         l_numberofvehicles = int(round(l_aadt / (24 * 60 * 60) * (l_timeend - l_timebegin))) \
-            if not p_runcfg.get("nbvehicles").get("enabled") \
-            else p_runcfg.get("nbvehicles").get("value")
+            if not self.run_config.get("nbvehicles").get("enabled") \
+            else self.run_config.get("nbvehicles").get("value")
 
         self._log.debug(
             "Scenario's AADT of %d vehicles/average annual day"

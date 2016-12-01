@@ -82,6 +82,7 @@ class SumoSim(object):
 
         for i_initial_sorting in l_initial_sortings:
             l_scenario_runs.get("runs")[i_initial_sorting] = {}
+
             for i_run in xrange(self._sumocfg.run_config.get("runs")):
                 l_run_data = self._sumocfg.generate_run(
                     l_scenario_runs, i_initial_sorting, i_run
