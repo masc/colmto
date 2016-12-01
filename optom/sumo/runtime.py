@@ -32,32 +32,32 @@ from optom.common import log
 class Runtime(object):
     """Runtime class"""
     # pylint: disable=too-few-public-methods
-    def __init__(self, p_args, p_sumoconfig, p_sumobinary):
+    def __init__(self, p_args, p_sumo_config, p_sumo_binary):
         """C'tor."""
-        self._sumoconfig = p_sumoconfig
-        self._sumobinary = p_sumobinary
+        self._sumo_config = p_sumo_config
+        self._sumo_binary = p_sumo_binary
         self._log = log.logger(__name__, p_args.loglevel, p_args.quiet, p_args.logfile)
 
-    def run(self, p_runcfg, p_scenarioname, p_runnumber):
+    def run(self, p_run_config, p_scenario_name, p_run_number):
         """
         Run provided scenario.
 
-        :param p_runcfg Run configuration
-        :param p_scenarioname Name of scenario (for logging purpose)
-        :param p_runnumber Number of current run (for logging purpose)
+        :param p_run_config Run configuration
+        :param p_scenario_name Name of scenario (for logging purpose)
+        :param p_run_number Number of current run (for logging purpose)
         """
 
-        self._log.info("Running scenario %s: run %d", p_scenarioname, p_runnumber)
+        self._log.info("Running scenario %s: run %d", p_scenario_name, p_run_number)
         l_sumoprocess = subprocess.check_output(
             [
-                self._sumobinary,
-                "-c", p_runcfg.get("configfile"),
-                "--gui-settings-file", p_runcfg.get("settingsfile"),
+                self._sumo_binary,
+                "-c", p_run_config.get("configfile"),
+                "--gui-settings-file", p_run_config.get("settingsfile"),
                 "--time-to-teleport", "-1",
                 "--no-step-log",
-                "--fcd-output", p_runcfg.get("fcdfile")
+                "--fcd-output", p_run_config.get("fcdfile")
             ],
             stderr=subprocess.STDOUT,
             bufsize=-1
         )
-        self._log.debug("%s : %s", self._sumobinary, l_sumoprocess.replace("\n", ""))
+        self._log.debug("%s : %s", self._sumo_binary, l_sumoprocess.replace("\n", ""))
