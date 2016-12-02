@@ -177,10 +177,6 @@ class SumoConfig(optom.common.configuration.Configuration):
             p_scenarioruns.get("scenarioname"), p_initialsorting, p_run_number
         )
 
-        l_additionalfile = os.path.join(
-            l_destinationdir, str(p_initialsorting), str(p_run_number),
-            "{}.add.xml".format(p_scenarioruns.get("scenarioname"))
-        )
         l_tripfile = os.path.join(
             l_destinationdir, str(p_initialsorting), str(p_run_number),
             "{}.trip.xml".format(p_scenarioruns.get("scenarioname"))
@@ -206,17 +202,12 @@ class SumoConfig(optom.common.configuration.Configuration):
         if not os.path.exists(l_output_measurements_dir):
             os.makedirs(l_output_measurements_dir)
 
-        l_iloopfile = os.path.join(
-            l_output_measurements_dir,
-            "{}.inductionLoops.xml".format(p_scenarioruns.get("scenarioname"))
-        )
-
         l_fcdfile = os.path.join(
             l_output_measurements_dir,
             "{}.fcd-output.xml".format(p_scenarioruns.get("scenarioname"))
         )
 
-        l_runcfgfiles = [l_tripfile, l_additionalfile, l_routefile, l_configfile]
+        l_runcfgfiles = [l_tripfile, l_routefile, l_configfile]
 
         if len([fname for fname in l_runcfgfiles if not os.path.isfile(fname)]) > 0:
             self._log.debug(
@@ -225,17 +216,11 @@ class SumoConfig(optom.common.configuration.Configuration):
             )
             self._args.forcerebuildscenarios = True
 
-        self._generate_additional_xml(
-            p_scenarioruns, l_iloopfile, l_additionalfile,
-            self._args.forcerebuildscenarios
-        )
-
         self._generate_config_xml(
             {
                 "configfile": l_configfile,
                 "netfile": p_scenarioruns.get("netfile"),
                 "routefile": l_routefile,
-                "additionalfile": l_additionalfile,
                 "settingsfile": p_scenarioruns.get("settingsfile")
             },
             self.run_config.get("simtimeinterval"), self._args.forcerebuildscenarios
@@ -254,11 +239,9 @@ class SumoConfig(optom.common.configuration.Configuration):
         return {
             "vehicles": l_vehicles,
             "settingsfile": p_scenarioruns.get("settingsfile"),
-            "additionalfile": l_additionalfile,
             "tripfile": l_tripfile,
             "routefile": l_routefile,
             "configfile": l_configfile,
-            "iloopfile": l_iloopfile,
             "fcdfile": l_fcdfile
         }
 
@@ -376,12 +359,6 @@ class SumoConfig(optom.common.configuration.Configuration):
                 p_scenario_name
             ).get("parameters")["detectorpositions"] = [0, l_segmentlength]
 
-        self.scenario_config.get(p_scenario_name).get("parameters")["ilooppositions"] = OrderedDict(
-            {
-                "1_enter": 5,
-                "2_21segment.0_begin": l_segmentlength - 5
-            })
-
         self._generate_switches(l_21edge, p_scenario_config)
 
         # Exit lane
@@ -455,162 +432,13 @@ class SumoConfig(optom.common.configuration.Configuration):
 
                 l_add_otl_lane ^= True
 
-    def _generate_additional_xml(
-            self, p_scenario_runs, p_iloopfile, p_additionalfile, p_forcerebuildscenarios):
-        """
-        Generate SUMO's additional configuration file.
-
-        :param p_scenario_runs: Containing "name" and "config" of scenario
-        :param p_iloopfile: File to write induction loop detector 'measurements'
-        :param p_additionalfile: Destination to write additional cfg file
-        :param p_forcerebuildscenarios: Rebuild scenarios,
-                                        even if they already exist for current run
-        """
-
-        if os.path.isfile(p_additionalfile) and not p_forcerebuildscenarios:
-            return
-
-        self._log.debug("Generating additional xml for %s", p_scenario_runs.get("scenarioname"))
-
-        # parameters
-        l_length = self.scenario_config.get(
-            p_scenario_runs.get("scenarioname")
-        ).get("parameters").get("length")
-        l_nbswitches = self.scenario_config.get(
-            p_scenario_runs.get("scenarioname")
-        ).get("parameters").get("switches")
-
-        # assume even distributed otl segment lengths
-        l_segmentlength = l_length / (l_nbswitches + 1)
-
-        l_additional = optom.common.io.etree.Element("additional")
-        l_iloop_positions = self.scenario_config.get(
-            p_scenario_runs.get("scenarioname")
-        ).get("parameters").get("ilooppositions")
-
-        # first induction loop at network enter
-        optom.common.io.etree.SubElement(
-            l_additional,
-            "inductionLoop",
-            attrib={
-                "id": "1_enter",
-                "lane": "enter_21start_0",
-                "pos": str(l_iloop_positions.get("1_enter")),
-                "friendlyPos": "true",
-                "splitByType": "true",
-                "freq": "1",
-                "file": p_iloopfile
-            }
-        )
-        # place induction loop right before the first split (i.e. end of starting edge)
-        optom.common.io.etree.SubElement(
-            l_additional,
-            "inductionLoop",
-            attrib={
-                "id": "2_21segment.0_begin",
-                "lane": "enter_21start_0",
-                "pos": str(l_iloop_positions.get("2_21segment.0_begin")),
-                "friendlyPos": "true",
-                "splitByType": "true",
-                "freq": "1",
-                "file": p_iloopfile
-            }
-        )
-
-        # induction loops at beginning of each switch
-        l_switches = self.scenario_config.get(
-            p_scenario_runs.get("scenarioname")
-        ).get(
-            "parameters"
-        ).get(
-            "switchpositions"
-        )
-
-        for i, i_switch_pos in list(enumerate(l_switches))[:-1]:
-            if i % 2 == 1:
-                l_iloop_positions[
-                    "2_21segment.{}_begin".format(l_switches[i + 1])
-                ] = l_segmentlength + i_switch_pos + l_segmentlength - 5
-
-                l_detector_end_id = "2_21segment.{}_end".format(l_switches[i - 1])
-                l_iloop_positions[l_detector_end_id] = l_segmentlength + i_switch_pos + 5
-
-                optom.common.io.etree.SubElement(
-                    l_additional,
-                    "inductionLoop",
-                    attrib={
-                        "id": "2_21segment.{}_begin".format(l_switches[i + 1]),
-                        "lane": "21segment.{}_0".format(l_switches[i]),
-                        "pos": str(l_segmentlength - 5),
-                        "friendlyPos": "true",
-                        "splitByType": "true",
-                        "freq": "1",
-                        "file": p_iloopfile
-                    }
-                )
-
-                optom.common.io.etree.SubElement(
-                    l_additional,
-                    "inductionLoop",
-                    attrib={
-                        "id": l_detector_end_id,
-                        "lane": "21segment.{}_0".format(l_switches[i]),
-                        "pos": "5",
-                        "friendlyPos": "true",
-                        "splitByType": "true",
-                        "freq": "1",
-                        "file": p_iloopfile
-                    }
-                )
-
-        # induction loop at the end of last one-lane segment and exit
-        l_iloop_positions[
-            "2_21segment.{}_end".format(l_switches[-2])
-        ] = l_length + l_segmentlength
-
-        optom.common.io.etree.SubElement(
-            l_additional,
-            "inductionLoop",
-            attrib={
-                "id": "2_21segment.{}_end".format(l_switches[-2]),
-                "lane": "21segment.{}_0".format(l_switches[-1]),
-                "pos": "5",
-                "friendlyPos": "true",
-                "splitByType": "true",
-                "freq": "1",
-                "file": p_iloopfile
-            }
-        )
-
-        optom.common.io.etree.SubElement(
-            l_additional,
-            "inductionLoop",
-            attrib={
-                "id": "3_exit",
-                "lane": "21segment.{}_0".format(
-                    self.scenario_config.get(
-                        p_scenario_runs.get("scenarioname")
-                    ).get("switchpositions")[-1]
-                ) if l_nbswitches % 2 == 1 or self._args.onlyoneotlsegment else "21end_exit_0",
-                "pos": str(l_segmentlength - 5),
-                "friendlyPos": "true",
-                "splitByType": "true",
-                "freq": "1",
-                "file": p_iloopfile
-            }
-        )
-        l_iloop_positions["3_exit"] = l_length + 2 * l_segmentlength - 5
-
-        with open(p_additionalfile, "w") as f_paddxml:
-            f_paddxml.write(optom.common.io.etree.tostring(l_additional, pretty_print=True))
-
     @staticmethod
     def _generate_config_xml(p_config_files, p_simtimeinterval, p_forcerebuildscenarios=False):
         """
         Generate SUMO's main configuration file.
 
         :param p_config_files: Dictionary of config file locations,
-                             i.e. netfile, routefile, additionalfile, settingsfile
+                             i.e. netfile, routefile, settingsfile
         :param p_simtimeinterval: Time interval of simulation
         :param p_forcerebuildscenarios: Rebuild scenarios,
                                         even if they already exist for current run
@@ -631,11 +459,6 @@ class SumoConfig(optom.common.configuration.Configuration):
             l_input,
             "route-files",
             attrib={"value": p_config_files.get("routefile")}
-        )
-        optom.common.io.etree.SubElement(
-            l_input,
-            "additional-files",
-            attrib={"value": p_config_files.get("additionalfile")}
         )
         optom.common.io.etree.SubElement(
             l_input,
