@@ -35,7 +35,7 @@ except ImportError:
     raise ("please declare environment variable 'SUMO_HOME' as the root"
            "directory of your sumo installation (it should contain folders 'bin',"
            "'tools' and 'docs')")
-
+import math
 import optom.common.io
 import optom.common.statistics
 import optom.common.log
@@ -84,25 +84,59 @@ class SumoSim(object):
             l_scenario_runs.get("runs")[i_initial_sorting] = {}
 
             for i_run in xrange(self._sumocfg.run_config.get("runs")):
+
                 l_run_data = self._sumocfg.generate_run(
                     l_scenario_runs, i_initial_sorting, i_run
                 )
 
                 self._runtime.run(l_run_data, p_scenario_name, i_run)
 
-                self._log.debug("Converting induction loop XMLs with etree.XSLT")
-                self._statistics.dump_traveltimes_from_iloops(
-                    l_run_data,
-                    {
-                        "run": self._sumocfg.run_config,
-                        "scenario": self._sumocfg.scenario_config.get(p_scenario_name)
-                    },
-                    p_scenario_name,
-                    i_initial_sorting,
-                    i_run,
-                    os.path.join(self._sumocfg.resultsdir, p_scenario_name, i_initial_sorting,
-                                 str(i_run))
+                l_vehicle_data_json = self._statistics.fcd_stats(l_run_data)
+
+                self._log.debug("Writing %s results", p_scenario_name)
+                self._writer.write_json(
+                    dict(l_vehicle_data_json),
+                    os.path.join(
+                        self._sumocfg.resultsdir, p_scenario_name, i_initial_sorting,
+                        str(i_run),
+                        "{}-{}-run{}-TT-TL.json.gz".format(
+                            p_scenario_name,
+                            self._sumocfg.scenario_config.get(
+                                p_scenario_name
+                            ).get("parameters").get("aadt")
+                            if self._sumocfg.run_config.get("aadt").get("enabled")
+                            else "{}veh".format(
+                                self._sumocfg.run_config.get("nbvehicles").get("value")
+                            ),
+                            str(i_run).zfill(
+                                int(math.ceil(math.log10(self._sumocfg.run_config.get("runs"))))
+                            )
+                        )
+                    )
                 )
+
+                # l_csv_header = next(iter(l_vehicle_data_csv), {}).keys()
+                # self._writer.write_csv(
+                #     l_csv_header,
+                #     l_vehicle_data_csv,
+                #     os.path.join(
+                #         self._sumocfg.resultsdir, p_scenario_name, i_initial_sorting,
+                #         str(i_run),
+                #         "{}-{}-run{}-TT-TL.csv".format(
+                #             p_scenario_name,
+                #             self._sumocfg.scenario_config.get(
+                #                 p_scenario_name
+                #             ).get("parameters").get("aadt")
+                #             if self._sumocfg.run_config.get("aadt").get("enabled")
+                #             else "{}veh".format(
+                #                 self._sumocfg.run_config.get("nbvehicles").get("value")
+                #             ),
+                #             str(i_run).zfill(
+                #                 int(math.ceil(math.log10(self._sumocfg.run_config.get("runs"))))
+                #             )
+                #         )
+                #     )
+                # )
 
                 if i_run % 10 == 0:
                     self._log.info(
