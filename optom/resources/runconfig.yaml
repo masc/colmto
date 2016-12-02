@@ -30,8 +30,3 @@ vehiclespersecond:
   enabled: false
   value: 0.5
 initialsortings: [random]
-detectors:
-  start: true
-  splits: true
-  end: true
-  otl: true
