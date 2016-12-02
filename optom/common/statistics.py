@@ -22,28 +22,12 @@
 # @endcond
 """Statistics module"""
 from __future__ import division
-from __future__ import print_function
 
-import math
-import os
 from collections import defaultdict
 from collections import OrderedDict
 
 import optom.common.io
 import optom.common.log
-
-_ILOOP_TEMPLATE = optom.common.io.etree.XML("""
-    <xsl:stylesheet version= "1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
-    <xsl:template match="/">
-    <detector>
-    <xsl:for-each select="detector/interval/typedInterval">
-    <vehicle>
-    <xsl:copy-of select="@id|@type|@begin"/>
-    </vehicle>
-    </xsl:for-each>
-    </detector>
-    </xsl:template>
-    </xsl:stylesheet>""")
 
 
 class Statistics(object):
