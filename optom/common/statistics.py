@@ -114,11 +114,11 @@ class Statistics(object):
         :return: H_2 - H_1 if p_data contains at least 5 elements, otherwise raises ArithmeticError
         """
         l_data = sorted(p_data)
-        l_n = len(l_data)
+        l_len = len(l_data)
 
-        if l_n < 5:
+        if l_len < 5:
             raise ArithmeticError
 
-        l_h1 = l_data[int((l_n + 3) / l_n - 1)]
-        l_h2 = l_data[int((3 * l_n + 1) / 4 - 1)]
+        l_h1 = l_data[int((l_len + 3) / 4 - 1)]
+        l_h2 = l_data[int((3 * l_len + 1) / 4 - 1)]
         return l_h2 - l_h1
