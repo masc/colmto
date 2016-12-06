@@ -23,10 +23,106 @@
 """
 optom: Test module for common.statistics.
 """
+import cStringIO
+
 from nose.tools import assert_equal
 from nose.tools import assert_raises
 
+import optom.common.io
 import optom.common.statistics
+import optom.environment.vehicle
+
+
+def test_fcd_stats():
+    """
+    Test fcd_stats method
+    """
+    l_fcdfile = cStringIO.StringIO("""
+    <fcd-export xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/fcd_file.xsd">
+    <timestep time="0.00">
+        <vehicle id="vehicle0" x="4.40" y="0.05" angle="90.00" type="vehicle0"
+        speed="27.78" pos="4.40" lane="enter_21start_0" slope="0.00"/>
+    </timestep>
+    <timestep time="1.00">
+        <vehicle id="vehicle0" x="30.89" y="0.05" angle="90.00" type="vehicle0"
+        speed="26.49" pos="30.89" lane="enter_21start_0" slope="0.00"/>
+    </timestep>
+    <timestep time="2.00">
+        <vehicle id="vehicle0" x="57.63" y="0.05" angle="90.00" type="vehicle0"
+        speed="26.75" pos="57.63" lane="enter_21start_0" slope="0.00"/>
+    </timestep>
+    </fcd-export>
+    """)
+
+    l_run_data = {
+        "fcdfile": l_fcdfile,
+        "vehicles": {
+            "vehicle0": optom.environment.vehicle.SUMOVehicle(**{"speed_max": 27.777})
+        }
+    }
+
+    l_result = {
+        "vehicle0": {
+            "maxspeed": 27.777,
+            "posx": {
+                "30.89": {
+                    "angle": "90.00",
+                    "lane": "enter_21start_0",
+                    "lanepos": "30.89",
+                    "speed": "26.49",
+                    "timestep": 1.0,
+                    "y": "0.05"
+                },
+                "4.40": {
+                    "angle": "90.00",
+                    "lane": "enter_21start_0",
+                    "lanepos": "4.40",
+                    "speed": "27.78",
+                    "timestep": 0.0,
+                    "y": "0.05"
+                },
+                "57.63": {
+                    "angle": "90.00",
+                    "lane": "enter_21start_0",
+                    "lanepos": "57.63",
+                    "speed": "26.75",
+                    "timestep": 2.0,
+                    "y": "0.05"
+                }
+            },
+            "timesteps": {
+                "0.00": {
+                    "angle": "90.00",
+                    "lane": "enter_21start_0",
+                    "lanepos": "4.40",
+                    "speed": "27.78",
+                    "x": "4.40",
+                    "y": "0.05"
+                },
+                "1.00": {
+                    "angle": "90.00",
+                    "lane": "enter_21start_0",
+                    "lanepos": "30.89",
+                    "speed": "26.49",
+                    "x": "30.89",
+                    "y": "0.05"
+                },
+                "2.00": {
+                    "angle": "90.00",
+                    "lane": "enter_21start_0",
+                    "lanepos": "57.63",
+                    "speed": "26.75",
+                    "x": "57.63",
+                    "y": "0.05"
+                }
+            },
+            "type": "vehicle0"
+        }
+    }
+
+    l_statistics = optom.common.statistics.Statistics(None).fcd_stats(l_run_data)
+    assert_equal(l_statistics, l_result)
 
 
 def test_h_spread():
