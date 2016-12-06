@@ -124,7 +124,10 @@ class Writer(object):
     """Class for writing data to json, yaml, csv, hdf5."""
 
     def __init__(self, p_args):
-        self._log = optom.common.log.logger(__name__, p_args.loglevel, p_args.logfile)
+        if p_args is not None:
+            self._log = optom.common.log.logger(__name__, p_args.loglevel, p_args.logfile)
+        else:
+            self._log = optom.common.log.logger(__name__, "NOTSET", "optom.log")
 
     def write_json_pretty(self, p_object, p_filename):
         """Write json in human readable form (slow!). If filename ends with .gz, compress file."""

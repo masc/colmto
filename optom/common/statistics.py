@@ -34,8 +34,12 @@ class Statistics(object):
     """Statistics class for computing/aggregating SUMO results"""
 
     def __init__(self, p_args):
-        self._log = optom.common.log.logger(__name__, p_args.loglevel, p_args.logfile)
-        self._writer = optom.common.io.Writer(p_args)
+        if p_args is not None:
+            self._log = optom.common.log.logger(__name__, p_args.loglevel, p_args.logfile)
+            self._writer = optom.common.io.Writer(p_args)
+        else:
+            self._log = optom.common.log.logger(__name__, "NOTSET", "optom.log")
+            self._writer = optom.common.io.Writer(None)
 
     def fcd_stats(self, p_run_data):
         """
@@ -43,6 +47,7 @@ class Statistics(object):
         :param p_run_data:
         :return: json object
         """
+        print(p_run_data.get("vehicles"))
         self._log.debug("Reading fcd file %s", p_run_data.get("fcdfile"))
         l_fcd_xml = optom.common.io.etree.parse(
             p_run_data.get("fcdfile")
