@@ -55,7 +55,7 @@ test:
         - mv -f /tmp/circle.yml .
         - mv -f /tmp/radon.sh .
         - mv -f /tmp/optom .
-        - pylint optom -f html --import-graph=optom-imports.png > pylint.html; true
+        - pylint optom tests run.py -f html --import-graph=optom-imports.png > pylint.html; true
         - pandoc --from html --to markdown_github pylint.html -o pylint.md
         - echo -e "\n## Import Graph" >> pylint.md
         - echo -e "\n![ImportGraph](https://github.com/masc/optom/blob/gh-pages/optom-imports.png)" >> pylint.md
