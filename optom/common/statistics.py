@@ -47,7 +47,7 @@ class Statistics(object):
         :param p_run_data:
         :return: json object
         """
-        print(p_run_data.get("vehicles"))
+
         self._log.debug("Reading fcd file %s", p_run_data.get("fcdfile"))
         l_fcd_xml = optom.common.io.etree.parse(
             p_run_data.get("fcdfile")
