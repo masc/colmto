@@ -19,13 +19,12 @@ from setuptools.command.test import test as TestCommand
 class PyTest(TestCommand):
     def finalize_options(self):
         TestCommand.finalize_options(self)
-        self.test_args = []
+        self.test_args = ['tests']
         self.test_suite = True
 
     def run_tests(self):
-        pass
-        # import pytest  # import here, because outside the required eggs aren't loaded yet
-        # sys.exit(pytest.main(self.test_args))
+        import pytest  # import here, because outside the required eggs aren't loaded yet
+        sys.exit(pytest.main(self.test_args))
 
 
 version = "0.1"
@@ -43,7 +42,7 @@ setup(name="optom",
       author_email="masc@tu-clausthal.de",
       url="",
       license="LGPL",
-      packages=find_packages(exclude=['examples', 'tests']),
+      packages=find_packages(exclude=['examples', 'tests', 'sumo']),
       include_package_data=True,
       zip_safe=False,
       tests_require=['pytest'],
@@ -52,23 +51,19 @@ setup(name="optom",
       # TODO: List of packages that this one depends upon:
       install_requires=[
           # 'gurobipy',
-          # 'matplotlib',
+          'matplotlib',
           'sh',
           'lxml',
           'h5py',
           'PyYAML',
           'python-cjson',
-          # 'pathos',
           # 'networkx',
-          'progressbar',
-          'matplotlib'
-          # 'pygraphviz'
+          'progressbar'
       ],
-      # NOTE: For pathos use pip2 install git+https://github.com/uqfoundation/pathos
-      # NOTE: For progressbar use pip2 install git+https://github.com/niltonvolpato/python-progressbar.git
+
       # TODO: List executable scripts, provided by the package (this is just an example)
       entry_points={
         'console_scripts':
-        ['optom=optom:main']
+        ['optom=run']
       }
 )
