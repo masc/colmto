@@ -23,7 +23,8 @@
 """
 optom: Test module for common.statistics.
 """
-from nose.tools import *
+from nose.tools import assert_equal
+from nose.tools import assert_raises
 
 import optom.common.statistics
 
