@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# @package optom
+# @package optom.common
 # @cond LICENSE
 # #############################################################################
 # # LGPL License                                                              #
