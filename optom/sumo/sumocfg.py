@@ -556,7 +556,7 @@ class SumoConfig(optom.common.configuration.Configuration):
         l_vehicle_list = [
             optom.environment.vehicle.SUMOVehicle(
                 vtype=vtype,
-                vtype_sumo_attr=self.vtypes_config.get(vtype),
+                vtype_sumo_cfg=self.vtypes_config.get(vtype),
                 speed_deviation=self._run_config.get(
                     "vtypedistribution"
                 ).get(vtype).get("speedDev"),
@@ -643,10 +643,14 @@ class SumoConfig(optom.common.configuration.Configuration):
 
         # create a sumo vtype for each vehicle
         for i_vid, i_vehicle in l_vehicles.iteritems():
+
             # filter for relevant attributes and transform to string
-            l_vattr = i_vehicle.vtype_sumo_attr
-            l_vattr["id"] = str(i_vid)
-            l_vattr["color"] = "{},{},{},{}".format(*i_vehicle.color)
+            l_vattr = i_vehicle.vtype_sumo_cfg
+            l_vattr.update({
+                "id": str(i_vid),
+                "color": "{},{},{},{}".format(*i_vehicle.color)
+            })
+
             # override parameters speedDev, desiredSpeed, and length if defined in run config
             l_runcfgspeeddev = self.run_config \
                 .get("vtypedistribution") \
