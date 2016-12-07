@@ -74,17 +74,21 @@ class BaseVehicle(object):
 class SUMOVehicle(BaseVehicle):
     """SUMO vehicle class."""
 
-    def __init__(self, speed_max=0.0, speed_current=0.0, position=(None,), speed_deviation=0.0,
-                 vtype=None, vtype_sumo_cfg=None, color=(255, 255, 0, 255), start_time=0.0):
-        """C'tor"""
+    def __init__(self, **kwargs):
+        """
+        C'tor.
+        :param kwargs: Recognised arguments (with default values) are
+                       speed_max=0.0, speed_current=0.0, position=(None,), speed_deviation=0.0,
+                       vtype=None, vtype_sumo_cfg={}, color=(255, 255, 0, 255), start_time=0.0
+        """
 
-        self._vtype = vtype
-        self._vtype_sumo_cfg = vtype_sumo_cfg if isinstance(vtype_sumo_cfg, dict) else {}
-        self._color = color
-        self._speed_deviation = speed_deviation
-        self._start_time = start_time
+        self._vtype = kwargs.pop("vtype", None)
+        self._vtype_sumo_cfg = kwargs.pop("vtype_sumo_cfg", {})
+        self._color = kwargs.pop("color", (255, 255, 0, 255))
+        self._speed_deviation = kwargs.pop("speed_deviation", 0.0)
+        self._start_time = kwargs.pop("start_time", 0.0)
 
-        super(SUMOVehicle, self).__init__(speed_max, speed_current, position)
+        super(SUMOVehicle, self).__init__(**kwargs)
 
         self._travel_times = {}
         self._time_losses = {}
