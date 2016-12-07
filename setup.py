@@ -50,6 +50,7 @@ setup(name="optom",
 
       # TODO: List of packages that this one depends upon:
       install_requires=[
+          'nose',
           # 'gurobipy',
           'matplotlib',
           'sh',
