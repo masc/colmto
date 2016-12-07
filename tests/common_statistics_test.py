@@ -58,7 +58,7 @@ def test_fcd_stats():
     l_run_data = {
         "fcdfile": l_fcdfile,
         "vehicles": {
-            "vehicle0": optom.environment.vehicle.SUMOVehicle(**{"speed_max": 27.777})
+            "vehicle0": optom.environment.vehicle.SUMOVehicle(speed_max=27.777)
         }
     }
 
