@@ -26,33 +26,39 @@
 class BaseVehicle(object):
     """Base Vehicle."""
 
-    def __init__(self, p_kwargs):
-        self._position = p_kwargs.pop("position", (None,))
-        self._speed_max = p_kwargs.pop("speed_max", 0)
-        if p_kwargs:
-            raise TypeError('Unexpected **p_kwargs: %r' % p_kwargs)
-        self._speed = 0
-
-        self._parameters = {
-            "position": self.position,
-            "speed": self.speed,
-            "speed_max": self.speed_max
-        }
+    def __init__(self, speed_max=0.0, speed_current=0.0, position=(None,)):
+        self._speed_max = speed_max
+        self._speed_current = speed_current
+        self._position = position
 
     @property
-    def parameters(self):
-        """Returns vehicle parameters as dictionary bundle"""
-        return self._parameters
+    def properties(self):
+        """Returns vehicle properties as dictionary bundle"""
+        return {
+            "position": self.position,
+            "speed_current": self.speed_current,
+            "speed_max": self.speed_max
+        }
 
     @property
     def speed_max(self):
         """Returns maximum capable velocity of vehicle."""
         return self._speed_max
 
+    @speed_max.setter
+    def speed_max(self, speed):
+        """Sets maximum speed."""
+        self._speed_max = speed
+
     @property
-    def speed(self):
+    def speed_current(self):
         """Returns current speed."""
-        return self._speed
+        return self._speed_current
+
+    @speed_current.setter
+    def speed_current(self, speed):
+        """Sets current speed."""
+        self._speed_current = speed
 
     @property
     def position(self):
@@ -68,36 +74,36 @@ class BaseVehicle(object):
 class SUMOVehicle(BaseVehicle):
     """SUMO vehicle class."""
 
-    def __init__(self, **p_kwargs):
+    def __init__(self, speed_max=0.0, speed_current=0.0, position=(None,), speed_deviation=0.0,
+                 vtype=None, vtype_sumo_cfg=None, color=(255, 255, 0, 255), start_time=0.0):
         """C'tor"""
 
-        self._vtype = p_kwargs.pop("vtype", None)
+        self._vtype = vtype
+        self._vtype_sumo_cfg = vtype_sumo_cfg if isinstance(vtype_sumo_cfg, dict) else {}
+        self._color = color
+        self._speed_deviation = speed_deviation
+        self._start_time = start_time
 
-        # convert attr values to str for sumo xml handling
-        self._vtype_sumo_attr = dict(
-            [
-                (k, str(v)) for (k, v) in p_kwargs.pop("vtype_sumo_attr", {}).iteritems()
-            ]
-        )
+        super(SUMOVehicle, self).__init__(speed_max, speed_current, position)
 
-        self._color = p_kwargs.pop("color", None)
-        self._speed_deviation = p_kwargs.pop("speed_deviation", 0.0)
-
-        super(SUMOVehicle, self).__init__(p_kwargs)
-
-        self._start_time = 0
         self._travel_times = {}
         self._time_losses = {}
 
-        self._parameters.update({
+    @property
+    def properties(self):
+        """Returns vehicle's properties as a dict bundle."""
+        return {
+            "position": self.position,
+            "speed_current": self.speed_current,
+            "speed_max": self.speed_max,
             "vtype": self.vtype,
-            "vtype_sumo_attr": self.vtype_sumo_attr,
+            "vtype_sumo_cfg": self.vtype_sumo_cfg,
             "color": self.color,
             "speed_deviation": self.speed_deviation,
             "travel_times": self.travel_times,
             "time_losses": self.time_losses,
             "start_time": self.start_time
-        })
+        }
 
     @property
     def vtype(self):
@@ -105,9 +111,13 @@ class SUMOVehicle(BaseVehicle):
         return self._vtype
 
     @property
-    def vtype_sumo_attr(self):
-        """Return SUMO specific attributes."""
-        return self._vtype_sumo_attr
+    def vtype_sumo_cfg(self):
+        """
+        Convert values of vtype config to str for sumo xml handling and return cfg.
+        """
+        return {
+            attr: str(value) for (attr, value) in self._vtype_sumo_cfg.iteritems()
+        }
 
     @property
     def color(self):
