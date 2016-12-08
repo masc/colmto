@@ -146,57 +146,57 @@ class SumoConfig(optom.common.configuration.Configuration):
 
         return l_scenarioruns
 
-    def generate_run(self, p_scenarioruns, p_initialsorting, p_run_number):
+    def generate_run(self, scenario_run_config, initial_sorting, run_number):
         """generate run configurations
 
-        :param p_scenarioruns: run configuration of scenario
-        :param p_initialsorting: initial sorting of vehicles ("best", "random", "worst")
-        :param p_run_number: number of current run
+        :param scenario_run_config: run configuration of scenario
+        :param initial_sorting: initial sorting of vehicles ("best", "random", "worst")
+        :param run_number: number of current run
         """
-        self._log.debug("Generating run %s for %s sorting", p_run_number, p_initialsorting)
+        self._log.debug("Generating run %s for %s sorting", run_number, initial_sorting)
 
-        l_destinationdir = os.path.join(self.runsdir, p_scenarioruns.get("scenarioname"))
+        l_destinationdir = os.path.join(self.runsdir, scenario_run_config.get("scenarioname"))
         if not os.path.exists(os.path.join(l_destinationdir)):
             os.mkdir(l_destinationdir)
 
-        if not os.path.exists(os.path.join(l_destinationdir, str(p_initialsorting))):
+        if not os.path.exists(os.path.join(l_destinationdir, str(initial_sorting))):
             os.mkdir(
-                os.path.join(os.path.join(l_destinationdir, str(p_initialsorting)))
+                os.path.join(os.path.join(l_destinationdir, str(initial_sorting)))
             )
 
         if not os.path.exists(
-                os.path.join(l_destinationdir, str(p_initialsorting), str(p_run_number))):
+                os.path.join(l_destinationdir, str(initial_sorting), str(run_number))):
             os.mkdir(
                 os.path.join(
-                    os.path.join(l_destinationdir, str(p_initialsorting), str(p_run_number))
+                    os.path.join(l_destinationdir, str(initial_sorting), str(run_number))
                 )
             )
 
         self._log.debug(
             "Generating SUMO run configuration for scenario %s / sorting %s / run %d",
-            p_scenarioruns.get("scenarioname"), p_initialsorting, p_run_number
+            scenario_run_config.get("scenarioname"), initial_sorting, run_number
         )
 
         l_tripfile = os.path.join(
-            l_destinationdir, str(p_initialsorting), str(p_run_number),
-            "{}.trip.xml".format(p_scenarioruns.get("scenarioname"))
+            l_destinationdir, str(initial_sorting), str(run_number),
+            "{}.trip.xml".format(scenario_run_config.get("scenarioname"))
         )
         l_routefile = os.path.join(
-            l_destinationdir, str(p_initialsorting), str(p_run_number),
-            "{}.rou.xml".format(p_scenarioruns.get("scenarioname"))
+            l_destinationdir, str(initial_sorting), str(run_number),
+            "{}.rou.xml".format(scenario_run_config.get("scenarioname"))
         )
         l_configfile = os.path.join(
-            l_destinationdir, str(p_initialsorting), str(p_run_number),
-            "{}.sumo.cfg".format(p_scenarioruns.get("scenarioname"))
+            l_destinationdir, str(initial_sorting), str(run_number),
+            "{}.sumo.cfg".format(scenario_run_config.get("scenarioname"))
         )
-        # l_tripinfofile = os.path.join(l_destinationdir, str(p_initialsorting), str(p_run_number),
+        # l_tripinfofile = os.path.join(l_destinationdir, str(initial_sorting), str(run_number),
         # "{}.tripinfo-output.xml".format(l_scenarioname))
 
         l_output_measurements_dir = os.path.join(
             self.resultsdir,
-            p_scenarioruns.get("scenarioname"),
-            str(p_initialsorting),
-            str(p_run_number)
+            scenario_run_config.get("scenarioname"),
+            str(initial_sorting),
+            str(run_number)
         )
 
         if not os.path.exists(l_output_measurements_dir):
@@ -204,7 +204,7 @@ class SumoConfig(optom.common.configuration.Configuration):
 
         l_fcdfile = os.path.join(
             l_output_measurements_dir,
-            "{}.fcd-output.xml".format(p_scenarioruns.get("scenarioname"))
+            "{}.fcd-output.xml".format(scenario_run_config.get("scenarioname"))
         )
 
         l_runcfgfiles = [l_tripfile, l_routefile, l_configfile]
@@ -212,33 +212,36 @@ class SumoConfig(optom.common.configuration.Configuration):
         if len([fname for fname in l_runcfgfiles if not os.path.isfile(fname)]) > 0:
             self._log.debug(
                 "Incomplete/non-existing SUMO run configuration for %s, %s, %d -> (re)building",
-                p_scenarioruns.get("scenarioname"), p_initialsorting, p_run_number
+                scenario_run_config.get("scenarioname"), initial_sorting, run_number
             )
             self._args.forcerebuildscenarios = True
 
         self._generate_config_xml(
             {
                 "configfile": l_configfile,
-                "netfile": p_scenarioruns.get("netfile"),
+                "netfile": scenario_run_config.get("netfile"),
                 "routefile": l_routefile,
-                "settingsfile": p_scenarioruns.get("settingsfile")
+                "settingsfile": scenario_run_config.get("settingsfile")
             },
             self.run_config.get("simtimeinterval"), self._args.forcerebuildscenarios
         )
 
         l_vehicles = self._generate_trip_xml(
-            p_scenarioruns, p_initialsorting, l_tripfile,
+            scenario_run_config, initial_sorting, l_tripfile,
             self._args.forcerebuildscenarios
         )
 
         self._generate_route_xml(
-            p_scenarioruns.get("netfile"), l_tripfile, l_routefile,
+            scenario_run_config.get("netfile"), l_tripfile, l_routefile,
             self._args.forcerebuildscenarios
         )
 
         return {
+            "scenarioname": scenario_run_config.get("scenarioname"),
+            "sumoport": self.run_config.get("sumo").get("port"),
+            "runnumber": run_number,
             "vehicles": l_vehicles,
-            "settingsfile": p_scenarioruns.get("settingsfile"),
+            "settingsfile": scenario_run_config.get("settingsfile"),
             "tripfile": l_tripfile,
             "routefile": l_routefile,
             "configfile": l_configfile,
