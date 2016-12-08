@@ -20,8 +20,8 @@
 # # along with this program. If not, see http://www.gnu.org/licenses/         #
 # #############################################################################
 # @endcond
+# pylint: disable=too-few-public-methods
 """CSE classes"""
-
 
 class BaseCSE(object):
     """Base class for the central optimisation entity (CSE)."""
