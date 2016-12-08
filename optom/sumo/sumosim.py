@@ -31,7 +31,6 @@ try:
     sys.path.append(os.path.join("sumo", "sumo", "tools"))
     sys.path.append(os.path.join(os.environ.get("SUMO_HOME", os.path.join("..", "..")), "tools"))
     import sumolib
-    import traci
 except ImportError:
     raise ("please declare environment variable 'SUMO_HOME' as the root"
            "directory of your sumo installation (it should contain folders 'bin',"
@@ -90,7 +89,7 @@ class SumoSim(object):
                     l_scenario_runs, i_initial_sorting, i_run
                 )
 
-                self._runtime.run(l_run_data)
+                self._runtime.run_once(l_run_data)
 
                 l_vehicle_data_json = self._statistics.fcd_stats(l_run_data)
 

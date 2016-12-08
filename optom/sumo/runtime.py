@@ -26,38 +26,81 @@ from __future__ import print_function
 
 import subprocess
 
-from optom.common import log
+import optom.common.log
+import optom.environment.cse
+try:
+    import traci
+except ImportError:
+    raise ("please declare environment variable 'SUMO_HOME' as the root"
+           "directory of your sumo installation (it should contain folders 'bin',"
+           "'tools' and 'docs')")
 
 
 class Runtime(object):
     """Runtime class"""
     # pylint: disable=too-few-public-methods
-    def __init__(self, p_args, p_sumo_config, p_sumo_binary):
+    def __init__(self, args, sumo_config, sumo_binary):
         """C'tor."""
-        self._sumo_config = p_sumo_config
-        self._sumo_binary = p_sumo_binary
-        self._log = log.logger(__name__, p_args.loglevel, p_args.quiet, p_args.logfile)
+        self._args = args
+        self._sumo_config = sumo_config
+        self._sumo_binary = sumo_binary
+        self._log = optom.common.log.logger(__name__, args.loglevel, args.quiet, args.logfile)
 
-    def run(self, p_run_config, p_scenario_name, p_run_number):
+    def run_once(self, run_config):
         """
-        Run provided scenario.
+        Run provided scenario in one shot.
 
-        :param p_run_config Run configuration
-        :param p_scenario_name Name of scenario (for logging purpose)
-        :param p_run_number Number of current run (for logging purpose)
+        :param run_config Run configuration
         """
 
-        self._log.info("Running scenario %s: run %d", p_scenario_name, p_run_number)
+        self._log.info(
+            "Running scenario %s: run %d",
+            run_config.get("scenarioname"), run_config.get("runnumber")
+        )
         l_sumoprocess = subprocess.check_output(
             [
                 self._sumo_binary,
-                "-c", p_run_config.get("configfile"),
-                "--gui-settings-file", p_run_config.get("settingsfile"),
+                "-c", run_config.get("configfile"),
+                "--gui-settings-file", run_config.get("settingsfile"),
                 "--time-to-teleport", "-1",
                 "--no-step-log",
-                "--fcd-output", p_run_config.get("fcdfile")
+                "--fcd-output", run_config.get("fcdfile")
             ],
             stderr=subprocess.STDOUT,
             bufsize=-1
         )
         self._log.debug("%s : %s", self._sumo_binary, l_sumoprocess.replace("\n", ""))
+
+    def run_traci(self, run_config, cse):
+        """
+        Run provided scenario with TraCI by providing a ref to an optimisation entity
+
+        :param run_config Run configuration
+        :param cse central optimisation entity
+        """
+
+        print("--remote-port", run_config.get("sumoport"))
+        if not isinstance(cse, optom.environment.cse.BaseCSE):
+            raise AttributeError
+
+        subprocess.call(
+            [
+                self._sumo_binary,
+                "-c", run_config.get("configfile"),
+                "--gui-settings-file", run_config.get("settingsfile"),
+                "--time-to-teleport", "-1",
+                "--no-step-log",
+                "--fcd-output", run_config.get("fcdfile"),
+                "--remote-port", run_config.get("sumoport")
+            ]
+        )
+
+        l_sumo_connection = traci.connect(run_config.get("sumoport"))
+
+        for _ in xrange(100):
+            l_sumo_connection.simulationStep()
+
+        self._log.info(
+            "Running scenario %s, run %d with TraCI",
+            run_config.get("scenarioname"), run_config.get("runnumber")
+        )
