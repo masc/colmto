@@ -25,12 +25,11 @@ optom: Test module for common.statistics.
 """
 import cStringIO
 
-from nose.tools import assert_equal
-from nose.tools import assert_raises
-
 import optom.common.io
 import optom.common.statistics
 import optom.environment.vehicle
+from nose.tools import assert_equal
+from nose.tools import assert_raises
 
 
 def test_fcd_stats():
@@ -40,25 +39,26 @@ def test_fcd_stats():
     l_fcdfile = cStringIO.StringIO("""
     <fcd-export xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/fcd_file.xsd">
-    <timestep time="0.00">
-        <vehicle id="vehicle0" x="4.40" y="0.05" angle="90.00" type="vehicle0"
-        speed="27.78" pos="4.40" lane="enter_21start_0" slope="0.00"/>
-    </timestep>
-    <timestep time="1.00">
-        <vehicle id="vehicle0" x="30.89" y="0.05" angle="90.00" type="vehicle0"
-        speed="26.49" pos="30.89" lane="enter_21start_0" slope="0.00"/>
-    </timestep>
-    <timestep time="2.00">
-        <vehicle id="vehicle0" x="57.63" y="0.05" angle="90.00" type="vehicle0"
-        speed="26.75" pos="57.63" lane="enter_21start_0" slope="0.00"/>
-    </timestep>
+        <timestep time="36.00">
+            <vehicle id="vehicle0" x="210.00" y="0.05" angle="90.00" type="vehicle0" speed="7.71"
+                pos="210.00" lane="enter_21start_0" slope="0.00"/>
+            <vehicle id="vehicle1" x="196.09" y="0.05" angle="90.00" type="vehicle1" speed="8.03"
+                pos="196.09" lane="enter_21start_0" slope="0.00"/>
+        </timestep>
+        <timestep time="37.00">
+            <vehicle id="vehicle0" x="218.15" y="0.05" angle="90.00" type="vehicle0" speed="8.15"
+                pos="218.15" lane="enter_21start_0" slope="0.00"/>
+            <vehicle id="vehicle1" x="203.77" y="0.05" angle="90.00" type="vehicle1" speed="7.69"
+                pos="203.77" lane="enter_21start_0" slope="0.00"/>
+        </timestep>
     </fcd-export>
     """)
 
     l_run_data = {
         "fcdfile": l_fcdfile,
         "vehicles": {
-            "vehicle0": optom.environment.vehicle.SUMOVehicle(speed_max=27.777)
+            "vehicle0": optom.environment.vehicle.SUMOVehicle(speed_max=27.777),
+            "vehicle1": optom.environment.vehicle.SUMOVehicle(speed_max=27.777),
         }
     }
 
@@ -66,58 +66,82 @@ def test_fcd_stats():
         "vehicle0": {
             "maxspeed": 27.777,
             "posx": {
-                "30.89": {
+                "210.00": {
                     "angle": "90.00",
                     "lane": "enter_21start_0",
-                    "lanepos": "30.89",
-                    "speed": "26.49",
-                    "timestep": 1.0,
+                    "lanepos": "210.00",
+                    "speed": "7.71",
+                    "timestep": 36.0,
                     "y": "0.05"
                 },
-                "4.40": {
+                "218.15": {
                     "angle": "90.00",
                     "lane": "enter_21start_0",
-                    "lanepos": "4.40",
-                    "speed": "27.78",
-                    "timestep": 0.0,
-                    "y": "0.05"
-                },
-                "57.63": {
-                    "angle": "90.00",
-                    "lane": "enter_21start_0",
-                    "lanepos": "57.63",
-                    "speed": "26.75",
-                    "timestep": 2.0,
+                    "lanepos": "218.15",
+                    "speed": "8.15",
+                    "timestep": 37.0,
                     "y": "0.05"
                 }
             },
             "timesteps": {
-                "0.00": {
+                "36.00": {
                     "angle": "90.00",
                     "lane": "enter_21start_0",
-                    "lanepos": "4.40",
-                    "speed": "27.78",
-                    "x": "4.40",
+                    "lanepos": "210.00",
+                    "speed": "7.71",
+                    "x": "210.00",
                     "y": "0.05"
                 },
-                "1.00": {
+                "37.00": {
                     "angle": "90.00",
                     "lane": "enter_21start_0",
-                    "lanepos": "30.89",
-                    "speed": "26.49",
-                    "x": "30.89",
-                    "y": "0.05"
-                },
-                "2.00": {
-                    "angle": "90.00",
-                    "lane": "enter_21start_0",
-                    "lanepos": "57.63",
-                    "speed": "26.75",
-                    "x": "57.63",
+                    "lanepos": "218.15",
+                    "speed": "8.15",
+                    "x": "218.15",
                     "y": "0.05"
                 }
             },
             "type": "vehicle0"
+        },
+        "vehicle1": {
+            "maxspeed": 27.777,
+            "posx": {
+                "196.09": {
+                    "angle": "90.00",
+                    "lane": "enter_21start_0",
+                    "lanepos": "196.09",
+                    "speed": "8.03",
+                    "timestep": 36.0,
+                    "y": "0.05"
+                },
+                "203.77": {
+                    "angle": "90.00",
+                    "lane": "enter_21start_0",
+                    "lanepos": "203.77",
+                    "speed": "7.69",
+                    "timestep": 37.0,
+                    "y": "0.05"
+                }
+            },
+            "timesteps": {
+                "36.00": {
+                    "angle": "90.00",
+                    "lane": "enter_21start_0",
+                    "lanepos": "196.09",
+                    "speed": "8.03",
+                    "x": "196.09",
+                    "y": "0.05"
+                },
+                "37.00": {
+                    "angle": "90.00",
+                    "lane": "enter_21start_0",
+                    "lanepos": "203.77",
+                    "speed": "7.69",
+                    "x": "203.77",
+                    "y": "0.05"
+                }
+            },
+            "type": "vehicle1"
         }
     }
 
