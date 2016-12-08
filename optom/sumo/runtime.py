@@ -79,7 +79,6 @@ class Runtime(object):
         :param cse central optimisation entity
         """
 
-        print("--remote-port", run_config.get("sumoport"))
         if not isinstance(cse, optom.environment.cse.BaseCSE):
             raise AttributeError
 
@@ -91,13 +90,14 @@ class Runtime(object):
                 "--time-to-teleport", "-1",
                 "--no-step-log",
                 "--fcd-output", run_config.get("fcdfile"),
-                "--remote-port", run_config.get("sumoport")
+                "--remote-port", str(run_config.get("sumoport"))
             ]
         )
-
+        print("connecting")
         l_sumo_connection = traci.connect(run_config.get("sumoport"))
 
-        for _ in xrange(100):
+        for i_step in xrange(100):
+            print("step", i_step)
             l_sumo_connection.simulationStep()
 
         self._log.info(

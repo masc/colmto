@@ -39,6 +39,7 @@ import math
 import optom.common.io
 import optom.common.statistics
 import optom.common.log
+import optom.environment.cse
 import optom.sumo.sumocfg
 import optom.sumo.runtime
 
@@ -85,13 +86,16 @@ class SumoSim(object):
 
             for i_run in xrange(self._sumocfg.run_config.get("runs")):
 
-                l_run_data = self._sumocfg.generate_run(
+                l_run_config = self._sumocfg.generate_run(
                     l_scenario_runs, i_initial_sorting, i_run
                 )
 
-                self._runtime.run_once(l_run_data)
+                if self._sumocfg.run_config.get("cse-enabled"):
+                    self._runtime.run_traci(l_run_config, optom.environment.cse.SumoCSE())
+                else:
+                    self._runtime.run_once(l_run_config)
 
-                l_vehicle_data_json = self._statistics.fcd_stats(l_run_data)
+                l_vehicle_data_json = self._statistics.fcd_stats(l_run_config)
 
                 self._log.debug("Writing %s results", scenario_name)
                 self._writer.write_json(

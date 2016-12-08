@@ -24,12 +24,12 @@
 """Optom main module."""
 from __future__ import print_function
 
-import argparse
 import datetime
 import os
 import shutil
 import sys
 
+import argparse
 import optom.common.configuration
 import optom.common.log
 import optom.sumo.sumosim
@@ -118,6 +118,12 @@ class Optom(object):
         )
 
         l_sumogroup = l_parser.add_argument_group("SUMO")
+
+        l_sumogroup.add_argument(
+            "--cse", dest="cse_enabled", action="store_true",
+            default=None, help="run SUMO simulation with central optimisation entity (CSE)"
+        )
+
         l_mutexsumogroup = l_sumogroup.add_mutually_exclusive_group(required=False)
         l_mutexsumogroup.add_argument(
             "--headless", dest="headless", action="store_true",

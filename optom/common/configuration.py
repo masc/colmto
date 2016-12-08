@@ -28,7 +28,6 @@ import copy
 import os
 
 import sh
-
 from optom.common import log
 from optom.common.io import Reader
 
@@ -129,14 +128,16 @@ class Configuration(object):
     def _override_cfg_flags(self):
         """Override the cfs flags."""
 
-        if self.args.headless:
-            self.run_config.get("sumo")["headless"] = True
-        if self.args.gui:
-            self.run_config.get("sumo")["headless"] = False
-        if self.args.runs is not None:
-            self.run_config["runs"] = self._args.runs
-        if self.args.scenarios is not None:
-            if self.args.scenarios != ["all"]:
-                self.run_config["scenarios"] = self.args.scenarios
+        if self._args.headless:
+            self._run_config.get("sumo")["headless"] = True
+        if self._args.gui:
+            self._run_config.get("sumo")["headless"] = False
+        if self._args.cse_enabled:
+            self._run_config["cse-enabled"] = True
+        if self._args.runs is not None:
+            self._run_config["runs"] = self._args.runs
+        if self._args.scenarios is not None:
+            if self._args.scenarios != ["all"]:
+                self._run_config["scenarios"] = self._args.scenarios
             else:
-                self.run_config["scenarios"] = self.scenario_config.keys()
+                self._run_config["scenarios"] = self._scenario_config.keys()
