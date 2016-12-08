@@ -23,11 +23,12 @@
 """
 optom: Test module for common.io.
 """
+import json
 import tempfile
 
-from nose.tools import assert_equals
-
 import optom.common.io
+import yaml
+from nose.tools import assert_equals
 
 
 def test_reader_read_etree():
@@ -70,4 +71,148 @@ def test_reader_read_etree():
         )
 
     f_temp_gold.close()
+    f_temp_test.close()
+
+
+def test_reader_read_json():
+    """Test read_json method from Reader class."""
+
+    l_json_gold = {
+        "vehicle56": {
+            "timesteps": {
+                "981.00": {
+                    "lane": "21segment.4080_1",
+                    "angle": "90.00",
+                    "lanepos": "778.36",
+                    "y": "1.65",
+                    "x": "6218.36",
+                    "speed": "8.25"
+                },
+                "1322.00": {
+                    "lane": "21end_exit_0",
+                    "angle": "90.00",
+                    "lanepos": "778.48",
+                    "y": "-1.65",
+                    "x": "8939.98",
+                    "speed": "7.28"
+                },
+                "767.00": {
+                    "lane": "21segment.2720_1",
+                    "angle": "90.00",
+                    "lanepos": "428.48",
+                    "y": "1.65",
+                    "x": "4508.48",
+                    "speed": "8.00"
+                },
+                "1365.00": {
+                    "lane": "21end_exit_0",
+                    "angle": "90.00",
+                    "lanepos": "1123.24",
+                    "y": "-1.65",
+                    "x": "9284.74",
+                    "speed": "7.64"
+                },
+                "476.00": {
+                    "lane": "enter_21start_0",
+                    "angle": "90.00",
+                    "lanepos": "409.40",
+                    "y": "-1.65",
+                    "x": "409.40",
+                    "speed": "7.56"
+                },
+                "1210.00": {
+                    "lane": "21segment.5440_1",
+                    "angle": "90.00",
+                    "lanepos": "1273.80",
+                    "y": "1.65",
+                    "x": "8073.80",
+                    "speed": "11.97"
+                }
+            }
+        }
+    }
+
+    f_temp_test = tempfile.NamedTemporaryFile()
+    f_temp_test.write(json.dumps(l_json_gold))
+    f_temp_test.seek(0)
+
+    l_reader = optom.common.io.Reader(None)
+
+    assert_equals(
+        l_reader.read_json(f_temp_test.name),
+        l_json_gold
+    )
+
+    f_temp_test.close()
+
+
+def test_reader_read_yaml():
+    """Test read_yaml method from Reader class."""
+
+    l_yaml_gold = {
+        "vehicle56": {
+            "timesteps": {
+                "981.00": {
+                    "lane": "21segment.4080_1",
+                    "angle": "90.00",
+                    "lanepos": "778.36",
+                    "y": "1.65",
+                    "x": "6218.36",
+                    "speed": "8.25"
+                },
+                "1322.00": {
+                    "lane": "21end_exit_0",
+                    "angle": "90.00",
+                    "lanepos": "778.48",
+                    "y": "-1.65",
+                    "x": "8939.98",
+                    "speed": "7.28"
+                },
+                "767.00": {
+                    "lane": "21segment.2720_1",
+                    "angle": "90.00",
+                    "lanepos": "428.48",
+                    "y": "1.65",
+                    "x": "4508.48",
+                    "speed": "8.00"
+                },
+                "1365.00": {
+                    "lane": "21end_exit_0",
+                    "angle": "90.00",
+                    "lanepos": "1123.24",
+                    "y": "-1.65",
+                    "x": "9284.74",
+                    "speed": "7.64"
+                },
+                "476.00": {
+                    "lane": "enter_21start_0",
+                    "angle": "90.00",
+                    "lanepos": "409.40",
+                    "y": "-1.65",
+                    "x": "409.40",
+                    "speed": "7.56"
+                },
+                "1210.00": {
+                    "lane": "21segment.5440_1",
+                    "angle": "90.00",
+                    "lanepos": "1273.80",
+                    "y": "1.65",
+                    "x": "8073.80",
+                    "speed": "11.97"
+                }
+            }
+        }
+    }
+
+    f_temp_test = tempfile.NamedTemporaryFile()
+    f_temp_test.write(yaml.dump(l_yaml_gold))
+    f_temp_test.seek(0)
+
+    l_reader = optom.common.io.Reader(None)
+
+    assert_equals(
+        l_reader.read_yaml(f_temp_test.name),
+        l_yaml_gold
+    )
+
     f_temp_test.close()
