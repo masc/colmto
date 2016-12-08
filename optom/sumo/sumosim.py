@@ -31,6 +31,7 @@ try:
     sys.path.append(os.path.join("sumo", "sumo", "tools"))
     sys.path.append(os.path.join(os.environ.get("SUMO_HOME", os.path.join("..", "..")), "tools"))
     import sumolib
+    import traci
 except ImportError:
     raise ("please declare environment variable 'SUMO_HOME' as the root"
            "directory of your sumo installation (it should contain folders 'bin',"
@@ -66,18 +67,18 @@ class SumoSim(object):
             else sumolib.checkBinary("sumo-gui")
         )
 
-    def run_scenario(self, p_scenario_name):
+    def run_scenario(self, scenario_name):
         """
         Run given scenario.
 
-        :param p_scenario_name Scenario name to look up cfgs.
+        :param scenario_name Scenario name to look up cfgs.
         """
 
-        if self._sumocfg.scenario_config.get(p_scenario_name) is None:
-            self._log.error(r"/!\ scenario %s not found in configuration", p_scenario_name)
+        if self._sumocfg.scenario_config.get(scenario_name) is None:
+            self._log.error(r"/!\ scenario %s not found in configuration", scenario_name)
             return
 
-        l_scenario_runs = self._sumocfg.generate_scenario(p_scenario_name)
+        l_scenario_runs = self._sumocfg.generate_scenario(scenario_name)
         l_initial_sortings = self._sumocfg.run_config.get("initialsortings")
 
         for i_initial_sorting in l_initial_sortings:
@@ -89,20 +90,20 @@ class SumoSim(object):
                     l_scenario_runs, i_initial_sorting, i_run
                 )
 
-                self._runtime.run(l_run_data, p_scenario_name, i_run)
+                self._runtime.run(l_run_data)
 
                 l_vehicle_data_json = self._statistics.fcd_stats(l_run_data)
 
-                self._log.debug("Writing %s results", p_scenario_name)
+                self._log.debug("Writing %s results", scenario_name)
                 self._writer.write_json(
                     dict(l_vehicle_data_json),
                     os.path.join(
-                        self._sumocfg.resultsdir, p_scenario_name, i_initial_sorting,
+                        self._sumocfg.resultsdir, scenario_name, i_initial_sorting,
                         str(i_run),
                         "{}-{}-run{}-TT-TL.json.gz".format(
-                            p_scenario_name,
+                            scenario_name,
                             self._sumocfg.scenario_config.get(
-                                p_scenario_name
+                                scenario_name
                             ).get("parameters").get("aadt")
                             if self._sumocfg.run_config.get("aadt").get("enabled")
                             else "{}veh".format(
@@ -141,7 +142,7 @@ class SumoSim(object):
                 if i_run % 10 == 0:
                     self._log.info(
                         "Scenario %s, AADT %d (%d vps), sorting %s: Finished run %d/%d",
-                        p_scenario_name,
+                        scenario_name,
                         self._sumocfg.run_config.get("aadt").get("value"),
                         int(self._sumocfg.run_config.get("aadt").get("value") / 24),
                         i_initial_sorting,
