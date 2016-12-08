@@ -25,7 +25,6 @@ optom: Test module for common.statistics.
 """
 import cStringIO
 
-import optom.common.io
 import optom.common.statistics
 import optom.environment.vehicle
 from nose.tools import assert_equal
