@@ -87,7 +87,10 @@ class Reader(object):
 
     def __init__(self, p_args):
         """C'tor."""
-        self._log = optom.common.log.logger(__name__, p_args.loglevel, p_args.logfile)
+        if p_args is not None:
+            self._log = optom.common.log.logger(__name__, p_args.loglevel, p_args.logfile)
+        else:
+            self._log = optom.common.log.logger(__name__, "NOTSET", "optom.log")
 
     def read_etree(self, p_fname):
         """Parses xml file with etree. Returns etree object"""
