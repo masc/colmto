@@ -30,10 +30,11 @@ import optom.common.colormaps
 
 def test_cmap_names():
     """Test case for cmap_names function."""
-    assert_equal(sorted(optom.common.colormaps.cmap_names()),
-                 sorted(["magma", "magma_r", "inferno", "inferno_r",
-                         "plasma", "plasma_r","viridis", "viridis_r"])
-                 )
+    assert_equal(
+        sorted(optom.common.colormaps.cmap_names()),
+        sorted(["magma", "magma_r", "inferno", "inferno_r",
+                "plasma", "plasma_r", "viridis", "viridis_r"])
+    )
 
 
 def test_mapped_cmap():
