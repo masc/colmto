@@ -549,7 +549,12 @@ _COLORMAP = dict(
 )
 
 
-def get_mapped_cmap(cmap_name, range_max):
+def cmap_names():
+    """Returns valid colormap names."""
+    return _COLORMAP.keys()
+
+
+def mapped_cmap(cmap_name, range_max):
     """Return colormap scaled to p_range_max"""
     l_cnorm = colors.Normalize(vmin=0, vmax=range_max)
     return cm.ScalarMappable(norm=l_cnorm, cmap=_COLORMAP[cmap_name]).to_rgba

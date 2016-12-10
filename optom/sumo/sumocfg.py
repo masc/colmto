@@ -75,7 +75,7 @@ class SumoConfig(optom.common.configuration.Configuration):
                 for i_scenario in self.scenario_config.itervalues()
                 ]
         )
-        self._speed_colormap = optom.common.colormaps.get_mapped_cmap(
+        self._speed_colormap = optom.common.colormaps.mapped_cmap(
             "plasma",
             l_global_maxspeed
         )
