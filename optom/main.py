@@ -22,14 +22,12 @@
 # @endcond
 # pylint: disable=too-few-public-methods
 """Optom main module."""
-from __future__ import print_function
-
+import argparse
 import datetime
 import os
 import shutil
 import sys
 
-import argparse
 import optom.common.configuration
 import optom.common.log
 import optom.sumo.sumosim
@@ -40,26 +38,6 @@ class Optom(object):
 
     def __init__(self):
         l_config_dir = os.path.expanduser(u"~/.optom")
-
-        # place default config in ~/.optom if there exists none
-        if not os.path.exists(l_config_dir):
-            os.mkdir(l_config_dir)
-        l_cwd = os.path.realpath(os.path.dirname(sys.argv[0]))
-        if not os.path.isfile(os.path.join(l_config_dir, u"runconfig.yaml")):
-            shutil.copy(
-                os.path.join(l_cwd, "optom/resources/runconfig.yaml"),
-                os.path.join(l_config_dir, u"runconfig.yaml")
-            )
-        if not os.path.isfile(os.path.join(l_config_dir, u"vtypesconfig.yaml")):
-            shutil.copy(
-                os.path.join(l_cwd, "optom/resources/vtypesconfig.yaml"),
-                os.path.join(l_config_dir, u"vtypesconfig.yaml")
-            )
-        if not os.path.isfile(os.path.join(l_config_dir, u"scenarioconfig.yaml")):
-            shutil.copy(
-                os.path.join(l_cwd, "optom/resources/scenarioconfig.yaml"),
-                os.path.join(l_config_dir, u"scenarioconfig.yaml")
-            )
 
         l_parser = argparse.ArgumentParser(description="Process parameters for optom")
         l_parser.add_argument(
@@ -73,6 +51,13 @@ class Optom(object):
         l_parser.add_argument(
             "--vtypesconfigfile", dest="vtypesconfigfile", type=str,
             default=os.path.join(l_config_dir, u"vtypesconfig.yaml")
+        )
+        l_parser.add_argument(
+            "--fresh-configs",
+            dest="freshconfigs",
+            action="store_true",
+            default=False,
+            help="generate fresh config files (overwrite existing ones in {})".format(l_config_dir)
         )
         l_parser.add_argument(
             "--output-dir", dest="output_dir", type=str,
@@ -144,6 +129,29 @@ class Optom(object):
             default=False, help="Generate SUMO scenarios with only on OTL segment"
         )
         self._args = l_parser.parse_args()
+
+        # place default config in ~/.optom if there exists none or --fresh-configs set
+        if not os.path.exists(l_config_dir):
+            os.mkdir(l_config_dir)
+        l_cwd = os.path.realpath(os.path.dirname(sys.argv[0]))
+        if not os.path.isfile(
+                os.path.join(l_config_dir, u"runconfig.yaml")) or self._args.freshconfigs:
+            shutil.copy(
+                os.path.join(l_cwd, "optom/resources/runconfig.yaml"),
+                os.path.join(l_config_dir, u"runconfig.yaml")
+            )
+        if not os.path.isfile(
+                os.path.join(l_config_dir, u"vtypesconfig.yaml")) or self._args.freshconfigs:
+            shutil.copy(
+                os.path.join(l_cwd, "optom/resources/vtypesconfig.yaml"),
+                os.path.join(l_config_dir, u"vtypesconfig.yaml")
+            )
+        if not os.path.isfile(
+                os.path.join(l_config_dir, u"scenarioconfig.yaml")) or self._args.freshconfigs:
+            shutil.copy(
+                os.path.join(l_cwd, "optom/resources/scenarioconfig.yaml"),
+                os.path.join(l_config_dir, u"scenarioconfig.yaml")
+            )
 
         self._log = optom.common.log.logger(
             __name__,
