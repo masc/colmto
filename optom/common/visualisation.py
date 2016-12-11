@@ -20,11 +20,9 @@
 # # along with this program. If not, see http://www.gnu.org/licenses/         #
 # #############################################################################
 # @endcond
-"""Visualisation of simulation results."""
-import matplotlib
+"""Visualisation of simulation stuff."""
 import matplotlib.cm
 import matplotlib.colors
-import matplotlib.pyplot
 
 import optom.common.log
 
@@ -586,35 +584,3 @@ def mapped_cmap(cmap_name, range_max):
     """Return colormap scaled to p_range_max"""
     l_cnorm = matplotlib.colors.Normalize(vmin=0, vmax=range_max)
     return matplotlib.cm.ScalarMappable(norm=l_cnorm, cmap=_COLORMAP[cmap_name]).to_rgba
-
-
-def boxplot(p_filename, p_data, p_title="", p_xlabel="", p_ylabel=""):
-    """
-    Draw a boxplot of provided data and write result to file.
-
-
-    :param p_filename filename with path
-    :param p_data data as dictionary, key (box) -> [values]
-    :param p_title figure title
-    :param p_xlabel x label
-    :param p_ylabel y label
-    """
-
-    _LOG.info("Creating boxplot %s", p_filename)
-    matplotlib.rc("text", usetex=True)
-    matplotlib.rc("font", **{"family": "sans-serif", "sans-serif": ["Helvetica"], "size": 10})
-    matplotlib.rc("text.latex", preamble=r"\usepackage{cmbright}")
-    matplotlib.rc("mathtext", fontset="stixsans")
-
-    matplotlib.pyplot.figure(1)
-
-    l_datakeys = sorted(p_data.keys())
-    l_data = [p_data.get(i_key) for i_key in l_datakeys]
-
-    matplotlib.pyplot.grid(axis='y')
-    matplotlib.pyplot.title(p_title, fontsize=12)
-    matplotlib.pyplot.xlabel(p_xlabel, fontsize=12)
-    matplotlib.pyplot.ylabel(p_ylabel, fontsize=12)
-    matplotlib.pyplot.boxplot(l_data, vert=True, notch=False, labels=l_datakeys)
-    matplotlib.pyplot.savefig(p_filename, bbox_inches="tight")
-    matplotlib.pyplot.close()
