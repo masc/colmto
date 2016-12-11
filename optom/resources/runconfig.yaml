@@ -6,7 +6,7 @@ sumo:
 simtimeinterval: [0, 600]
 runs: 1
 scenarios: [Irzik1]
-cse-enabled: true
+cse-enabled: false
 vtypedistribution:
   tractor:
     fraction: 0.2
