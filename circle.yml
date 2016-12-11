@@ -42,6 +42,8 @@ test:
         - python setup.py install
         - SUMO_HOME=/usr/share/sumo python -m run
         - mv -f optom /tmp
+        - mv -f tests /tmp
+        - mv -f run.py /tmp
         - git checkout gh-pages
         - mv -f circle.yml /tmp
         - mv -f .gitignore /tmp
@@ -55,6 +57,8 @@ test:
         - mv -f /tmp/circle.yml .
         - mv -f /tmp/radon.sh .
         - mv -f /tmp/optom .
+        - mv -f /tmp/tests .
+        - mv -f /tmp/run.py .
         - pylint optom tests run.py -f html --import-graph=optom-imports.png > pylint.html; true
         - pandoc --from html --to markdown_github pylint.html -o pylint.md
         - echo -e "\n## Import Graph" >> pylint.md
@@ -67,5 +71,5 @@ test:
         - echo -e "\n# Pylint\n" >> README.md
         - cat pylint.md >> README.md
         - git add --all .
-        - git commit -m "circleci"
+        - git commit -m "CircleCI run complete\n\nReport will be available at https://github.com/masc/optom/blob/gh-pages/README.md"
         - git push origin gh-pages
