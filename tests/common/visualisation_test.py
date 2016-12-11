@@ -25,13 +25,13 @@ optom: Test module for common.colormaps.
 """
 from nose.tools import assert_equal
 
-import optom.common.colormaps
+import optom.common.visualisation
 
 
 def test_cmap_names():
     """Test case for cmap_names function."""
     assert_equal(
-        sorted(optom.common.colormaps.cmap_names()),
+        sorted(optom.common.visualisation.cmap_names()),
         sorted(["magma", "magma_r", "inferno", "inferno_r",
                 "plasma", "plasma_r", "viridis", "viridis_r"])
     )
@@ -140,8 +140,8 @@ def test_mapped_cmap():
     ]
 
     l_colors = [
-        [optom.common.colormaps.mapped_cmap(i_cmap, 10)(i) for i in xrange(10)]
-        for i_cmap in optom.common.colormaps.cmap_names()
+        [optom.common.visualisation.mapped_cmap(i_cmap, 10)(i) for i in xrange(10)]
+        for i_cmap in optom.common.visualisation.cmap_names()
         ]
 
     assert_equal(l_colors, l_results)
