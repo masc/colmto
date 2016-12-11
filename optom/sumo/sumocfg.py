@@ -31,10 +31,10 @@ import random
 import subprocess
 from collections import OrderedDict
 
-import optom.common.colormaps
 import optom.common.configuration
 import optom.common.io
 import optom.common.log
+import optom.common.visualisation
 import optom.environment.vehicle
 
 
@@ -75,7 +75,7 @@ class SumoConfig(optom.common.configuration.Configuration):
                 for i_scenario in self.scenario_config.itervalues()
                 ]
         )
-        self._speed_colormap = optom.common.colormaps.mapped_cmap(
+        self._speed_colormap = optom.common.visualisation.mapped_cmap(
             "plasma",
             l_global_maxspeed
         )
