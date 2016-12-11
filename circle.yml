@@ -72,5 +72,5 @@ test:
         - echo -e "\n# Pylint\n" >> README.md
         - cat pylint.md >> README.md
         - git add --all .
-        - git commit -m "CircleCI run complete" -m"Report available at https://github.com/masc/optom/blob/gh-pages/README.md"
+        - git commit -m "CircleCI run complete" -m "Report available at https://github.com/masc/optom/blob/gh-pages/README.md"
         - git push origin gh-pages
