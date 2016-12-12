@@ -28,17 +28,232 @@ import copy
 import os
 
 import sh
-from optom.common import log
-from optom.common.io import Reader
+
+import optom.common.io
+import optom.common.log
+
+
+_DEFAULT_CONFIG_RUN = {
+    "aadt": {
+        "enabled": True,
+        "value": 13000
+    },
+    "cse-enabled": False,
+    "initialsortings": ["random"],
+    "nbvehicles": {
+        "enabled": False,
+        "value": 30
+    },
+    "runs": 1,
+    "scenarios": ["Irzik1"],
+    "simtimeinterval": [0, 600],
+    "starttimedistribution": "poisson",
+    "sumo": {
+        "enabled": True,
+        "gui-delay": 200,
+        "headless": True,
+        "port": 8873
+    },
+    "vehiclespersecond": {
+        "enabled": False,
+        "value": 0.5
+    },
+    "vtypedistribution": {
+        "passenger": {
+            "desiredSpeeds": [34.0],
+            "fraction": 0.5,
+            "speedDev": 0.0
+        },
+        "tractor": {
+            "desiredSpeeds": [8.0],
+            "fraction": 0.2,
+            "speedDev": 0.0
+        },
+        "truck": {
+            "desiredSpeeds": [23.0],
+            "fraction": 0.3,
+            "speedDev": 0.0
+        }
+    }
+}
+
+_DEFAULT_CONFIG_SCENARIO = {
+    "Irzik1": {
+        "description": {
+            "from": "OUJever",
+            "road": "B210",
+            "state": "NI",
+            "to": "OUJever"
+        },
+        "parameters": {
+            "aadt": 13000.0,
+            "detectorpositions": [0, 1360, 2720, 4080, 5440],
+            "length": 6800.0,
+            "speedlimit": 27.77777777777778,
+            "switches": 4,
+            "switchpositions": [0, 1360, 2720, 4080, 5440]
+        }
+    },
+    "Irzik2": {
+        "description": {
+            "from": "Coelbe",
+            "road": "B62",
+            "state": "HE",
+            "to": "Kirchhain"
+        },
+        "parameters": {
+            "aadt": 13000.0,
+            "detectorpositions": [0, 1171, 2342, 3513, 4684, 5855, 7026, 8197],
+            "length": 8200.0,
+            "speedlimit": 27.77777777777778,
+            "switches": 6,
+            "switchpositions": [0, 1171, 2342, 3513, 4684, 5855, 7026, 8197]
+        }
+    },
+    "Irzik3": {
+        "description": {
+            "from": "Paderborn",
+            "road": "B1",
+            "state": "NW",
+            "to": "Schlangen"
+        },
+        "parameters": {
+            "aadt": 17000.0,
+            "detectorpositions": [0, 977, 1954, 2931, 3908, 4885, 5862, 6839, 7816, 8793],
+            "length": 8800.0,
+            "speedlimit": 27.77777777777778,
+            "switches": 8,
+            "switchpositions": [0, 977, 1954, 2931, 3908, 4885, 5862, 6839, 7816, 8793]
+        }
+    },
+    "Irzik4": {
+        "description": {
+            "from": "Leun",
+            "road": "B49",
+            "state": "HE",
+            "to": "Niederbiel"
+        },
+        "parameters": {
+            "aadt": 19000.0,
+            "detectorpositions": [0, 900, 1800, 2700, 3600],
+            "length": 4500.0,
+            "speedlimit": 27.77777777777778,
+            "switches": 4,
+            "switchpositions": [0, 900, 1800, 2700, 3600]
+        }
+    },
+    "Irzik5": {
+        "description": {
+            "from": "Cham",
+            "road": "B20",
+            "state": "BY",
+            "to": "Straubing"
+        },
+        "parameters": {
+            "aadt": 20000.0,
+            "detectorpositions": [0, 1375, 2750, 4125, 5500, 6875, 8250, 9625],
+            "length": 11000.0,
+            "speedlimit": 27.77777777777778,
+            "switches": 7,
+            "switchpositions": [0, 1375, 2750, 4125, 5500, 6875, 8250, 9625]
+        }
+    },
+    "Irzik6": {
+        "description": {
+            "from": "OUDachau",
+            "road": "B471",
+            "state": "BY",
+            "to": "OUDachau"
+        },
+        "parameters": {
+            "aadt": 16000.0,
+            "detectorpositions": [0, 1280, 2560, 3840, 5120],
+            "length": 6400.0,
+            "speedlimit": 27.77777777777778,
+            "switches": 4,
+            "switchpositions": [0, 1280, 2560, 3840, 5120]
+        }
+    }
+}
+
+_DEFAULT_CONFIG_VTYPES = {
+    "delivery": {
+        "accel": 2.9,
+        "decel": 7.5,
+        "height": 2.86,
+        "length": 6.5,
+        "maxSpeed": 50.0,
+        "minGap": 2.5,
+        "speedDev": 0.1,
+        "speedFactor": 1,
+        "vClass": "delivery",
+        "width": 2.16
+    },
+    "heavytransport": {
+        "accel": 1.3,
+        "decel": 4.0,
+        "height": 2.4,
+        "length": 7.1,
+        "maxSpeed": 11.11111111111111,
+        "minGap": 2.5,
+        "speedDev": 0.1,
+        "speedFactor": 1,
+        "vClass": "trailer",
+        "width": 2.4
+    },
+    "passenger": {
+        "accel": 2.9,
+        "decel": 7.5,
+        "height": 1.5,
+        "length": 4.3,
+        "maxSpeed": 50.0,
+        "minGap": 2.5,
+        "speedDev": 0.1,
+        "speedFactor": 1,
+        "vClass": "passenger",
+        "width": 1.8
+    },
+    "tractor": {
+        "accel": 1.3,
+        "decel": 4.0,
+        "height": 2.4,
+        "length": 3.0,
+        "maxSpeed": 8.333333333333334,
+        "minGap": 2.5,
+        "speedDev": 0.1,
+        "speedFactor": 1,
+        "vClass": "tractor",
+        "width": 2.4
+    },
+    "truck": {
+        "accel": 1.3,
+        "decel": 4.0,
+        "height": 2.4,
+        "length": 7.1,
+        "maxSpeed": 36.11111111111111,
+        "minGap": 2.5,
+        "speedDev": 0.1,
+        "speedFactor": 1,
+        "vClass": "truck",
+        "width": 2.4
+    },
+    "van": {
+        "accel": 2.9,
+        "decel": 7.5,
+        "height": 1.73,
+        "length": 4.7,
+        "maxSpeed": 50.0,
+        "minGap": 2.5,
+        "speedDev": 0.1,
+        "speedFactor": 1,
+        "vClass": "delivery",
+        "width": 1.9
+    }
+}
 
 
 class Configuration(object):
     """Configuration reads OPTOM's general cfg files."""
-
-    @property
-    def args(self):
-        """Return config command line arguments."""
-        return copy.deepcopy(self._args)
 
     @property
     def run_config(self):
@@ -70,20 +285,16 @@ class Configuration(object):
         """Return run prefix."""
         return copy.copy(self._args.run_prefix)
 
-    @property
-    def optom_version(self):
-        """Return optom version"""
-        return self._optom_version
-
-    def __init__(self, p_args):
+    def __init__(self, args):
         """
         C'tor: Read scenario/run/vtype configs and merge with command line arguments.
         Command line args override cfgs.
         """
 
-        self._log = log.logger(__name__, p_args.loglevel, p_args.logfile)
-        self._reader = Reader(p_args)
-        self._args = p_args
+        self._log = optom.common.log.logger(__name__, args.loglevel, args.logfile)
+        self._reader = optom.common.io.Reader(args)
+        self._writer = optom.common.io.Writer(args)
+        self._args = args
 
         if self._args.runconfigfile is None:
             raise BaseException("run configuration file flag is None")
@@ -94,34 +305,44 @@ class Configuration(object):
         if self._args.vtypesconfigfile is None:
             raise BaseException("vtype configuration file flag is None")
 
-        if not os.path.isfile(self._args.runconfigfile):
-            raise BaseException("run configuration {} is not a file".format(self.run_config))
-
-        if not os.path.isfile(self._args.scenarioconfigfile):
-            raise BaseException(
-                "scenario configuration {} is not a file".format(self._args.scenarioconfigfile)
+        if not os.path.isfile(self._args.runconfigfile) or self._args.freshconfigs:
+            self._log.info(
+                "generating default run configuration %s", self._args.runconfigfile
             )
+            self._run_config = copy.copy(_DEFAULT_CONFIG_RUN)
+            self._writer.write_yaml(self._run_config, self._args.runconfigfile)
+        else:
+            self._run_config = self._reader.read_yaml(self._args.runconfigfile)
 
-        if not os.path.isfile(self._args.vtypesconfigfile):
-            raise BaseException(
-                "vtype configuration {} is not a file".format(self._args.vtypesconfigfile)
+        if not os.path.isfile(self._args.scenarioconfigfile) or self._args.freshconfigs:
+            self._log.info(
+                "generating default scenario configuration %s", self._args.scenarioconfigfile
             )
+            self._scenario_config = copy.copy(_DEFAULT_CONFIG_SCENARIO)
+            self._writer.write_yaml(self._scenario_config, self._args.scenarioconfigfile)
+        else:
+            self._scenario_config = self._reader.read_yaml(self._args.scenarioconfigfile)
 
-        self._run_config = self._reader.read_yaml(self._args.runconfigfile)
-        self._scenario_config = self._reader.read_yaml(self._args.scenarioconfigfile)
-        self._vtypes_config = self._reader.read_yaml(self._args.vtypesconfigfile)
+        if not os.path.isfile(self._args.vtypesconfigfile) or self._args.freshconfigs:
+            self._log.info(
+                "generating default vtype configuration %s", self._args.vtypesconfigfile
+            )
+            self._vtypes_config = copy.copy(_DEFAULT_CONFIG_VTYPES)
+            self._writer.write_yaml(self._vtypes_config, self._args.vtypesconfigfile)
+        else:
+            self._vtypes_config = self._reader.read_yaml(self._args.vtypesconfigfile)
 
         # store currently running version
         # inferred from current HEAD if located inside a git project.
         # otherwise set version to "UNKNOWN"
         try:
             l_git_commit_id = sh.Command("git")(["rev-parse", "HEAD"])
-            self._optom_version = str(l_git_commit_id).replace("\n", "")
+            self._run_config["optom_version"] = str(l_git_commit_id).replace("\n", "")
         except sh.ErrorReturnCode:
-            self._optom_version = "UNKNOWN"
+            self._run_config["optom_version"] = "UNKNOWN"
         except sh.CommandNotFound:
             self._log.debug("Git command not found in PATH. Setting commit id to UNKNOWN.")
-            self._optom_version = "UNKNOWN"
+            self._run_config["optom_version"] = "UNKNOWN"
 
         self._override_cfg_flags()
 

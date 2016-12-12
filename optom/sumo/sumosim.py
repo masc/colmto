@@ -156,7 +156,6 @@ class SumoSim(object):
         # dump configuration
         self._writer.write_json_pretty(
             {
-                "optom_version": self._sumocfg.optom_version,
                 "run_config": self._sumocfg.run_config,
                 "scenario_config": self._sumocfg.scenario_config,
                 "vtypes_config": self._sumocfg.vtypes_config

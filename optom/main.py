@@ -25,8 +25,6 @@
 import argparse
 import datetime
 import os
-import shutil
-import sys
 
 import optom.common.configuration
 import optom.common.log
@@ -133,25 +131,6 @@ class Optom(object):
         # place default config in ~/.optom if there exists none or --fresh-configs set
         if not os.path.exists(l_config_dir):
             os.mkdir(l_config_dir)
-        l_cwd = os.path.realpath(os.path.dirname(sys.argv[0]))
-        if not os.path.isfile(
-                os.path.join(l_config_dir, u"runconfig.yaml")) or self._args.freshconfigs:
-            shutil.copy(
-                os.path.join(l_cwd, "optom/resources/runconfig.yaml"),
-                os.path.join(l_config_dir, u"runconfig.yaml")
-            )
-        if not os.path.isfile(
-                os.path.join(l_config_dir, u"vtypesconfig.yaml")) or self._args.freshconfigs:
-            shutil.copy(
-                os.path.join(l_cwd, "optom/resources/vtypesconfig.yaml"),
-                os.path.join(l_config_dir, u"vtypesconfig.yaml")
-            )
-        if not os.path.isfile(
-                os.path.join(l_config_dir, u"scenarioconfig.yaml")) or self._args.freshconfigs:
-            shutil.copy(
-                os.path.join(l_cwd, "optom/resources/scenarioconfig.yaml"),
-                os.path.join(l_config_dir, u"scenarioconfig.yaml")
-            )
 
         self._log = optom.common.log.logger(
             __name__,
