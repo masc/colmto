@@ -96,35 +96,35 @@ class Optom(object):
             default=False, help="suppress log info output to stdout"
         )
 
-        l_mutexgrouprunchoice = l_parser.add_mutually_exclusive_group(required=False)
-        l_mutexgrouprunchoice.add_argument(
+        l_mutex_group_run_choice = l_parser.add_mutually_exclusive_group(required=False)
+        l_mutex_group_run_choice.add_argument(
             "--sumo", dest="runsumo", action="store_true",
             default=False, help="run SUMO simulation"
         )
 
-        l_sumogroup = l_parser.add_argument_group("SUMO")
+        l_sumo_group = l_parser.add_argument_group("SUMO")
 
-        l_sumogroup.add_argument(
+        l_sumo_group.add_argument(
             "--cse", dest="cse_enabled", action="store_true",
             default=None, help="run SUMO simulation with central optimisation entity (CSE)"
         )
 
-        l_mutexsumogroup = l_sumogroup.add_mutually_exclusive_group(required=False)
-        l_mutexsumogroup.add_argument(
+        l_mutex_sumo_group = l_sumo_group.add_mutually_exclusive_group(required=False)
+        l_mutex_sumo_group.add_argument(
             "--headless", dest="headless", action="store_true",
             default=None, help="run without SUMO GUI"
         )
-        l_mutexsumogroup.add_argument(
+        l_mutex_sumo_group.add_argument(
             "--gui", dest="gui", action="store_true",
             default=None, help="run with SUMO GUI"
         )
-        l_sumogroup.add_argument(
+        l_sumo_group.add_argument(
             "--force-rebuild-scenarios", dest="forcerebuildscenarios", action="store_true",
             default=False,
             help="Rebuild and overwrite existing SUMO scenarios in configuration directory "
                  "({})".format(l_config_dir)
         )
-        l_sumogroup.add_argument(
+        l_sumo_group.add_argument(
             "--only-one-otl-segment", dest="onlyoneotlsegment", action="store_true",
             default=False, help="Generate SUMO scenarios with only on OTL segment"
         )
