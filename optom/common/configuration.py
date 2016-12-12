@@ -27,10 +27,9 @@ from __future__ import print_function
 import copy
 import os
 
-import sh
-
 import optom.common.io
 import optom.common.log
+import sh
 
 
 _DEFAULT_CONFIG_RUN = {
@@ -255,36 +254,6 @@ _DEFAULT_CONFIG_VTYPES = {
 class Configuration(object):
     """Configuration reads OPTOM's general cfg files."""
 
-    @property
-    def run_config(self):
-        """Return run config."""
-        return copy.copy(self._run_config)
-
-    @property
-    def scenario_config(self):
-        """Return scenario config."""
-        return copy.copy(self._scenario_config)
-
-    @property
-    def scenario_dir(self):
-        """Return scenario directory."""
-        return copy.copy(self._args.scenario_dir)
-
-    @property
-    def vtypes_config(self):
-        """Return vehicle type config."""
-        return copy.copy(self._vtypes_config)
-
-    @property
-    def output_dir(self):
-        """Return destination dir."""
-        return copy.copy(self._args.output_dir)
-
-    @property
-    def run_prefix(self):
-        """Return run prefix."""
-        return copy.copy(self._args.run_prefix)
-
     def __init__(self, args):
         """
         C'tor: Read scenario/run/vtype configs and merge with command line arguments.
@@ -362,3 +331,33 @@ class Configuration(object):
                 self._run_config["scenarios"] = self._args.scenarios
             else:
                 self._run_config["scenarios"] = self._scenario_config.keys()
+
+    @property
+    def run_config(self):
+        """Return run config."""
+        return copy.copy(self._run_config)
+
+    @property
+    def scenario_config(self):
+        """Return scenario config."""
+        return copy.copy(self._scenario_config)
+
+    @property
+    def scenario_dir(self):
+        """Return scenario directory."""
+        return copy.copy(self._args.scenario_dir)
+
+    @property
+    def vtypes_config(self):
+        """Return vehicle type config."""
+        return copy.copy(self._vtypes_config)
+
+    @property
+    def output_dir(self):
+        """Return destination dir."""
+        return copy.copy(self._args.output_dir)
+
+    @property
+    def run_prefix(self):
+        """Return run prefix."""
+        return copy.copy(self._args.run_prefix)
