@@ -47,20 +47,21 @@ import optom.sumo.runtime
 class SumoSim(object):
     """Class for initialising/running SUMO scenarios."""
 
-    def __init__(self, p_args):
+    def __init__(self, args):
         """C'tor."""
 
-        self._log = optom.common.log.logger(__name__, p_args.loglevel, p_args.quiet, p_args.logfile)
+        self._log = optom.common.log.logger(__name__, args.loglevel, args.quiet, args.logfile)
+        self._args = args
         self._sumocfg = optom.sumo.sumocfg.SumoConfig(
-            p_args,
+            args,
             sumolib.checkBinary("netconvert"),
             sumolib.checkBinary("duarouter")
         )
-        self._writer = optom.common.io.Writer(p_args)
-        self._statistics = optom.common.statistics.Statistics(p_args)
+        self._writer = optom.common.io.Writer(args)
+        self._statistics = optom.common.statistics.Statistics(args)
         self._allscenarioruns = {}  # map scenarios -> runid -> files
         self._runtime = optom.sumo.runtime.Runtime(
-            p_args,
+            args,
             self._sumocfg,
             sumolib.checkBinary("sumo")
             if self._sumocfg.sumo_run_config.get("headless")
@@ -91,7 +92,7 @@ class SumoSim(object):
                 )
 
                 if self._sumocfg.run_config.get("cse-enabled"):
-                    self._runtime.run_traci(l_run_config, optom.environment.cse.SumoCSE())
+                    self._runtime.run_traci(l_run_config, optom.environment.cse.SumoCSE(self._args))
                 else:
                     self._runtime.run_once(l_run_config)
 
