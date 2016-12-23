@@ -260,7 +260,7 @@ class Configuration(object):
         Command line args override cfgs.
         """
 
-        self._log = optom.common.log.logger(__name__, args.loglevel, args.logfile)
+        self._log = optom.common.log.logger(__name__, args.loglevel, args.quiet, args.logfile)
         self._reader = optom.common.io.Reader(args)
         self._writer = optom.common.io.Writer(args)
         self._args = args
