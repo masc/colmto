@@ -51,16 +51,25 @@ class BaseCSE(object):
 
     def allow(self, vehicle_id):
         """
-        Add vehicle to white list, allowing access to OTL
+        Add vehicle to white list, i.e. allowing access to OTL
         :param vehicle_id: ID of vehicle
         :return: self
         """
         self._whitelist.add(vehicle_id)
         return self
 
+    def allow_list(self, vehicle_id_list):
+        """
+        Add vehicles to white list, i.e. allowing access to OTL
+        :param vehicle_id_list: list of vehicle IDs
+        :return: self
+        """
+        self._whitelist.update(vehicle_id_list)
+        return self
+
     def deny(self, vehicle_id):
         """
-        Remove vehicle from white list (if element of), denying access to OTL
+        Remove vehicle from white list (if element of), i.e. denying access to OTL
         :param vehicle_id: ID of vehicle
         :return: self
         """
@@ -70,9 +79,18 @@ class BaseCSE(object):
             self._log.warn("%s not in white list, no vehicle removed")
         return self
 
+    def deny_list(self, vehicle_id_list):
+        """
+        Remove vehicles from white list (if element of), denying access to OTL
+        :param vehicle_id_list: list of vehicle IDs
+        :return: self
+        """
+        self._whitelist.difference_update(vehicle_id_list)
+        return self
+
     def clear(self):
         """
-        Removegi all elements from white list
+        Remove all elements from white list
         :return: self
         """
         self._whitelist.clear()
