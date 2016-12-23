@@ -69,7 +69,7 @@ def logger(name, loglevel=logging.NOTSET, quiet=False,
 
     # create a stdout handler if not set to quiet
     if not isinstance(quiet, bool):
-        raise KeyError("quiet is not bool.")
+        raise KeyError("quiet ({}) is {}, but bool expected.".format(quiet, type(quiet)))
 
     if not quiet:
         l_shandler = logging.StreamHandler(sys.stdout)
