@@ -81,26 +81,28 @@ class Runtime(object):
 
         if not isinstance(cse, optom.environment.cse.BaseCSE):
             raise AttributeError
-
-        subprocess.call(
+        self._log.debug("starting sumo process")
+        traci.start(
             [
                 self._sumo_binary,
                 "-c", run_config.get("configfile"),
                 "--gui-settings-file", run_config.get("settingsfile"),
                 "--time-to-teleport", "-1",
-                "--no-step-log",
-                "--fcd-output", run_config.get("fcdfile"),
-                "--remote-port", str(run_config.get("sumoport"))
+                # "--no-step-log",
+                "--fcd-output", run_config.get("fcdfile")
             ]
         )
-        print("connecting")
-        l_sumo_connection = traci.connect(run_config.get("sumoport"))
+        self._log.debug("connecting to TraCI instance on port %d", run_config.get("sumoport"))
 
-        for i_step in xrange(100):
-            print("step", i_step)
-            l_sumo_connection.simulationStep()
+        l_arrived_count = 0
+        while traci.vehicle.getIDCount() > 0 or l_arrived_count == 0:
+            l_arrived_count += traci.simulation.getArrivedNumber()
+            print("{} vehicles".format(traci.vehicle.getIDCount()))
+            traci.simulationStep()
+
+        traci.close()
 
         self._log.info(
-            "Running scenario %s, run %d with TraCI",
+            "TraCI run of scenario %s, run %d completed.",
             run_config.get("scenarioname"), run_config.get("runnumber")
         )
