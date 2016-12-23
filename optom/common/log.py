@@ -40,11 +40,6 @@ def logger(p_name, loglevel=logging.NOTSET, quiet=False,
            logfile=os.path.expanduser(u"~/.optom/optom.log")):
     """Create a logger instance."""
 
-    if loglevel not in LOGLEVEL.values():
-        raise KeyError("loglevel argument is not a valid logging log level.")
-    if not isinstance(quiet, bool):
-        raise KeyError("quiet is not bool.")
-
     if not os.path.exists(os.path.dirname(logfile)):
         os.makedirs(os.path.dirname(logfile))
 
@@ -55,7 +50,7 @@ def logger(p_name, loglevel=logging.NOTSET, quiet=False,
         l_level = LOGLEVEL.get(str(loglevel).upper()) \
             if LOGLEVEL.get(str(loglevel).upper()) is not None else logging.NOTSET
     else:
-        l_level = logging.NOTSET
+        raise KeyError("loglevel argument {} is not a valid logging log level.".format(loglevel))
 
     l_log.setLevel(l_level if l_level is not None else logging.NOTSET)
 
@@ -73,6 +68,9 @@ def logger(p_name, loglevel=logging.NOTSET, quiet=False,
     l_log.addHandler(l_fhandler)
 
     # create a stdout handler if not set to quiet
+    if not isinstance(quiet, bool):
+        raise KeyError("quiet is not bool.")
+
     if not quiet:
         l_shandler = logging.StreamHandler(sys.stdout)
         l_shandler.setLevel(l_level)
