@@ -88,7 +88,7 @@ class Runtime(object):
                 "-c", run_config.get("configfile"),
                 "--gui-settings-file", run_config.get("settingsfile"),
                 "--time-to-teleport", "-1",
-                # "--no-step-log",
+                "--no-step-log",
                 "--fcd-output", run_config.get("fcdfile")
             ]
         )
@@ -97,7 +97,9 @@ class Runtime(object):
         l_arrived_count = 0
         while traci.vehicle.getIDCount() > 0 or l_arrived_count == 0:
             l_arrived_count += traci.simulation.getArrivedNumber()
-            print("{} vehicles".format(traci.vehicle.getIDCount()))
+
+            # TODO: Insert CSE push/pulls here
+
             traci.simulationStep()
 
         traci.close()
