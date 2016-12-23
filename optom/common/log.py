@@ -36,19 +36,24 @@ LOGLEVEL = {
 }
 
 
-def logger(p_name, p_loglevel=logging.NOTSET, p_quiet=False,
-           p_logfile=os.path.expanduser(u"~/.optom/optom.log")):
+def logger(p_name, loglevel=logging.NOTSET, quiet=False,
+           logfile=os.path.expanduser(u"~/.optom/optom.log")):
     """Create a logger instance."""
 
-    if not os.path.exists(os.path.dirname(p_logfile)):
-        os.makedirs(os.path.dirname(p_logfile))
+    if loglevel not in LOGLEVEL.values():
+        raise KeyError("loglevel argument is not a valid logging log level.")
+    if not isinstance(quiet, bool):
+        raise KeyError("quiet is not bool.")
+
+    if not os.path.exists(os.path.dirname(logfile)):
+        os.makedirs(os.path.dirname(logfile))
 
     l_log = logging.getLogger(p_name)
-    if isinstance(p_loglevel, int):
-        l_level = p_loglevel
-    elif isinstance(p_loglevel, str):
-        l_level = LOGLEVEL.get(str(p_loglevel).upper()) \
-            if LOGLEVEL.get(str(p_loglevel).upper()) is not None else logging.NOTSET
+    if isinstance(loglevel, int):
+        l_level = loglevel
+    elif isinstance(loglevel, str):
+        l_level = LOGLEVEL.get(str(loglevel).upper()) \
+            if LOGLEVEL.get(str(loglevel).upper()) is not None else logging.NOTSET
     else:
         l_level = logging.NOTSET
 
@@ -56,7 +61,7 @@ def logger(p_name, p_loglevel=logging.NOTSET, p_quiet=False,
 
     # create a file handler
     l_fhandler = logging.handlers.RotatingFileHandler(
-        p_logfile, maxBytes=100*1024*1024, backupCount=16
+        logfile, maxBytes=100 * 1024 * 1024, backupCount=16
     )
     l_fhandler.setLevel(l_level if l_level is not None else logging.NOTSET)
 
@@ -68,7 +73,7 @@ def logger(p_name, p_loglevel=logging.NOTSET, p_quiet=False,
     l_log.addHandler(l_fhandler)
 
     # create a stdout handler if not set to quiet
-    if not p_quiet:
+    if not quiet:
         l_shandler = logging.StreamHandler(sys.stdout)
         l_shandler.setLevel(l_level)
         l_shandler.setFormatter(l_formatter)
