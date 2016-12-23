@@ -33,12 +33,12 @@ import optom.common.log
 class Statistics(object):
     """Statistics class for computing/aggregating SUMO results"""
 
-    def __init__(self, p_args):
-        if p_args is not None:
-            self._log = optom.common.log.logger(__name__, p_args.loglevel, p_args.logfile)
-            self._writer = optom.common.io.Writer(p_args)
+    def __init__(self, args):
+        if args is not None:
+            self._log = optom.common.log.logger(__name__, args.loglevel, args.quiet, args.logfile)
+            self._writer = optom.common.io.Writer(args)
         else:
-            self._log = optom.common.log.logger(__name__, "NOTSET", "optom.log")
+            self._log = optom.common.log.logger(__name__)
             self._writer = optom.common.io.Writer(None)
 
     def fcd_stats(self, p_run_data):
