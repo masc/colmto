@@ -85,12 +85,12 @@ def xslt(p_template):
 class Reader(object):
     """Read xml, json and yaml files."""
 
-    def __init__(self, p_args):
+    def __init__(self, args):
         """C'tor."""
-        if p_args is not None:
-            self._log = optom.common.log.logger(__name__, p_args.loglevel, p_args.logfile)
+        if args is not None:
+            self._log = optom.common.log.logger(__name__, args.loglevel, args.quiet, args.logfile)
         else:
-            self._log = optom.common.log.logger(__name__, "NOTSET", "optom.log")
+            self._log = optom.common.log.logger(__name__)
 
     def read_etree(self, p_fname):
         """Parses xml file with etree. Returns etree object"""
@@ -126,11 +126,11 @@ class Reader(object):
 class Writer(object):
     """Class for writing data to json, yaml, csv, hdf5."""
 
-    def __init__(self, p_args):
-        if p_args is not None:
-            self._log = optom.common.log.logger(__name__, p_args.loglevel, p_args.logfile)
+    def __init__(self, args):
+        if args is not None:
+            self._log = optom.common.log.logger(__name__, args.loglevel, args.quiet, args.logfile)
         else:
-            self._log = optom.common.log.logger(__name__, "NOTSET", "optom.log")
+            self._log = optom.common.log.logger(__name__)
 
     def write_json_pretty(self, p_object, p_filename):
         """Write json in human readable form (slow!). If filename ends with .gz, compress file."""
