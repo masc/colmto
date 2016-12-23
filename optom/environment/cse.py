@@ -22,9 +22,58 @@
 # @endcond
 # pylint: disable=too-few-public-methods
 """CSE classes"""
+import optom.common.log
+
 
 class BaseCSE(object):
     """Base class for the central optimisation entity (CSE)."""
+
+    def __init__(self, args, whitelist=()):
+        """
+        C'tor
+        :param args: argparse configuration
+        :param whitelist: CSE white list for vehicles, e.g. [ "vehicle0", ... ].
+                          Default: empty set (set())
+        """
+        self._whitelist = set(whitelist)
+        self._log = optom.common.log.logger(__name__, args.loglevel, args.quiet, args.logfile)
+
+    @property
+    def whitelist(self):
+        """
+        Property getter of white list
+        :return: frozenset of white list
+        """
+        return frozenset(self._whitelist)
+
+    def allow(self, vehicle_id):
+        """
+        Add vehicle to white list, allowing access to OTL
+        :param vehicle_id: ID of vehicle
+        :return: self
+        """
+        self._whitelist.add(vehicle_id)
+        return self
+
+    def deny(self, vehicle_id):
+        """
+        Remove vehicle from white list (if element of), denying access to OTL
+        :param vehicle_id: ID of vehicle
+        :return: self
+        """
+        try:
+            self._whitelist.remove(vehicle_id)
+        except KeyError:
+            self._log.warn("%s not in white list, no vehicle removed")
+        return self
+
+    def clear(self):
+        """
+        Removegi all elements from white list
+        :return: self
+        """
+        self._whitelist.clear()
+        return self
 
 
 class SumoCSE(BaseCSE):
