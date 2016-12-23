@@ -36,14 +36,14 @@ LOGLEVEL = {
 }
 
 
-def logger(p_name, loglevel=logging.NOTSET, quiet=False,
+def logger(name, loglevel=logging.NOTSET, quiet=False,
            logfile=os.path.expanduser(u"~/.optom/optom.log")):
     """Create a logger instance."""
 
     if not os.path.exists(os.path.dirname(logfile)):
         os.makedirs(os.path.dirname(logfile))
 
-    l_log = logging.getLogger(p_name)
+    l_log = logging.getLogger(name)
     if isinstance(loglevel, int):
         l_level = loglevel
     elif isinstance(loglevel, str):
