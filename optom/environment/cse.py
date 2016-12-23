@@ -28,15 +28,18 @@ import optom.common.log
 class BaseCSE(object):
     """Base class for the central optimisation entity (CSE)."""
 
-    def __init__(self, args, whitelist=()):
+    def __init__(self, args=None, whitelist=()):
         """
         C'tor
         :param args: argparse configuration
         :param whitelist: CSE white list for vehicles, e.g. [ "vehicle0", ... ].
                           Default: empty set (set())
         """
+        if args is not None:
+            self._log = optom.common.log.logger(__name__, args.loglevel, args.quiet, args.logfile)
+        else:
+            self._log = optom.common.log.logger(__name__)
         self._whitelist = set(whitelist)
-        self._log = optom.common.log.logger(__name__, args.loglevel, args.quiet, args.logfile)
 
     @property
     def whitelist(self):
