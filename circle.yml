@@ -39,9 +39,9 @@ checkout:
 test:
     post:
         - git checkout master
+        - bash <(curl -s https://codecov.io/bash) -t 910321f1-7584-4bc8-b264-bce881241d83
         - python setup.py install
         - SUMO_HOME=/usr/share/sumo python -m run
-        - bash <(curl -s https://codecov.io/bash) -t 910321f1-7584-4bc8-b264-bce881241d83
         - mv -f optom /tmp
         - mv -f tests /tmp
         - mv -f run.py /tmp
