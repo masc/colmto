@@ -63,6 +63,7 @@ test:
         - mv -f /tmp/run.py .
         - pylint optom tests run.py -f html --import-graph=optom-imports.png > pylint.html; true
         - pandoc --from html --to markdown_github pylint.html -o pylint.md
+        - mv pylint.html index.html
         - echo -e "\n## Import Graph" >> pylint.md
         - echo -e "\n![ImportGraph](https://github.com/masc/optom/blob/gh-pages/optom-imports.png)" >> pylint.md
         - echo -e "# OPTOM Statistics\n\n" > README.md
