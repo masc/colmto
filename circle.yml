@@ -30,6 +30,7 @@ dependencies:
         - sudo apt-get install libhdf5-dev pandoc graphviz tk-dev python-tk
         - pip install pylint
         - pip install radon
+        - pip install codecov
 
 checkout:
   post:
@@ -39,6 +40,7 @@ checkout:
 test:
     post:
         - git checkout master
+        - codecov --token=910321f1-7584-4bc8-b264-bce881241d83
         - bash <(curl -s https://codecov.io/bash) -t 910321f1-7584-4bc8-b264-bce881241d83
         - python setup.py install
         - SUMO_HOME=/usr/share/sumo python -m run
