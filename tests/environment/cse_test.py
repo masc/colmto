@@ -26,14 +26,14 @@ optom: Test module for environment.cse.
 from nose.tools import assert_equal
 from nose.tools import assert_is_instance
 
-import optom.environment.cse
+import optom.cse.cse
 
 
 def test_base_cse():
     """
     Test BaseCSE class
     """
-    l_base_cse = optom.environment.cse.BaseCSE()
+    l_base_cse = optom.cse.cse.BaseCSE()
     assert_is_instance(l_base_cse.whitelist, frozenset)
     assert_equal(len(l_base_cse.whitelist), 0)
     l_base_cse.allow("vehicle0")
@@ -58,7 +58,7 @@ def test_sumo_cse():
     """
     Test SumoCSE class
     """
-    l_sumo_cse = optom.environment.cse.SumoCSE()
+    l_sumo_cse = optom.cse.cse.SumoCSE()
     assert_is_instance(l_sumo_cse.whitelist, frozenset)
     assert_equal(len(l_sumo_cse.whitelist), 0)
     l_sumo_cse.allow("vehicle0")

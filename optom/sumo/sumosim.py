@@ -39,7 +39,7 @@ import math
 import optom.common.io
 import optom.common.statistics
 import optom.common.log
-import optom.environment.cse
+import optom.cse.cse
 import optom.sumo.sumocfg
 import optom.sumo.runtime
 
@@ -92,7 +92,7 @@ class SumoSim(object):
                 )
 
                 if self._sumocfg.run_config.get("cse-enabled"):
-                    self._runtime.run_traci(l_run_config, optom.environment.cse.SumoCSE(self._args))
+                    self._runtime.run_traci(l_run_config, optom.cse.cse.SumoCSE(self._args))
                 else:
                     self._runtime.run_once(l_run_config)
 

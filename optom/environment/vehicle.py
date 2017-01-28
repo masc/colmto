@@ -22,11 +22,13 @@
 # @endcond
 """Vehicle classes for storing vehicle data/attributes/states."""
 
+import numpy
+
 
 class BaseVehicle(object):
     """Base Vehicle."""
 
-    def __init__(self, speed_max=0.0, speed_current=0.0, position=(None,)):
+    def __init__(self, speed_max=0.0, speed_current=0.0, position=numpy.array([0.0, 0])):
         self._speed_max = speed_max
         self._speed_current = speed_current
         self._position = position
@@ -87,6 +89,7 @@ class SUMOVehicle(BaseVehicle):
         self._color = kwargs.pop("color", (255, 255, 0, 255))
         self._speed_deviation = kwargs.pop("speed_deviation", 0.0)
         self._start_time = kwargs.pop("start_time", 0.0)
+        self._vehicle_class = None
 
         super(SUMOVehicle, self).__init__(**kwargs)
 
@@ -157,3 +160,8 @@ class SUMOVehicle(BaseVehicle):
     def time_losses(self):
         """Return time losses."""
         return self._time_losses
+
+    def change_vehicle_class(self, p_class_name):
+        """Change vehicle class"""
+        self._vehicle_class = p_class_name
+        return self
