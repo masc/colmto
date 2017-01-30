@@ -23,7 +23,9 @@
 """
 optom: Test module for environment.vehicle.
 """
+import numpy
 from nose.tools import assert_equal
+from nose.tools import assert_true
 
 import optom.environment.vehicle
 
@@ -38,18 +40,18 @@ def test_basevehicle():
 
     assert_equal(l_basevehicle.speed_max, 0.0)
     assert_equal(l_basevehicle.speed_current, 0.0)
-    assert_equal(l_basevehicle.position, (None,))
+    assert_true(numpy.array_equal(l_basevehicle.position, numpy.array([0.0, 0])))
 
     # test custom values
     l_basevehicle = optom.environment.vehicle.BaseVehicle(
         speed_max=27.777,
         speed_current=12.1,
-        position=(0, 0)
+        position=numpy.array([23.0, 0])
     )
 
     assert_equal(l_basevehicle.speed_max, 27.777)
     assert_equal(l_basevehicle.speed_current, 12.1)
-    assert_equal(l_basevehicle.position, (0, 0))
+    assert_true(numpy.array_equal(l_basevehicle.position, numpy.array([23.0, 0])))
 
 
 def test_sumovehicle():
@@ -62,7 +64,7 @@ def test_sumovehicle():
 
     assert_equal(l_sumovehicle.speed_max, 0.0)
     assert_equal(l_sumovehicle.speed_current, 0.0)
-    assert_equal(l_sumovehicle.position, (None,))
+    assert_true(numpy.array_equal(l_sumovehicle.position, numpy.array([0.0, 0])))
     assert_equal(l_sumovehicle.speed_deviation, 0.0)
     assert_equal(l_sumovehicle.vtype, None)
     assert_equal(l_sumovehicle.color, (255, 255, 0, 255))
@@ -73,7 +75,7 @@ def test_sumovehicle():
     l_sumovehicle = optom.environment.vehicle.SUMOVehicle(
         speed_max=27.777,
         speed_current=12.1,
-        position=(0, 0),
+        position=numpy.array([42.0, 0]),
         speed_deviation=1.2,
         vtype="passenger",
         color=(128, 64, 255, 255),
@@ -86,7 +88,7 @@ def test_sumovehicle():
 
     assert_equal(l_sumovehicle.speed_max, 27.777)
     assert_equal(l_sumovehicle.speed_current, 12.1)
-    assert_equal(l_sumovehicle.position, (0, 0))
+    assert_true(numpy.array_equal(l_sumovehicle.position, numpy.array([42.0, 0])))
     assert_equal(l_sumovehicle.speed_deviation, 1.2)
     assert_equal(l_sumovehicle.vtype, "passenger")
     assert_equal(l_sumovehicle.color, (128, 64, 255, 255))
