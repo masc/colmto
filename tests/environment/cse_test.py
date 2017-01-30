@@ -23,7 +23,6 @@
 """
 optom: Test module for environment.cse.
 """
-from nose.tools import assert_equal
 from nose.tools import assert_is_instance
 
 import optom.cse.cse
@@ -34,24 +33,7 @@ def test_base_cse():
     Test BaseCSE class
     """
     l_base_cse = optom.cse.cse.BaseCSE()
-    assert_is_instance(l_base_cse.whitelist, frozenset)
-    assert_equal(len(l_base_cse.whitelist), 0)
-    l_base_cse.allow("vehicle0")
-    l_base_cse.allow("vehicle1").allow("vehicle2")
-    l_vehicle_list = ("vehicle0", "vehicle1", "vehicle2")
-    assert_equal(l_base_cse.whitelist, frozenset(l_vehicle_list))
-    l_base_cse.deny("vehicle1")
-    assert_equal(l_base_cse.whitelist, frozenset(("vehicle0", "vehicle2")))
-    l_base_cse.deny("vehicle2").allow("vehicle3")
-    assert_equal(l_base_cse.whitelist, frozenset(("vehicle0", "vehicle3")))
-    l_base_cse.clear().allow("vehicle5")
-    assert_equal(l_base_cse.whitelist, frozenset(("vehicle5",)))
-    l_base_cse.clear().allow_list(l_vehicle_list)
-    assert_equal(l_base_cse.whitelist, frozenset(l_vehicle_list))
-    l_base_cse.allow("vehicle5")
-    assert_equal(l_base_cse.whitelist, frozenset(l_vehicle_list+("vehicle5",)))
-    l_base_cse.deny_list(l_vehicle_list)
-    assert_equal(l_base_cse.whitelist, frozenset(("vehicle5",)))
+    assert_is_instance(l_base_cse, optom.cse.cse.BaseCSE)
 
 
 def test_sumo_cse():
@@ -59,22 +41,4 @@ def test_sumo_cse():
     Test SumoCSE class
     """
     l_sumo_cse = optom.cse.cse.SumoCSE()
-    assert_is_instance(l_sumo_cse.whitelist, frozenset)
-    assert_equal(len(l_sumo_cse.whitelist), 0)
-    l_sumo_cse.allow("vehicle0")
-    l_sumo_cse.allow("vehicle1").allow("vehicle2")
-    l_vehicle_list = ("vehicle0", "vehicle1", "vehicle2")
-    assert_equal(l_sumo_cse.whitelist, frozenset(l_vehicle_list))
-    l_sumo_cse.deny("vehicle1")
-    assert_equal(l_sumo_cse.whitelist, frozenset(("vehicle0", "vehicle2")))
-    l_sumo_cse.deny("vehicle2").allow("vehicle3")
-    assert_equal(l_sumo_cse.whitelist, frozenset(("vehicle0", "vehicle3")))
-    l_sumo_cse.clear().allow("vehicle5")
-    assert_equal(l_sumo_cse.whitelist, frozenset(("vehicle5",)))
-    l_sumo_cse.clear().allow_list(l_vehicle_list)
-    assert_equal(l_sumo_cse.whitelist, frozenset(l_vehicle_list))
-    l_sumo_cse.allow("vehicle5")
-    assert_equal(l_sumo_cse.whitelist, frozenset(l_vehicle_list+("vehicle5",)))
-    l_sumo_cse.deny_list(l_vehicle_list)
-    assert_equal(l_sumo_cse.whitelist, frozenset(("vehicle5",)))
-
+    assert_is_instance(l_sumo_cse, optom.cse.cse.SumoCSE)

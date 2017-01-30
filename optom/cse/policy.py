@@ -22,12 +22,11 @@
 # @endcond
 # pylint: disable=too-few-public-methods
 """Policy related classes"""
-
 import numpy
 
 import optom.common.helper
 
-DEFAULT = optom.common.helper.Enum("deny", "allow")
+DEFAULT = optom.common.helper.Enum(["deny", "allow"])
 
 
 class BasePolicy(object):
@@ -36,7 +35,8 @@ class BasePolicy(object):
     def __init__(self, default_behaviour=DEFAULT.deny):
         """
         C'tor
-        :param default_behaviour: Default, i.e. baseline policy. Enum of optom.cse.policy.DEFAULT.deny/allow
+        :param default_behaviour: Default, i.e. baseline policy.
+                                  Enum of optom.cse.policy.DEFAULT.deny/allow
         """
         self._default_behaviour = default_behaviour
 
@@ -49,7 +49,7 @@ class SUMOPolicy(BasePolicy):
 
     def __init__(self, p_default_behaviour):
         """C'tor"""
-        super(BasePolicy, self).__init__(p_default_behaviour)
+        super(SUMOPolicy, self).__init__(p_default_behaviour)
 
     _m_policy = {
         DEFAULT.allow: "custom1",
@@ -58,10 +58,12 @@ class SUMOPolicy(BasePolicy):
 
     @property
     def to_allowed_class(self):
+        """Get the SUMO class for allowed vehicles"""
         return self._m_policy.get("allowed")
 
     @property
     def to_disallowed_class(self):
+        """Get the SUMO class for disallowed vehicles"""
         return self._m_policy.get("disallowed")
 
 
@@ -73,7 +75,7 @@ class SUMONullPolicy(SUMOPolicy):
 
     def __init__(self, p_default_behaviour=DEFAULT.deny):
         """C'tor"""
-        super(SUMOPolicy, self).__init__(p_default_behaviour)
+        super(SUMONullPolicy, self).__init__(p_default_behaviour)
 
     def apply(self, p_vehicles):
         """
@@ -96,7 +98,7 @@ class SUMOMinSpeedPolicy(SUMOPolicy):
 
     def __init__(self, p_min_speed=0, p_default_behaviour=DEFAULT.deny):
         """C'tor"""
-        super(SUMOPolicy, self).__init__(p_default_behaviour)
+        super(SUMOMinSpeedPolicy, self).__init__(p_default_behaviour)
         self._m_min_speed = p_min_speed
 
     def apply(self, p_vehicles):
@@ -122,7 +124,7 @@ class SUMOPositionPolicy(SUMOPolicy):
 
     def __init__(self, p_min_position=numpy.array((0.0,)), default_behaviour=DEFAULT.deny):
         """C'tor"""
-        super(SUMOPolicy, self).__init__(default_behaviour)
+        super(SUMOPositionPolicy, self).__init__(default_behaviour)
         self._m_min_position = p_min_position
 
     def apply(self, p_vehicles):

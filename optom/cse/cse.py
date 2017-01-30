@@ -21,8 +21,8 @@
 # #############################################################################
 # @endcond
 # pylint: disable=too-few-public-methods
+# pylint: disable=no-self-use
 """CSE classes"""
-
 import optom.common.log
 
 
@@ -32,15 +32,17 @@ class BaseCSE(object):
     _log = optom.common.log.logger(__name__)
     _vehicles = set()
 
-    def __init__(self, args=None):
+    def __init__(self, policy=None, args=None):
         """
         C'tor
         :param args: argparse configuration
         """
         if args is not None:
             self._log = optom.common.log.logger(__name__, args.loglevel, args.quiet, args.logfile)
+        self._policy = policy
 
     def update(self, p_vehicles):
+        """Update vehicles"""
         return p_vehicles
 
 
@@ -48,6 +50,7 @@ class SumoCSE(BaseCSE):
     """First-come-first-served CSE (basically do nothing and allow all vehicles access to OTL."""
 
     def update(self, p_vehicles):
+        """Update vehicles"""
         return set(
             [i_v.change_vehicle_class("custom1") for i_v in p_vehicles]
         )
