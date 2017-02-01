@@ -26,8 +26,9 @@ dependencies:
     pre:
         - sudo add-apt-repository -y ppa:sumo/stable
         - sudo apt-get update
+        - sudo apt-get install doxygen graphviz
         - sudo apt-get install sumo sumo-tools sumo-doc
-        - sudo apt-get install libhdf5-dev pandoc graphviz tk-dev python-tk
+        - sudo apt-get install libhdf5-dev pandoc tk-dev python-tk
         - pip install pylint
         - pip install radon
         - pip install codecov
@@ -63,9 +64,9 @@ test:
         - mv -f /tmp/optom .
         - mv -f /tmp/tests .
         - mv -f /tmp/run.py .
+        - mv -f /tmp/site .
         - pylint optom tests run.py -f html --import-graph=optom-imports.png > pylint.html; true
         - pandoc --from html --to markdown_github pylint.html -o pylint.md
-        - mv pylint.html index.html
         - echo -e "\n## Import Graph" >> pylint.md
         - echo -e "\n![ImportGraph](https://github.com/masc/optom/blob/gh-pages/optom-imports.png)" >> pylint.md
         - echo -e "# OPTOM Statistics\n\n" > README.md
@@ -75,6 +76,7 @@ test:
         - cat radon.md >> README.md
         - echo -e "\n# Pylint\n" >> README.md
         - cat pylint.md >> README.md
+        - doxygen site/configuration.doxyfile
         - git add --all .
         - git commit -m "CircleCI run complete. Report available at https://github.com/masc/optom/blob/gh-pages/README.md"
         - git push origin gh-pages
