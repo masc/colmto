@@ -49,6 +49,8 @@ test:
         - mv -f tests /tmp
         - mv -f site /tmp
         - mv -f run.py /tmp
+        - mv -f LICENSE.md /tmp
+        - mv -f README.md /tmp
         - git checkout gh-pages
         - mv -f circle.yml /tmp
         - mv -f .gitignore /tmp
@@ -66,6 +68,8 @@ test:
         - mv -f /tmp/tests .
         - mv -f /tmp/run.py .
         - mv -f /tmp/site .
+        - mv -f /tmp/LICENSE.md .
+        - mv -f /tmp/README.md .
         - doxygen site/configuration.doxyfile
         - pylint optom tests run.py -f html --import-graph=optom-imports.png > pylint.html; true
         - pandoc --from html --to markdown_github pylint.html -o pylint.md
