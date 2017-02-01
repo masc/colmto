@@ -7,5 +7,5 @@ OPTOM - Optimisation of Overtaking Manoeuvres
 Copyright & License
 -------------------
 
-  * Copyright 2016, Malte Aschermann
+  * Copyright 2017, Malte Aschermann
   * License: LGPL
