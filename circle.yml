@@ -47,6 +47,7 @@ test:
         - SUMO_HOME=/usr/share/sumo python -m run
         - mv -f optom /tmp
         - mv -f tests /tmp
+        - mv -f site /tmp
         - mv -f run.py /tmp
         - git checkout gh-pages
         - mv -f circle.yml /tmp
