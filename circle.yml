@@ -66,6 +66,7 @@ test:
         - mv -f /tmp/tests .
         - mv -f /tmp/run.py .
         - mv -f /tmp/site .
+        - doxygen site/configuration.doxyfile
         - pylint optom tests run.py -f html --import-graph=optom-imports.png > pylint.html; true
         - pandoc --from html --to markdown_github pylint.html -o pylint.md
         - echo -e "\n## Import Graph" >> pylint.md
@@ -77,7 +78,6 @@ test:
         - cat radon.md >> README.md
         - echo -e "\n# Pylint\n" >> README.md
         - cat pylint.md >> README.md
-        - doxygen site/configuration.doxyfile
         - git add --all .
         - git commit -m "CircleCI run complete. Report available at https://github.com/masc/optom/blob/gh-pages/README.md"
         - git push origin gh-pages
