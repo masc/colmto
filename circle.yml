@@ -81,8 +81,6 @@ test:
         - echo -e "# OPTOM Statistics\n\n" > README_doc.md
         - echo -e '[![CircleCI](https://circleci.com/gh/masc/optom/tree/master.svg?style=shield&circle-token=ff9f6072df84edef937bff818eb00102157245b4)](https://circleci.com/gh/masc/optom/tree/master)\n\n' >> README.md
         - sh radon.sh > radon.md
-        - rm -Rf optom
-        - rm -Rf tests
         - cat radon.md >> README.md
         - cat radon.md >> README_doc.md
         - echo -e "\n# Pylint\n" >> README.md
@@ -90,6 +88,8 @@ test:
         - cat pylint.md >> README.md
         - cat pylint_doc.md >> README_doc.md
         - doxygen site/configuration.doxyfile
+        - rm -Rf optom
+        - rm -Rf tests
         - rm -Rf site
         - rm README_doc.md
         - git add --all .
