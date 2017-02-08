@@ -26,10 +26,12 @@ dependencies:
     pre:
         - sudo add-apt-repository -y ppa:sumo/stable
         - sudo apt-get update
+        - sudo apt-get install doxygen graphviz
         - sudo apt-get install sumo sumo-tools sumo-doc
-        - sudo apt-get install libhdf5-dev pandoc graphviz tk-dev python-tk
+        - sudo apt-get install libhdf5-dev pandoc tk-dev python-tk
         - pip install pylint
         - pip install radon
+        - pip install codecov
 
 checkout:
   post:
@@ -39,11 +41,16 @@ checkout:
 test:
     post:
         - git checkout master
+        - codecov --token=910321f1-7584-4bc8-b264-bce881241d83
+        - bash <(curl -s https://codecov.io/bash) -t 910321f1-7584-4bc8-b264-bce881241d83
         - python setup.py install
         - SUMO_HOME=/usr/share/sumo python -m run
         - mv -f optom /tmp
         - mv -f tests /tmp
+        - mv -f site /tmp
         - mv -f run.py /tmp
+        - mv -f README.md /tmp
+        - mv -f LICENSE.md /tmp
         - git checkout gh-pages
         - mv -f circle.yml /tmp
         - mv -f .gitignore /tmp
@@ -60,17 +67,30 @@ test:
         - mv -f /tmp/optom .
         - mv -f /tmp/tests .
         - mv -f /tmp/run.py .
+        - mv -f /tmp/site .
+        - mv -f /tmp/README.md .
+        - mv -f /tmp/LICENSE.md .
         - pylint optom tests run.py -f html --import-graph=optom-imports.png > pylint.html; true
         - pandoc --from html --to markdown_github pylint.html -o pylint.md
         - echo -e "\n## Import Graph" >> pylint.md
+        - cp pylint.md pylint_doc.md
         - echo -e "\n![ImportGraph](https://github.com/masc/optom/blob/gh-pages/optom-imports.png)" >> pylint.md
-        - echo -e "# OPTOM Statistics\n\n" > README.md
-        - echo -e '[![CircleCI](https://circleci.com/gh/masc/optom/tree/master.svg?style=shield&circle-token=ff9f6072df84edef937bff818eb00102157245b4)](https://circleci.com/gh/masc/optom/tree/master)\n\n' >> README.md
+        - echo -e "\n![ImportGraph](optom-imports.png)" >> pylint_doc.md
+        - echo -e "\n# Code Statistics\n\n" >> README.md
+        - echo -e "# Code Statistics\n\n" > README_doc.md
         - sh radon.sh > radon.md
-        - rm -Rf optom
         - cat radon.md >> README.md
+        - cat radon.md >> README_doc.md
         - echo -e "\n# Pylint\n" >> README.md
+        - echo -e "\n# Pylint\n" >> README_doc.md
         - cat pylint.md >> README.md
+        - cat pylint_doc.md >> README_doc.md
+        - doxygen site/configuration.doxyfile
+        - rm -Rf optom
+        - rm -Rf tests
+        - rm -Rf site
+        - rm run.py
+        - rm README_doc.md
         - git add --all .
-        - git commit -m "CircleCI run complete. Report available at https://github.com/masc/optom/blob/gh-pages/README.md"
+        - git commit -m "CircleCI run complete. Report https://github.com/masc/optom/blob/gh-pages/README.md , Doku http://masc.github.io/optom/docs/sources/index.html"
         - git push origin gh-pages

@@ -27,7 +27,8 @@ from __future__ import print_function
 import subprocess
 
 import optom.common.log
-import optom.environment.cse
+import optom.cse.cse
+
 try:
     import traci
 except ImportError:
@@ -79,7 +80,7 @@ class Runtime(object):
         :param cse central optimisation entity
         """
 
-        if not isinstance(cse, optom.environment.cse.BaseCSE):
+        if not isinstance(cse, optom.cse.cse.SumoCSE):
             raise AttributeError
         self._log.debug("starting sumo process")
         traci.start(

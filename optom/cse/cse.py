@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# @package optom
+# @package optom.cse
 # @cond LICENSE
 # #############################################################################
 # # LGPL License                                                              #
@@ -21,81 +21,50 @@
 # #############################################################################
 # @endcond
 # pylint: disable=too-few-public-methods
+# pylint: disable=no-self-use
 """CSE classes"""
 import optom.common.log
+import optom.cse.policy
 
 
 class BaseCSE(object):
     """Base class for the central optimisation entity (CSE)."""
 
-    def __init__(self, args=None, whitelist=()):
+    _log = optom.common.log.logger(__name__)
+    _vehicles = set()
+
+    def __init__(self, policies=(), args=None):
         """
         C'tor
         :param args: argparse configuration
-        :param whitelist: CSE white list for vehicles, e.g. [ "vehicle0", ... ].
-                          Default: empty set (set())
         """
         if args is not None:
             self._log = optom.common.log.logger(__name__, args.loglevel, args.quiet, args.logfile)
-        else:
-            self._log = optom.common.log.logger(__name__)
-        self._whitelist = set(whitelist)
+        self._policies = policies
 
-    @property
-    def whitelist(self):
+    def apply(self, vehicles):
         """
-        Property getter of white list
-        :return: frozenset of white list
+        Apply policies to vehicles
+        :param vehicles: Iterable of vehicles
+        :return: vehicles
         """
-        return frozenset(self._whitelist)
+        for i_vehicle in vehicles:
+            for i_policy in self._policies:
+                if i_policy.applies_to(i_vehicle):
+                    i_vehicle.change_vehicle_class(
+                        optom.cse.policy.SUMOPolicy.to_disallowed_class()
+                    )
+                    break
 
-    def allow(self, vehicle_id):
-        """
-        Add vehicle to white list, i.e. allowing access to OTL
-        :param vehicle_id: ID of vehicle
-        :return: self
-        """
-        self._whitelist.add(vehicle_id)
-        return self
-
-    def allow_list(self, vehicle_id_list):
-        """
-        Add vehicles to white list, i.e. allowing access to OTL
-        :param vehicle_id_list: list of vehicle IDs
-        :return: self
-        """
-        self._whitelist.update(vehicle_id_list)
-        return self
-
-    def deny(self, vehicle_id):
-        """
-        Remove vehicle from white list (if element of), i.e. denying access to OTL
-        :param vehicle_id: ID of vehicle
-        :return: self
-        """
-        try:
-            self._whitelist.remove(vehicle_id)
-        except KeyError:
-            self._log.warn("%s not in white list, no vehicle removed")
-        return self
-
-    def deny_list(self, vehicle_id_list):
-        """
-        Remove vehicles from white list (if element of), denying access to OTL
-        :param vehicle_id_list: list of vehicle IDs
-        :return: self
-        """
-        self._whitelist.difference_update(vehicle_id_list)
-        return self
-
-    def clear(self):
-        """
-        Remove all elements from white list
-        :return: self
-        """
-        self._whitelist.clear()
-        return self
+        return vehicles
 
 
 class SumoCSE(BaseCSE):
-    """SUMO related class for the central optimisation entity (CSE)."""
+    """First-come-first-served CSE (basically do nothing and allow all vehicles access to OTL."""
+
+    @staticmethod
+    def update(vehicles):
+        """Update vehicles"""
+        return set(
+            [i_v.change_vehicle_class("custom1") for i_v in vehicles]
+        )
