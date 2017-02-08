@@ -26,24 +26,24 @@ import numpy
 
 import optom.common.helper
 
-DEFAULT = optom.common.helper.Enum(["deny", "allow"])
+BEHAVIOUR = optom.common.helper.Enum(["deny", "allow"])
 
 POLICY = {
-    DEFAULT.allow: "custom2",
-    DEFAULT.deny: "custom1"
+    BEHAVIOUR.allow: "custom2",
+    BEHAVIOUR.deny: "custom1"
 }
 
 
 class BasePolicy(object):
     """Base Policy"""
 
-    def __init__(self, default_behaviour=DEFAULT.deny):
+    def __init__(self, default_behaviour=BEHAVIOUR.deny):
         """
         C'tor
         :param default_behaviour: Default, i.e. baseline policy.
-                                  Enum of optom.cse.policy.DEFAULT.deny/allow
+                                  Enum of optom.cse.policy.BEHAVIOUR.deny/allow
         """
-        self._default_behaviour = default_behaviour
+        self._behaviour = default_behaviour
 
 
 class SUMOPolicy(BasePolicy):
@@ -52,94 +52,41 @@ class SUMOPolicy(BasePolicy):
     for allowing/disallowing access to overtaking lane (OTL)
     """
 
-    def __init__(self, p_default_behaviour=DEFAULT.deny):
+    def __init__(self, p_behaviour=BEHAVIOUR.deny):
         """C'tor"""
-        super(SUMOPolicy, self).__init__(p_default_behaviour)
+        super(SUMOPolicy, self).__init__(p_behaviour)
 
     @staticmethod
     def to_allowed_class():
         """Get the SUMO class for allowed vehicles"""
-        return POLICY.get(DEFAULT.allow)
+        return POLICY.get(BEHAVIOUR.allow)
 
     @staticmethod
     def to_disallowed_class():
         """Get the SUMO class for disallowed vehicles"""
-        return POLICY.get(DEFAULT.deny)
+        return POLICY.get(BEHAVIOUR.deny)
 
 
-class SUMONullPolicy(SUMOPolicy):
+class SUMODenyPolicy(SUMOPolicy):
     """
-    Null policy, i.e. no restrictions: Every vehicle can use overtaking lane (OTL) depending on
-    default policy
+    Deny policy, i.e. always deny access
     """
 
-    def __init__(self, p_default_behaviour=DEFAULT.deny):
+    def __init__(self, p_behaviour=BEHAVIOUR.deny):
         """C'tor"""
-        super(SUMONullPolicy, self).__init__(p_default_behaviour)
+        super(SUMODenyPolicy, self).__init__(p_behaviour)
 
     @staticmethod
-    def applies_to(vehicle):
+    def applies_to(p_vehicle):
         """
         Test whether this policy applies to given vehicle
-        :param vehicle: Vehicle
+        :param p_vehicle: Vehicle
         :return: boolean
         """
-        if vehicle:
-            return False
-
-        return False
-
-    def apply(self, vehicles):
-        """
-        apply policy to vehicles
-        :param vehicles: iterable object containing BaseVehicles, or inherited objects
-        :return: List of vehicles with applied, i.e. set attributes, whether they can use otl or not
-        """
-
-        return vehicles
-
-
-class SUMOMinSpeedPolicy(SUMOPolicy):
-    """Speed based policy"""
-
-    def __init__(self, p_min_speed=0, p_default_behaviour=DEFAULT.deny):
-        """C'tor"""
-        super(SUMOMinSpeedPolicy, self).__init__(p_default_behaviour)
-        self._m_min_speed = p_min_speed
-
-    def applies_to(self, vehicle):
-        """
-        Test whether this policy applies to given vehicle
-        :param vehicle: Vehicle
-        :return: boolean
-        """
-        if vehicle.speed_max < self._m_min_speed:
+        if p_vehicle:
             return True
-        return False
 
-    def apply(self, vehicles):
-        """
-        apply policy to vehicles
-        :param vehicles: iterable object containing BaseVehicles, or inherited objects
-        :return: List of vehicles with applied, i.e. set attributes, whether they can use otl or not
-        """
-
-        return [
-            i_vehicle.change_vehicle_class(
-                self.to_disallowed_class()
-            ) if self.applies_to(i_vehicle) else i_vehicle.change_vehicle_class(
-                self.to_allowed_class()
-            ) for i_vehicle in vehicles
-        ]
-
-
-class SUMOPositionPolicy(SUMOPolicy):
-    """Position based policy: Applies to the given position until end of scenario road"""
-
-    def __init__(self, min_position=numpy.array((0.0,)), default_behaviour=DEFAULT.deny):
-        """C'tor"""
-        super(SUMOPositionPolicy, self).__init__(default_behaviour)
-        self._m_min_position = min_position
+        return True
 
     def apply(self, p_vehicles):
         """
@@ -150,9 +97,109 @@ class SUMOPositionPolicy(SUMOPolicy):
 
         return [
             i_vehicle.change_vehicle_class(
-                self.to_allowed_class()
-            ) if numpy.greater_equal(i_vehicle.position, self._m_min_position).all()
-            else i_vehicle.change_vehicle_class(
                 self.to_disallowed_class()
             ) for i_vehicle in p_vehicles
+        ]
+
+
+class SUMONullPolicy(SUMOPolicy):
+    """
+    Null policy, i.e. no restrictions: Every vehicle can use overtaking lane (OTL) depending on
+    default policy
+    """
+
+    def __init__(self, p_behaviour=BEHAVIOUR.deny):
+        """C'tor"""
+        super(SUMONullPolicy, self).__init__(p_behaviour)
+
+    @staticmethod
+    def applies_to(p_vehicle):
+        """
+        Test whether this policy applies to given vehicle
+        :param p_vehicle: Vehicle
+        :return: boolean
+        """
+        if p_vehicle:
+            return False
+
+        return False
+
+    @staticmethod
+    def apply(p_vehicles):
+        """
+        apply policy to vehicles
+        :param p_vehicles: iterable object containing BaseVehicles, or inherited objects
+        :return: List of vehicles with applied, i.e. set attributes, whether they can use otl or not
+        """
+        return p_vehicles
+
+
+class SUMOSpeedPolicy(SUMOPolicy):
+    """Speed based policy: Applies to vehicles within a given speed range"""
+
+    def __init__(self, p_speed_range=numpy.array((0, 120)), p_behaviour=BEHAVIOUR.deny):
+        """C'tor"""
+        super(SUMOSpeedPolicy, self).__init__(p_behaviour)
+        self._speed_range = p_speed_range
+
+    def applies_to(self, p_vehicle):
+        """
+        Test whether this policy applies to given vehicle
+        :param p_vehicle: Vehicle
+        :return: boolean
+        """
+        if self._speed_range[0] <= p_vehicle.speed_max <= self._speed_range[1]:
+            return True
+        return False
+
+    def apply(self, p_vehicles):
+        """
+        apply policy to vehicles
+        :param p_vehicles: iterable object containing BaseVehicles, or inherited objects
+        :return: List of vehicles with applied, i.e. set attributes, whether they can use otl or not
+        """
+
+        return [
+            i_vehicle.change_vehicle_class(
+                POLICY.get(self._behaviour)
+            ) if self.applies_to(i_vehicle) else i_vehicle
+            for i_vehicle in p_vehicles
+        ]
+
+
+class SUMOPositionPolicy(SUMOPolicy):
+    """
+    Position based policy: Applies to vehicles which are located inside a given bounding box, i.e.
+    [(left_lane_0, right_lane_0) -> (left_lane_1, right_lane_1)]
+    """
+
+    def __init__(self, p_position_box=numpy.array(((0.0, 0), (100.0, 1))),
+                 p_behaviour=BEHAVIOUR.deny):
+        """C'tor"""
+        super(SUMOPositionPolicy, self).__init__(p_behaviour)
+        self._position_box = p_position_box
+
+    def applies_to(self, p_vehicle):
+        """
+        Test whether this policy applies to given vehicle
+        :param p_vehicle: Vehicle
+        :return: boolean
+        """
+        if numpy.all(numpy.logical_and(self._position_box[0] <= p_vehicle.position,
+                                       p_vehicle.position <= self._position_box[1])):
+            return True
+        return False
+
+    def apply(self, p_vehicles):
+        """
+        apply policy to vehicles
+        :param p_vehicles: iterable object containing BaseVehicles, or inherited objects
+        :return: List of vehicles with applied, i.e. set attributes, whether they can use otl or not
+        """
+
+        return [
+            i_vehicle.change_vehicle_class(
+                POLICY.get(self._behaviour)
+            ) if self.applies_to(i_vehicle) else i_vehicle
+            for i_vehicle in p_vehicles
         ]

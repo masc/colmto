@@ -48,17 +48,13 @@ class BaseCSE(object):
         :param vehicles: Iterable of vehicles
         :return: vehicles
         """
-
         for i_vehicle in vehicles:
-            print "appling to vehicle", i_vehicle
             for i_policy in self._policies:
-                print "\t", i_policy
                 if i_policy.applies_to(i_vehicle):
                     i_vehicle.change_vehicle_class(
                         optom.cse.policy.SUMOPolicy.to_disallowed_class()
                     )
-                    print "\t\t applied!"
-                break
+                    break
 
         return vehicles
 

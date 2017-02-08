@@ -91,7 +91,7 @@ class SUMOVehicle(BaseVehicle):
         self._speed_deviation = kwargs.pop("speed_deviation", 0.0)
         self._start_time = kwargs.pop("start_time", 0.0)
         self._vehicle_class = kwargs.pop(
-            "vehicle_class", optom.cse.policy.SUMOPolicy().to_disallowed_class
+            "vehicle_class", optom.cse.policy.SUMOPolicy.to_allowed_class()
         )
 
         super(SUMOVehicle, self).__init__(**kwargs)
