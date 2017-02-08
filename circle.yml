@@ -77,13 +77,13 @@ test:
         - echo -e "# OPTOM Statistics\n\n" > README.md
         - echo -e '[![CircleCI](https://circleci.com/gh/masc/optom/tree/master.svg?style=shield&circle-token=ff9f6072df84edef937bff818eb00102157245b4)](https://circleci.com/gh/masc/optom/tree/master)\n\n' >> README.md
         - sh radon.sh > radon.md
-        - doxygen site/configuration.doxyfile
-        - rm -Rf site
         - rm -Rf optom
         - rm -Rf tests
         - cat radon.md >> README.md
         - echo -e "\n# Pylint\n" >> README.md
         - cat pylint.md >> README.md
+        - doxygen site/configuration.doxyfile
+        - rm -Rf site
         - git add --all .
         - git commit -m "CircleCI run complete. Report https://github.com/masc/optom/blob/gh-pages/README.md , Doku http://masc.github.io/optom/docs/sources/index.html"
         - git push origin gh-pages
