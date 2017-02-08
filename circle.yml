@@ -76,10 +76,8 @@ test:
         - cp pylint.md pylint_doc.md
         - echo -e "\n![ImportGraph](https://github.com/masc/optom/blob/gh-pages/optom-imports.png)" >> pylint.md
         - echo -e "\n![ImportGraph](optom-imports.png)" >> pylint_doc.md
-        - echo -e "# OPTOM Dokumentation\nhttp://masc.github.io/optom/docs/sources/index.html\n\n" >> README.md
-        - echo -e "# OPTOM Statistics\n\n" >> README.md
-        - echo -e "# OPTOM Statistics\n\n" > README_doc.md
-        - echo -e '[![CircleCI](https://circleci.com/gh/masc/optom/tree/master.svg?style=shield&circle-token=ff9f6072df84edef937bff818eb00102157245b4)](https://circleci.com/gh/masc/optom/tree/master)\n\n' >> README.md
+        - echo -e "\n# Code Statistics\n\n" >> README.md
+        - echo -e "# Code Statistics\n\n" > README_doc.md
         - sh radon.sh > radon.md
         - cat radon.md >> README.md
         - cat radon.md >> README_doc.md
@@ -91,6 +89,7 @@ test:
         - rm -Rf optom
         - rm -Rf tests
         - rm -Rf site
+        - rm run.py
         - rm README_doc.md
         - git add --all .
         - git commit -m "CircleCI run complete. Report https://github.com/masc/optom/blob/gh-pages/README.md , Doku http://masc.github.io/optom/docs/sources/index.html"
