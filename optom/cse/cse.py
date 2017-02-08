@@ -24,6 +24,7 @@
 # pylint: disable=no-self-use
 """CSE classes"""
 import optom.common.log
+import optom.cse.policy
 
 
 class BaseCSE(object):
@@ -32,25 +33,42 @@ class BaseCSE(object):
     _log = optom.common.log.logger(__name__)
     _vehicles = set()
 
-    def __init__(self, policy=None, args=None):
+    def __init__(self, policies=(), args=None):
         """
         C'tor
         :param args: argparse configuration
         """
         if args is not None:
             self._log = optom.common.log.logger(__name__, args.loglevel, args.quiet, args.logfile)
-        self._policy = policy
+        self._policies = policies
 
-    def update(self, p_vehicles):
-        """Update vehicles"""
-        return p_vehicles
+    def apply(self, vehicles):
+        """
+        Apply policies to vehicles
+        :param vehicles: Iterable of vehicles
+        :return: vehicles
+        """
+
+        for i_vehicle in vehicles:
+            print "appling to vehicle", i_vehicle
+            for i_policy in self._policies:
+                print "\t", i_policy
+                if i_policy.applies_to(i_vehicle):
+                    i_vehicle.change_vehicle_class(
+                        optom.cse.policy.SUMOPolicy.to_disallowed_class()
+                    )
+                    print "\t\t applied!"
+                break
+
+        return vehicles
 
 
 class SumoCSE(BaseCSE):
     """First-come-first-served CSE (basically do nothing and allow all vehicles access to OTL."""
 
-    def update(self, p_vehicles):
+    @staticmethod
+    def update(vehicles):
         """Update vehicles"""
         return set(
-            [i_v.change_vehicle_class("custom1") for i_v in p_vehicles]
+            [i_v.change_vehicle_class("custom1") for i_v in vehicles]
         )

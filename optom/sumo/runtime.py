@@ -80,7 +80,7 @@ class Runtime(object):
         :param cse central optimisation entity
         """
 
-        if not isinstance(cse, optom.cse.cse.BaseCSE):
+        if not isinstance(cse, optom.cse.cse.SumoCSE):
             raise AttributeError
         self._log.debug("starting sumo process")
         traci.start(

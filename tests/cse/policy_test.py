@@ -51,8 +51,8 @@ def test_sumo_policy():
     )
     assert_is_instance(l_sumo_policy, optom.cse.policy.SUMOPolicy)
 
-    assert_equal(l_sumo_policy.to_disallowed_class, "custom1")
-    assert_equal(l_sumo_policy.to_allowed_class, "custom2")
+    assert_equal(l_sumo_policy.to_disallowed_class(), "custom1")
+    assert_equal(l_sumo_policy.to_allowed_class(), "custom2")
 
 
 def test_sumo_null_policy():
@@ -66,8 +66,8 @@ def test_sumo_null_policy():
         optom.environment.vehicle.SUMOVehicle(
             vehicle_class=random.choice(
                 [
-                    optom.cse.policy.SUMOPolicy().to_disallowed_class,
-                    optom.cse.policy.SUMOPolicy().to_allowed_class
+                    optom.cse.policy.SUMOPolicy.to_disallowed_class,
+                    optom.cse.policy.SUMOPolicy.to_allowed_class
                 ]
             )
         ) for _ in xrange(23)
@@ -98,12 +98,12 @@ def test_sumo_min_speed_policy():
         if l_vehicles[i].speed_max < 42.0:
             assert_equal(
                 l_results[i].vehicle_class,
-                optom.cse.policy.SUMOPolicy().to_disallowed_class
+                optom.cse.policy.SUMOPolicy.to_disallowed_class()
             )
         else:
             assert_equal(
                 l_results[i].vehicle_class,
-                optom.cse.policy.SUMOPolicy().to_allowed_class
+                optom.cse.policy.SUMOPolicy.to_allowed_class()
             )
 
 
@@ -127,10 +127,10 @@ def test_sumo_position_policy():
         if l_vehicles[i].position < 64.0:
             assert_equal(
                 l_results[i].vehicle_class,
-                optom.cse.policy.SUMOPolicy().to_disallowed_class
+                optom.cse.policy.SUMOPolicy.to_disallowed_class()
             )
         else:
             assert_equal(
                 l_results[i].vehicle_class,
-                optom.cse.policy.SUMOPolicy().to_allowed_class
+                optom.cse.policy.SUMOPolicy.to_allowed_class()
             )

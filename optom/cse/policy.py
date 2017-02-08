@@ -28,6 +28,11 @@ import optom.common.helper
 
 DEFAULT = optom.common.helper.Enum(["deny", "allow"])
 
+POLICY = {
+    DEFAULT.allow: "custom2",
+    DEFAULT.deny: "custom1"
+}
+
 
 class BasePolicy(object):
     """Base Policy"""
@@ -51,20 +56,15 @@ class SUMOPolicy(BasePolicy):
         """C'tor"""
         super(SUMOPolicy, self).__init__(p_default_behaviour)
 
-    _m_policy = {
-        DEFAULT.allow: "custom2",
-        DEFAULT.deny: "custom1"
-    }
-
-    @property
-    def to_allowed_class(self):
+    @staticmethod
+    def to_allowed_class():
         """Get the SUMO class for allowed vehicles"""
-        return self._m_policy.get(DEFAULT.allow)
+        return POLICY.get(DEFAULT.allow)
 
-    @property
-    def to_disallowed_class(self):
+    @staticmethod
+    def to_disallowed_class():
         """Get the SUMO class for disallowed vehicles"""
-        return self._m_policy.get(DEFAULT.deny)
+        return POLICY.get(DEFAULT.deny)
 
 
 class SUMONullPolicy(SUMOPolicy):
@@ -77,18 +77,26 @@ class SUMONullPolicy(SUMOPolicy):
         """C'tor"""
         super(SUMONullPolicy, self).__init__(p_default_behaviour)
 
-    def apply(self, p_vehicles):
+    @staticmethod
+    def applies_to(vehicle):
+        """
+        Test whether this policy applies to given vehicle
+        :param vehicle: Vehicle
+        :return: boolean
+        """
+        if vehicle:
+            return False
+
+        return False
+
+    def apply(self, vehicles):
         """
         apply policy to vehicles
-        :param p_vehicles: iterable object containing BaseVehicles, or inherited objects
+        :param vehicles: iterable object containing BaseVehicles, or inherited objects
         :return: List of vehicles with applied, i.e. set attributes, whether they can use otl or not
         """
 
-        return [
-            i_vehicle.change_vehicle_class(
-                self._m_policy[self._default_behaviour]
-            ) for i_vehicle in p_vehicles
-        ]
+        return vehicles
 
 
 class SUMOMinSpeedPolicy(SUMOPolicy):
@@ -99,19 +107,29 @@ class SUMOMinSpeedPolicy(SUMOPolicy):
         super(SUMOMinSpeedPolicy, self).__init__(p_default_behaviour)
         self._m_min_speed = p_min_speed
 
-    def apply(self, p_vehicles):
+    def applies_to(self, vehicle):
+        """
+        Test whether this policy applies to given vehicle
+        :param vehicle: Vehicle
+        :return: boolean
+        """
+        if vehicle.speed_max < self._m_min_speed:
+            return True
+        return False
+
+    def apply(self, vehicles):
         """
         apply policy to vehicles
-        :param p_vehicles: iterable object containing BaseVehicles, or inherited objects
+        :param vehicles: iterable object containing BaseVehicles, or inherited objects
         :return: List of vehicles with applied, i.e. set attributes, whether they can use otl or not
         """
 
         return [
             i_vehicle.change_vehicle_class(
-                self._m_policy[DEFAULT.deny]
-            ) if i_vehicle.speed_max < self._m_min_speed else i_vehicle.change_vehicle_class(
-                self._m_policy[DEFAULT.allow]
-            ) for i_vehicle in p_vehicles
+                self.to_disallowed_class()
+            ) if self.applies_to(i_vehicle) else i_vehicle.change_vehicle_class(
+                self.to_allowed_class()
+            ) for i_vehicle in vehicles
         ]
 
 
@@ -132,9 +150,9 @@ class SUMOPositionPolicy(SUMOPolicy):
 
         return [
             i_vehicle.change_vehicle_class(
-                self._m_policy[DEFAULT.allow]
+                self.to_allowed_class()
             ) if numpy.greater_equal(i_vehicle.position, self._m_min_position).all()
             else i_vehicle.change_vehicle_class(
-                self._m_policy[DEFAULT.deny]
+                self.to_disallowed_class()
             ) for i_vehicle in p_vehicles
         ]
