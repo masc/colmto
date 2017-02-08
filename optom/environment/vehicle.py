@@ -21,8 +21,9 @@
 # #############################################################################
 # @endcond
 """Vehicle classes for storing vehicle data/attributes/states."""
-
 import numpy
+
+import optom.cse.policy
 
 
 class BaseVehicle(object):
@@ -89,7 +90,9 @@ class SUMOVehicle(BaseVehicle):
         self._color = kwargs.pop("color", (255, 255, 0, 255))
         self._speed_deviation = kwargs.pop("speed_deviation", 0.0)
         self._start_time = kwargs.pop("start_time", 0.0)
-        self._vehicle_class = None
+        self._vehicle_class = kwargs.pop(
+            "vehicle_class", optom.cse.policy.SUMOPolicy().to_disallowed_class
+        )
 
         super(SUMOVehicle, self).__init__(**kwargs)
 
@@ -100,16 +103,17 @@ class SUMOVehicle(BaseVehicle):
     def properties(self):
         """Returns vehicle's properties as a dict bundle."""
         return {
-            "position": self.position,
-            "speed_current": self.speed_current,
-            "speed_max": self.speed_max,
+            "position": self._position,
+            "speed_current": self._speed_current,
+            "speed_max": self._speed_max,
             "vtype": self.vtype,
             "vtype_sumo_cfg": self.vtype_sumo_cfg,
-            "color": self.color,
-            "speed_deviation": self.speed_deviation,
-            "travel_times": self.travel_times,
-            "time_losses": self.time_losses,
-            "start_time": self.start_time
+            "color": self._color,
+            "speed_deviation": self._speed_deviation,
+            "travel_times": self._travel_times,
+            "time_losses": self._time_losses,
+            "start_time": self._start_time,
+            "vehicle_class": self._vehicle_class
         }
 
     @property
@@ -160,6 +164,11 @@ class SUMOVehicle(BaseVehicle):
     def time_losses(self):
         """Return time losses."""
         return self._time_losses
+
+    @property
+    def vehicle_class(self):
+        """Return SUMO vehicle class"""
+        return self._vehicle_class
 
     def change_vehicle_class(self, p_class_name):
         """Change vehicle class"""
