@@ -71,6 +71,7 @@ test:
         - mv -f /tmp/README.md .
         - mv -f /tmp/LICENSE.md .
         - doxygen site/configuration.doxyfile
+        - rm -Rf site
         - pylint optom tests run.py -f html --import-graph=optom-imports.png > pylint.html; true
         - pandoc --from html --to markdown_github pylint.html -o pylint.md
         - echo -e "\n## Import Graph" >> pylint.md
