@@ -4,7 +4,7 @@
 # Project related configuration options
 #---------------------------------------------------------------------------
 DOXYFILE_ENCODING      = UTF-8
-PROJECT_NAME           = "OPTOM"
+PROJECT_NAME           = "Optimisation of Overtaking Manoeuvres (OPTOM)"
 PROJECT_NUMBER         =
 PROJECT_BRIEF          =
 PROJECT_LOGO           =
@@ -112,7 +112,7 @@ WARN_LOGFILE           =
 #---------------------------------------------------------------------------
 INPUT                  = optom \
                          tests \
-                         README.md \
+                         README_doc.md \
                          LICENSE.md
 INPUT_ENCODING         = UTF-8
 FILE_PATTERNS          = *.py \

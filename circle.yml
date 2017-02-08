@@ -70,20 +70,29 @@ test:
         - mv -f /tmp/site .
         - mv -f /tmp/README.md .
         - mv -f /tmp/LICENSE.md .
-        - doxygen site/configuration.doxyfile
         - pylint optom tests run.py -f html --import-graph=optom-imports.png > pylint.html; true
         - pandoc --from html --to markdown_github pylint.html -o pylint.md
         - echo -e "\n## Import Graph" >> pylint.md
+        - cp pylint.md pylint_doc.md
         - echo -e "\n![ImportGraph](https://github.com/masc/optom/blob/gh-pages/optom-imports.png)" >> pylint.md
+        - echo -e "\n![ImportGraph](optom-imports.png)" >> pylint_doc.md
         - echo -e "# OPTOM Statistics\n\n" > README.md
+        - echo -e "# OPTOM Statistics\n\n" > README_doc.md
         - echo -e '[![CircleCI](https://circleci.com/gh/masc/optom/tree/master.svg?style=shield&circle-token=ff9f6072df84edef937bff818eb00102157245b4)](https://circleci.com/gh/masc/optom/tree/master)\n\n' >> README.md
         - sh radon.sh > radon.md
         - rm -Rf optom
         - rm -Rf tests
-        - rm -Rf sites
         - cat radon.md >> README.md
+        - cat radon.md >> README_doc.md
         - echo -e "\n# Pylint\n" >> README.md
+        - echo -e "\n# Pylint\n" >> README_doc.md
         - cat pylint.md >> README.md
+        - cat pylint_doc.md >> README_doc.md
+        - doxygen site/configuration.doxyfile
+        - rm -Rf site
+        - mv docs/sources/* .
+        - rm -Rf docs
+        - rm README_doc.md
         - git add --all .
         - git commit -m "CircleCI run complete. Report https://github.com/masc/optom/blob/gh-pages/README.md , Doku http://masc.github.io/optom/docs/sources/index.html"
         - git push origin gh-pages
