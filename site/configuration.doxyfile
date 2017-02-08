@@ -113,6 +113,7 @@ WARN_LOGFILE           =
 INPUT                  = optom \
                          tests \
                          README_doc.md \
+                         README.md \
                          LICENSE.md
 INPUT_ENCODING         = UTF-8
 FILE_PATTERNS          = *.py \
