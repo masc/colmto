@@ -95,8 +95,16 @@ class Runtime(object):
         self._log.debug("connecting to TraCI instance on port %d", run_config.get("sumoport"))
 
         l_arrived_count = 0
+
+        # TODO: Change lane states for all OTL lanes to deny access to "
+
         while traci.vehicle.getIDCount() > 0 or l_arrived_count == 0:
             l_arrived_count += traci.simulation.getArrivedNumber()
+
+            self._log.debug("new vehicles: %s", traci.simulation.getDepartedIDList())
+
+            # allow all new departing vehicles access to OTL
+            cse.allow_list(traci.simulation.getDepartedIDList())
 
             # TODO: Insert CSE push/pulls here
 
