@@ -657,14 +657,14 @@ class SumoConfig(optom.common.configuration.Configuration):
             # override parameters speedDev, desiredSpeed, and length if defined in run config
             l_runcfgspeeddev = self.run_config \
                 .get("vtypedistribution") \
-                .get(l_vattr.get("vClass")) \
+                .get(l_vattr.get("vType")) \
                 .get("speedDev")
             if l_runcfgspeeddev is not None:
                 l_vattr["speedDev"] = str(l_runcfgspeeddev)
 
             l_runcfgdesiredspeed = self.run_config \
                 .get("vtypedistribution"). \
-                get(l_vattr.get("vClass")). \
+                get(l_vattr.get("vType")). \
                 get("desiredSpeed")
 
             l_vattr["speedlimit"] = str(l_runcfgdesiredspeed) \
@@ -672,17 +672,17 @@ class SumoConfig(optom.common.configuration.Configuration):
 
             l_runcfglength = self.run_config \
                 .get("vtypedistribution") \
-                .get(l_vattr.get("vClass")) \
+                .get(l_vattr.get("vType")) \
                 .get("length")
 
             if l_runcfglength is not None:
                 l_vattr["length"] = str(l_runcfglength)
 
-            # fix tractor vClass to trailer
-            if l_vattr["vClass"] == "tractor":
-                l_vattr["vClass"] = "trailer"
+            # fix tractor vType to trailer
+            if l_vattr["vType"] == "tractor":
+                l_vattr["vType"] = "trailer"
 
-            l_vattr["type"] = l_vattr.get("vClass")
+            l_vattr["type"] = l_vattr.get("vType")
 
             optom.common.io.etree.SubElement(l_trips, "vType", attrib=l_vattr)
 

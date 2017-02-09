@@ -195,7 +195,8 @@ _DEFAULT_CONFIG_VTYPES = {
         "minGap": 2.5,
         "speedDev": 0.1,
         "speedFactor": 1,
-        "vClass": "delivery",
+        "vClass": "custom2",
+        "vType": "delivery",
         "width": 2.16
     },
     "heavytransport": {
@@ -207,7 +208,8 @@ _DEFAULT_CONFIG_VTYPES = {
         "minGap": 2.5,
         "speedDev": 0.1,
         "speedFactor": 1,
-        "vClass": "trailer",
+        "vClass": "custom2",
+        "vType": "trailer",
         "width": 2.4
     },
     "passenger": {
@@ -219,7 +221,8 @@ _DEFAULT_CONFIG_VTYPES = {
         "minGap": 2.5,
         "speedDev": 0.1,
         "speedFactor": 1,
-        "vClass": "passenger",
+        "vClass": "custom2",
+        "vType": "passenger",
         "width": 1.8
     },
     "tractor": {
@@ -231,7 +234,8 @@ _DEFAULT_CONFIG_VTYPES = {
         "minGap": 2.5,
         "speedDev": 0.1,
         "speedFactor": 1,
-        "vClass": "tractor",
+        "vClass": "custom2",
+        "vType": "tractor",
         "width": 2.4
     },
     "truck": {
@@ -243,7 +247,8 @@ _DEFAULT_CONFIG_VTYPES = {
         "minGap": 2.5,
         "speedDev": 0.1,
         "speedFactor": 1,
-        "vClass": "truck",
+        "vClass": "custom2",
+        "vType": "truck",
         "width": 2.4
     },
     "van": {
@@ -255,7 +260,8 @@ _DEFAULT_CONFIG_VTYPES = {
         "minGap": 2.5,
         "speedDev": 0.1,
         "speedFactor": 1,
-        "vClass": "delivery",
+        "vClass": "custom2",
+        "vType": "delivery",
         "width": 1.9
     }
 }
