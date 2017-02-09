@@ -9,7 +9,7 @@ radon cc --show-closures -x F --total-average -s optom | sed \
 -e '/^||/ s/$/|/' \
 -e '/^[a-zA-Z]/ s/^/|`/' \
 -e '/^|`[a-zA-Z]/ s/$/`|/' \
--e '/^||/ s/|[[:alnum:]\.\_]\{2\}[[:alnum:]\.\_]*|/|`&`|/g' \
+-e '/^||/ s/|[[:alnum:]\.\_]\{2\}[[:alnum:]\.\_]*|/|`&`|||||/g' \
 -e '/^||/ s/|`|/|`/' \
 -e '/^||/ s/|`|/`|/' \
 -e '/|`Average[[:print:]]*`|/ s/|//g'
