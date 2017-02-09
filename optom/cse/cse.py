@@ -34,13 +34,13 @@ class BaseCSE(object):
     _vehicles = set()
     _policies = []
 
-    def __init__(self, p_args=None):
+    def __init__(self, args=None):
         """
         C'tor
-        :param p_args: argparse configuration
+        :param args: argparse configuration
         """
-        if p_args is not None:
-            self._log = optom.common.log.logger(__name__, p_args.loglevel, p_args.quiet, p_args.logfile)
+        if args is not None:
+            self._log = optom.common.log.logger(__name__, args.loglevel, args.quiet, args.logfile)
 
     @property
     def policies(self):
@@ -70,7 +70,7 @@ class BaseCSE(object):
 class SumoCSE(BaseCSE):
     """First-come-first-served CSE (basically do nothing and allow all vehicles access to OTL."""
 
-    _POLICIES = {
+    _valid_policies = {
         "SUMODenyPolicy": optom.cse.policy.SUMODenyPolicy,
         "SUMONullPolicy": optom.cse.policy.SUMONullPolicy,
         "SUMOSpeedPolicy": optom.cse.policy.SUMOSpeedPolicy,
@@ -84,15 +84,27 @@ class SumoCSE(BaseCSE):
             [i_v.change_vehicle_class("custom1") for i_v in vehicles]
         )
 
-    def add_policies_from(self, p_policies_config):
+    def add_policy(self, policy):
         """
-        adds policies to SumoCSE based on run config's "policies" section.
-        :param p_policies_config: run config's "policies" section
+        adds policy to SumoCSE.
+        :param policy: policy object
         :return: self
         """
-        for i_policy in p_policies_config:
-            self._policies.append(
-                self._POLICIES.get(i_policy.get("type"))(
+        self._policies.append(
+            policy
+        )
+
+        return self
+
+    def add_policies_from_cfg(self, policies_config):
+        """
+        adds policies to SumoCSE based on run config's "policies" section.
+        :param policies_config: run config's "policies" section
+        :return: self
+        """
+        for i_policy in policies_config:
+            self.add_policy(
+                self._valid_policies.get(i_policy.get("type"))(
                     behaviour=optom.cse.policy.BasePolicy.behaviour_from_string_or_else(
                         i_policy.get("behaviour"),
                         optom.cse.policy.BEHAVIOUR.deny

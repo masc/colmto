@@ -46,11 +46,10 @@ def test_sumo_cse():
     """
     Test SumoCSE class
     """
-    l_sumo_cse = optom.cse.cse.SumoCSE(
-        policies=(
-            optom.cse.policy.SUMOSpeedPolicy(p_speed_range=numpy.array((0., 80.))),
-            optom.cse.policy.SUMOPositionPolicy(p_position_box=numpy.array(((0., 0), (64.0, 1))))
-        )
+    l_sumo_cse = optom.cse.cse.SumoCSE().add_policy(
+        optom.cse.policy.SUMOSpeedPolicy(speed_range=numpy.array((0., 80.))),
+    ).add_policy(
+        optom.cse.policy.SUMOPositionPolicy(position_box=numpy.array(((0., 0), (64.0, 1))))
     )
     assert_is_instance(l_sumo_cse, optom.cse.cse.SumoCSE)
 
@@ -61,7 +60,9 @@ def test_sumo_cse():
         ) for _ in xrange(4711)
     ]
 
-    for i, i_result in enumerate(l_sumo_cse.apply(l_vehicles)):
+    l_sumo_cse.apply(l_vehicles)
+
+    for i, i_result in enumerate(l_vehicles):
         if 0 <= l_vehicles[i].position[0] <= 64.0 and 0 <= l_vehicles[i].position[1] <= 1 \
                 or 0 <= l_vehicles[i].speed_max <= 80.0:
             assert_equal(
