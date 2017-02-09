@@ -92,7 +92,15 @@ class SumoSim(object):
                 )
 
                 if self._sumocfg.run_config.get("cse-enabled"):
-                    self._runtime.run_traci(l_run_config, optom.cse.cse.SumoCSE(self._args))
+                    self._runtime.run_traci(
+                        l_run_config, optom.cse.cse.SumoCSE(
+                            self._args
+                        ).add_policies_from(
+                            self._sumocfg.run_config.get("policies")
+                        ).apply(
+                            l_run_config.get("vehicles")
+                        )
+                    )
                 else:
                     self._runtime.run_once(l_run_config)
 

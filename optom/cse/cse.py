@@ -32,23 +32,31 @@ class BaseCSE(object):
 
     _log = optom.common.log.logger(__name__)
     _vehicles = set()
+    _policies = []
 
-    def __init__(self, policies=(), args=None):
+    def __init__(self, p_args=None):
         """
         C'tor
-        :param args: argparse configuration
+        :param p_args: argparse configuration
         """
-        if args is not None:
-            self._log = optom.common.log.logger(__name__, args.loglevel, args.quiet, args.logfile)
-        self._policies = policies
+        if p_args is not None:
+            self._log = optom.common.log.logger(__name__, p_args.loglevel, p_args.quiet, p_args.logfile)
+
+    @property
+    def policies(self):
+        """
+        Policies of CSE
+        :return: policies tuple
+        """
+        return tuple(self._policies)
 
     def apply(self, vehicles):
         """
         Apply policies to vehicles
-        :param vehicles: Iterable of vehicles
-        :return: vehicles
+        :param vehicles: Iterable of vehicles or dictionary Id -> Vehicle
+        :return: self
         """
-        for i_vehicle in vehicles:
+        for i_vehicle in vehicles.itervalues() if isinstance(vehicles, dict) else vehicles:
             for i_policy in self._policies:
                 if i_policy.applies_to(i_vehicle):
                     i_vehicle.change_vehicle_class(
@@ -56,11 +64,18 @@ class BaseCSE(object):
                     )
                     break
 
-        return vehicles
+        return self
 
 
 class SumoCSE(BaseCSE):
     """First-come-first-served CSE (basically do nothing and allow all vehicles access to OTL."""
+
+    _POLICIES = {
+        "SUMODenyPolicy": optom.cse.policy.SUMODenyPolicy,
+        "SUMONullPolicy": optom.cse.policy.SUMONullPolicy,
+        "SUMOSpeedPolicy": optom.cse.policy.SUMOSpeedPolicy,
+        "SUMOPositionPolicy": optom.cse.policy.SUMOPositionPolicy
+    }
 
     @staticmethod
     def update(vehicles):
@@ -68,3 +83,22 @@ class SumoCSE(BaseCSE):
         return set(
             [i_v.change_vehicle_class("custom1") for i_v in vehicles]
         )
+
+    def add_policies_from(self, p_policies_config):
+        """
+        adds policies to SumoCSE based on run config's "policies" section.
+        :param p_policies_config: run config's "policies" section
+        :return: self
+        """
+        for i_policy in p_policies_config:
+            self._policies.append(
+                self._POLICIES.get(i_policy.get("type"))(
+                    behaviour=optom.cse.policy.BasePolicy.behaviour_from_string_or_else(
+                        i_policy.get("behaviour"),
+                        optom.cse.policy.BEHAVIOUR.deny
+                    ),
+                    **i_policy.get("args")
+                )
+            )
+
+        return self

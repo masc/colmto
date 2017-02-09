@@ -28,7 +28,7 @@ import optom.common.helper
 
 BEHAVIOUR = optom.common.helper.Enum(["deny", "allow"])
 
-POLICY = {
+SUMO_VCLASS = {
     BEHAVIOUR.allow: "custom2",
     BEHAVIOUR.deny: "custom1"
 }
@@ -45,6 +45,21 @@ class BasePolicy(object):
         """
         self._behaviour = default_behaviour
 
+    @staticmethod
+    def behaviour_from_string_or_else(p_behaviour, p_or_else):
+        """
+        Transforms string argument of behaviour, i.e. "allow", "deny" case insensitive to
+        BEHAVIOUR enum value. Otherwise return passed p_or_else argument.
+        :param p_behaviour: string "allow", "deny"
+        :param p_or_else: otherwise returned argument
+        :return: BEHAVIOUR.allow, BEHAVIOUR.deny, p_or_else
+        """
+        if p_behaviour.lower() == "allow":
+            return BEHAVIOUR.allow
+        if p_behaviour.lower() == "deny":
+            return BEHAVIOUR.deny
+        return p_or_else
+
 
 class SUMOPolicy(BasePolicy):
     """
@@ -59,12 +74,12 @@ class SUMOPolicy(BasePolicy):
     @staticmethod
     def to_allowed_class():
         """Get the SUMO class for allowed vehicles"""
-        return POLICY.get(BEHAVIOUR.allow)
+        return SUMO_VCLASS.get(BEHAVIOUR.allow)
 
     @staticmethod
     def to_disallowed_class():
         """Get the SUMO class for disallowed vehicles"""
-        return POLICY.get(BEHAVIOUR.deny)
+        return SUMO_VCLASS.get(BEHAVIOUR.deny)
 
 
 class SUMODenyPolicy(SUMOPolicy):
@@ -137,10 +152,15 @@ class SUMONullPolicy(SUMOPolicy):
 class SUMOSpeedPolicy(SUMOPolicy):
     """Speed based policy: Applies to vehicles within a given speed range"""
 
-    def __init__(self, p_speed_range=numpy.array((0, 120)), p_behaviour=BEHAVIOUR.deny):
+    def __init__(self, speed_range=(0, 120), behaviour=BEHAVIOUR.deny):
         """C'tor"""
-        super(SUMOSpeedPolicy, self).__init__(p_behaviour)
-        self._speed_range = p_speed_range
+        super(SUMOSpeedPolicy, self).__init__(behaviour)
+        self._speed_range = numpy.array(speed_range)
+
+    def __str__(self):
+        return "SUMOSpeedPolicy: speed_range = {}, behaviour = {}".format(
+            self._speed_range, self._behaviour
+        )
 
     def applies_to(self, p_vehicle):
         """
@@ -161,7 +181,7 @@ class SUMOSpeedPolicy(SUMOPolicy):
 
         return [
             i_vehicle.change_vehicle_class(
-                POLICY.get(self._behaviour)
+                SUMO_VCLASS.get(self._behaviour)
             ) if self.applies_to(i_vehicle) else i_vehicle
             for i_vehicle in p_vehicles
         ]
@@ -199,7 +219,7 @@ class SUMOPositionPolicy(SUMOPolicy):
 
         return [
             i_vehicle.change_vehicle_class(
-                POLICY.get(self._behaviour)
+                SUMO_VCLASS.get(self._behaviour)
             ) if self.applies_to(i_vehicle) else i_vehicle
             for i_vehicle in p_vehicles
         ]
