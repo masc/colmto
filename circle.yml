@@ -84,6 +84,7 @@ test:
         - cat pylint.md >> README.md
         - cat pylint_doc.md >> README_doc.md
         - doxygen site/configuration.doxyfile
+        - cp optom-imports.png docs/sources
         - rm -Rf optom
         - rm -Rf tests
         - rm -Rf site
