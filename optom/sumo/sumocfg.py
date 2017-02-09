@@ -355,6 +355,17 @@ class SumoConfig(optom.common.configuration.Configuration):
             }
         )
 
+        # deny access to lane 1 (OTL) to vehicle with vClass "custom2"
+        # <lane index="1" disallow="custom2"/>
+        optom.common.io.etree.SubElement(
+            l_21edge,
+            "lane",
+            attrib={
+                "index": "1",
+                "disallow": "custom1"
+            }
+        )
+
         if self.scenario_config.get(
                 p_scenario_name
         ).get("parameters").get("detectorpositions") is None:

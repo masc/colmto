@@ -28,6 +28,7 @@ import subprocess
 
 import optom.common.log
 import optom.cse.cse
+import numpy
 
 try:
     import traci
@@ -81,7 +82,8 @@ class Runtime(object):
         """
 
         if not isinstance(cse, optom.cse.cse.SumoCSE):
-            raise AttributeError
+            raise AttributeError("Provided CSE object is not of type SumoCSE.")
+
         self._log.debug("starting sumo process")
         self._log.debug("CSE %s with policies %s", cse, cse.policies)
         traci.start(
@@ -105,10 +107,29 @@ class Runtime(object):
 
             self._log.debug("new vehicles: %s", traci.simulation.getDepartedIDList())
 
-            # allow all new departing vehicles access to OTL
-            # cse.allow_list(traci.simulation.getDepartedIDList())
+            # iterate through every vehicle id currently active in simulation
+            for i_vehicle_id in traci.vehicle.getIDList():
+                # update vehicle position
+                run_config.get("vehicles").get(i_vehicle_id).position = numpy.array(
+                    traci.vehicle.getPosition(i_vehicle_id)
+                )
 
-            # TODO: Insert CSE push/pulls here
+                # set vclass according to policies for each new entering vehicle, i.e.
+                # allow vehicles access to OTL depending on policy
+                cse.apply_one(run_config.get("vehicles").get(i_vehicle_id))
+                # update vehicle class via traci if changed
+                if traci.vehicle.getVehicleClass(
+                        i_vehicle_id
+                ) != run_config.get("vehicles").get(i_vehicle_id).vehicle_class:
+                    traci.vehicle.setVehicleClass(
+                        i_vehicle_id,
+                        run_config.get("vehicles").get(i_vehicle_id).vehicle_class
+                    )
+                    self._log.info(
+                        "changed vclass of %s to %s",
+                        i_vehicle_id,
+                        run_config.get("vehicles").get(i_vehicle_id).vehicle_class
+                    )
 
             traci.simulationStep()
 

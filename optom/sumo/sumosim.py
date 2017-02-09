@@ -97,8 +97,6 @@ class SumoSim(object):
                             self._args
                         ).add_policies_from_cfg(
                             self._sumocfg.run_config.get("policies")
-                        ).apply(
-                            l_run_config.get("vehicles")
                         )
                     )
                 else:
