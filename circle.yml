@@ -78,7 +78,7 @@ test:
         - echo -e "\n![ImportGraph](optom-imports.png)" >> pylint_doc.md
         - echo -e "\n# Code Statistics\n\n" >> README.md
         - echo -e "# Code Statistics\n\n" > README_doc.md
-        - sh radon.sh > radon.md
+        - sh site/radon.sh > radon.md
         - cat radon.md >> README.md
         - cat radon.md >> README_doc.md
         - echo -e "\n# Pylint\n" >> README.md
