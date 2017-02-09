@@ -37,28 +37,28 @@ SUMO_VCLASS = {
 class BasePolicy(object):
     """Base Policy"""
 
-    def __init__(self, default_behaviour=BEHAVIOUR.deny):
+    def __init__(self, behaviour=BEHAVIOUR.deny):
         """
         C'tor
-        :param default_behaviour: Default, i.e. baseline policy.
+        :param behaviour: Default, i.e. baseline policy.
                                   Enum of optom.cse.policy.BEHAVIOUR.deny/allow
         """
-        self._behaviour = default_behaviour
+        self._behaviour = behaviour
 
     @staticmethod
-    def behaviour_from_string_or_else(p_behaviour, p_or_else):
+    def behaviour_from_string_or_else(behaviour, or_else):
         """
         Transforms string argument of behaviour, i.e. "allow", "deny" case insensitive to
-        BEHAVIOUR enum value. Otherwise return passed p_or_else argument.
-        :param p_behaviour: string "allow", "deny"
-        :param p_or_else: otherwise returned argument
-        :return: BEHAVIOUR.allow, BEHAVIOUR.deny, p_or_else
+        BEHAVIOUR enum value. Otherwise return passed or_else argument.
+        :param behaviour: string "allow", "deny"
+        :param or_else: otherwise returned argument
+        :return: BEHAVIOUR.allow, BEHAVIOUR.deny, or_else
         """
-        if p_behaviour.lower() == "allow":
+        if behaviour.lower() == "allow":
             return BEHAVIOUR.allow
-        if p_behaviour.lower() == "deny":
+        if behaviour.lower() == "deny":
             return BEHAVIOUR.deny
-        return p_or_else
+        return or_else
 
 
 class SUMOPolicy(BasePolicy):
@@ -67,9 +67,9 @@ class SUMOPolicy(BasePolicy):
     for allowing/disallowing access to overtaking lane (OTL)
     """
 
-    def __init__(self, p_behaviour=BEHAVIOUR.deny):
+    def __init__(self, behaviour=BEHAVIOUR.deny):
         """C'tor"""
-        super(SUMOPolicy, self).__init__(p_behaviour)
+        super(SUMOPolicy, self).__init__(behaviour)
 
     @staticmethod
     def to_allowed_class():
@@ -87,9 +87,9 @@ class SUMOUniversalPolicy(SUMOPolicy):
     Universal policy, i.e. always applies to any vehicle
     """
 
-    def __init__(self, p_behaviour=BEHAVIOUR.deny):
+    def __init__(self, behaviour=BEHAVIOUR.deny):
         """C'tor"""
-        super(SUMOUniversalPolicy, self).__init__(p_behaviour)
+        super(SUMOUniversalPolicy, self).__init__(behaviour)
 
     @staticmethod
     def applies_to(vehicle):
@@ -122,9 +122,9 @@ class SUMONullPolicy(SUMOPolicy):
     Null policy, i.e. no restrictions: Applies to no vehicle
     """
 
-    def __init__(self, p_behaviour=BEHAVIOUR.deny):
+    def __init__(self, behaviour=BEHAVIOUR.deny):
         """C'tor"""
-        super(SUMONullPolicy, self).__init__(p_behaviour)
+        super(SUMONullPolicy, self).__init__(behaviour)
 
     @staticmethod
     def applies_to(vehicle):
@@ -183,7 +183,7 @@ class SUMOSpeedPolicy(SUMOPolicy):
                 SUMO_VCLASS.get(self._behaviour)
             ) if self.applies_to(i_vehicle) else i_vehicle
             for i_vehicle in vehicles
-            ]
+        ]
 
 
 class SUMOPositionPolicy(SUMOPolicy):
@@ -209,10 +209,10 @@ class SUMOPositionPolicy(SUMOPolicy):
             return True
         return False
 
-    def apply(self, p_vehicles):
+    def apply(self, vehicles):
         """
         apply policy to vehicles
-        :param p_vehicles: iterable object containing BaseVehicles, or inherited objects
+        :param vehicles: iterable object containing BaseVehicles, or inherited objects
         :return: List of vehicles with applied, i.e. set attributes, whether they can use otl or not
         """
 
@@ -220,5 +220,5 @@ class SUMOPositionPolicy(SUMOPolicy):
             i_vehicle.change_vehicle_class(
                 SUMO_VCLASS.get(self._behaviour)
             ) if self.applies_to(i_vehicle) else i_vehicle
-            for i_vehicle in p_vehicles
+            for i_vehicle in vehicles
         ]
