@@ -82,14 +82,14 @@ class SUMOPolicy(BasePolicy):
         return SUMO_VCLASS.get(BEHAVIOUR.deny)
 
 
-class SUMODenyPolicy(SUMOPolicy):
+class SUMOUniversalPolicy(SUMOPolicy):
     """
-    Deny policy, i.e. always deny access
+    Universal policy, i.e. always applies to any vehicle
     """
 
     def __init__(self, p_behaviour=BEHAVIOUR.deny):
         """C'tor"""
-        super(SUMODenyPolicy, self).__init__(p_behaviour)
+        super(SUMOUniversalPolicy, self).__init__(p_behaviour)
 
     @staticmethod
     def applies_to(vehicle):
@@ -114,13 +114,12 @@ class SUMODenyPolicy(SUMOPolicy):
             i_vehicle.change_vehicle_class(
                 self.to_disallowed_class()
             ) for i_vehicle in vehicles
-            ]
+        ]
 
 
 class SUMONullPolicy(SUMOPolicy):
     """
-    Null policy, i.e. no restrictions: Every vehicle can use overtaking lane (OTL) depending on
-    default policy
+    Null policy, i.e. no restrictions: Applies to no vehicle
     """
 
     def __init__(self, p_behaviour=BEHAVIOUR.deny):

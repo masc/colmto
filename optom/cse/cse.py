@@ -57,12 +57,22 @@ class BaseCSE(object):
         :return: self
         """
         for i_vehicle in vehicles.itervalues() if isinstance(vehicles, dict) else vehicles:
-            for i_policy in self._policies:
-                if i_policy.applies_to(i_vehicle):
-                    i_vehicle.change_vehicle_class(
-                        optom.cse.policy.SUMOPolicy.to_disallowed_class()
-                    )
-                    break
+            self.apply_one(i_vehicle)
+
+        return self
+
+    def apply_one(self, vehicle):
+        """
+        Apply policies to one vehicles
+        :param vehicle: Vehicle
+        :return: self
+        """
+        for i_policy in self._policies:
+            if i_policy.applies_to(vehicle):
+                vehicle.change_vehicle_class(
+                    optom.cse.policy.SUMOPolicy.to_disallowed_class()
+                )
+                break
 
         return self
 
@@ -71,7 +81,7 @@ class SumoCSE(BaseCSE):
     """First-come-first-served CSE (basically do nothing and allow all vehicles access to OTL."""
 
     _valid_policies = {
-        "SUMODenyPolicy": optom.cse.policy.SUMODenyPolicy,
+        "SUMOUniversalPolicy": optom.cse.policy.SUMOUniversalPolicy,
         "SUMONullPolicy": optom.cse.policy.SUMONullPolicy,
         "SUMOSpeedPolicy": optom.cse.policy.SUMOSpeedPolicy,
         "SUMOPositionPolicy": optom.cse.policy.SUMOPositionPolicy
