@@ -28,7 +28,7 @@ import optom.common.helper
 
 BEHAVIOUR = optom.common.helper.Enum(["deny", "allow"])
 
-POLICY = {
+SUMO_VCLASS = {
     BEHAVIOUR.allow: "custom2",
     BEHAVIOUR.deny: "custom1"
 }
@@ -45,6 +45,21 @@ class BasePolicy(object):
         """
         self._behaviour = default_behaviour
 
+    @staticmethod
+    def behaviour_from_string_or_else(p_behaviour, p_or_else):
+        """
+        Transforms string argument of behaviour, i.e. "allow", "deny" case insensitive to
+        BEHAVIOUR enum value. Otherwise return passed p_or_else argument.
+        :param p_behaviour: string "allow", "deny"
+        :param p_or_else: otherwise returned argument
+        :return: BEHAVIOUR.allow, BEHAVIOUR.deny, p_or_else
+        """
+        if p_behaviour.lower() == "allow":
+            return BEHAVIOUR.allow
+        if p_behaviour.lower() == "deny":
+            return BEHAVIOUR.deny
+        return p_or_else
+
 
 class SUMOPolicy(BasePolicy):
     """
@@ -59,12 +74,12 @@ class SUMOPolicy(BasePolicy):
     @staticmethod
     def to_allowed_class():
         """Get the SUMO class for allowed vehicles"""
-        return POLICY.get(BEHAVIOUR.allow)
+        return SUMO_VCLASS.get(BEHAVIOUR.allow)
 
     @staticmethod
     def to_disallowed_class():
         """Get the SUMO class for disallowed vehicles"""
-        return POLICY.get(BEHAVIOUR.deny)
+        return SUMO_VCLASS.get(BEHAVIOUR.deny)
 
 
 class SUMODenyPolicy(SUMOPolicy):
@@ -77,29 +92,29 @@ class SUMODenyPolicy(SUMOPolicy):
         super(SUMODenyPolicy, self).__init__(p_behaviour)
 
     @staticmethod
-    def applies_to(p_vehicle):
+    def applies_to(vehicle):
         """
         Test whether this policy applies to given vehicle
-        :param p_vehicle: Vehicle
+        :param vehicle: Vehicle
         :return: boolean
         """
-        if p_vehicle:
+        if vehicle:
             return True
 
         return True
 
-    def apply(self, p_vehicles):
+    def apply(self, vehicles):
         """
         apply policy to vehicles
-        :param p_vehicles: iterable object containing BaseVehicles, or inherited objects
+        :param vehicles: iterable object containing BaseVehicles, or inherited objects
         :return: List of vehicles with applied, i.e. set attributes, whether they can use otl or not
         """
 
         return [
             i_vehicle.change_vehicle_class(
                 self.to_disallowed_class()
-            ) for i_vehicle in p_vehicles
-        ]
+            ) for i_vehicle in vehicles
+            ]
 
 
 class SUMONullPolicy(SUMOPolicy):
@@ -113,58 +128,63 @@ class SUMONullPolicy(SUMOPolicy):
         super(SUMONullPolicy, self).__init__(p_behaviour)
 
     @staticmethod
-    def applies_to(p_vehicle):
+    def applies_to(vehicle):
         """
         Test whether this policy applies to given vehicle
-        :param p_vehicle: Vehicle
+        :param vehicle: Vehicle
         :return: boolean
         """
-        if p_vehicle:
+        if vehicle:
             return False
 
         return False
 
     @staticmethod
-    def apply(p_vehicles):
+    def apply(vehicles):
         """
         apply policy to vehicles
-        :param p_vehicles: iterable object containing BaseVehicles, or inherited objects
+        :param vehicles: iterable object containing BaseVehicles, or inherited objects
         :return: List of vehicles with applied, i.e. set attributes, whether they can use otl or not
         """
-        return p_vehicles
+        return vehicles
 
 
 class SUMOSpeedPolicy(SUMOPolicy):
     """Speed based policy: Applies to vehicles within a given speed range"""
 
-    def __init__(self, p_speed_range=numpy.array((0, 120)), p_behaviour=BEHAVIOUR.deny):
+    def __init__(self, speed_range=(0, 120), behaviour=BEHAVIOUR.deny):
         """C'tor"""
-        super(SUMOSpeedPolicy, self).__init__(p_behaviour)
-        self._speed_range = p_speed_range
+        super(SUMOSpeedPolicy, self).__init__(behaviour)
+        self._speed_range = numpy.array(speed_range)
 
-    def applies_to(self, p_vehicle):
+    def __str__(self):
+        return "SUMOSpeedPolicy: speed_range = {}, behaviour = {}".format(
+            self._speed_range, self._behaviour
+        )
+
+    def applies_to(self, vehicle):
         """
         Test whether this policy applies to given vehicle
-        :param p_vehicle: Vehicle
+        :param vehicle: Vehicle
         :return: boolean
         """
-        if self._speed_range[0] <= p_vehicle.speed_max <= self._speed_range[1]:
+        if self._speed_range[0] <= vehicle.speed_max <= self._speed_range[1]:
             return True
         return False
 
-    def apply(self, p_vehicles):
+    def apply(self, vehicles):
         """
         apply policy to vehicles
-        :param p_vehicles: iterable object containing BaseVehicles, or inherited objects
+        :param vehicles: iterable object containing BaseVehicles, or inherited objects
         :return: List of vehicles with applied, i.e. set attributes, whether they can use otl or not
         """
 
         return [
             i_vehicle.change_vehicle_class(
-                POLICY.get(self._behaviour)
+                SUMO_VCLASS.get(self._behaviour)
             ) if self.applies_to(i_vehicle) else i_vehicle
-            for i_vehicle in p_vehicles
-        ]
+            for i_vehicle in vehicles
+            ]
 
 
 class SUMOPositionPolicy(SUMOPolicy):
@@ -173,20 +193,20 @@ class SUMOPositionPolicy(SUMOPolicy):
     [(left_lane_0, right_lane_0) -> (left_lane_1, right_lane_1)]
     """
 
-    def __init__(self, p_position_box=numpy.array(((0.0, 0), (100.0, 1))),
-                 p_behaviour=BEHAVIOUR.deny):
+    def __init__(self, position_box=numpy.array(((0.0, 0), (100.0, 1))),
+                 behaviour=BEHAVIOUR.deny):
         """C'tor"""
-        super(SUMOPositionPolicy, self).__init__(p_behaviour)
-        self._position_box = p_position_box
+        super(SUMOPositionPolicy, self).__init__(behaviour)
+        self._position_box = position_box
 
-    def applies_to(self, p_vehicle):
+    def applies_to(self, vehicle):
         """
         Test whether this policy applies to given vehicle
-        :param p_vehicle: Vehicle
+        :param vehicle: Vehicle
         :return: boolean
         """
-        if numpy.all(numpy.logical_and(self._position_box[0] <= p_vehicle.position,
-                                       p_vehicle.position <= self._position_box[1])):
+        if numpy.all(numpy.logical_and(self._position_box[0] <= vehicle.position,
+                                       vehicle.position <= self._position_box[1])):
             return True
         return False
 
@@ -199,7 +219,7 @@ class SUMOPositionPolicy(SUMOPolicy):
 
         return [
             i_vehicle.change_vehicle_class(
-                POLICY.get(self._behaviour)
+                SUMO_VCLASS.get(self._behaviour)
             ) if self.applies_to(i_vehicle) else i_vehicle
             for i_vehicle in p_vehicles
         ]

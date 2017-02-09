@@ -83,6 +83,7 @@ class Runtime(object):
         if not isinstance(cse, optom.cse.cse.SumoCSE):
             raise AttributeError
         self._log.debug("starting sumo process")
+        self._log.debug("CSE %s with policies %s", cse, cse.policies)
         traci.start(
             [
                 self._sumo_binary,

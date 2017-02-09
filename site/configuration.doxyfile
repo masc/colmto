@@ -113,7 +113,6 @@ WARN_LOGFILE           =
 INPUT                  = optom \
                          tests \
                          README_doc.md \
-                         README.md \
                          LICENSE.md
 INPUT_ENCODING         = UTF-8
 FILE_PATTERNS          = *.py \
@@ -131,7 +130,7 @@ INPUT_FILTER           =
 FILTER_PATTERNS        =
 FILTER_SOURCE_FILES    = YES
 FILTER_SOURCE_PATTERNS =
-USE_MDFILE_AS_MAINPAGE = README.md
+USE_MDFILE_AS_MAINPAGE = README_doc.md
 #---------------------------------------------------------------------------
 # Configuration options related to source browsing
 #---------------------------------------------------------------------------

@@ -27,9 +27,10 @@ from __future__ import print_function
 import copy
 import os
 
+import sh
+
 import optom.common.io
 import optom.common.log
-import sh
 
 
 _DEFAULT_CONFIG_RUN = {
@@ -47,6 +48,15 @@ _DEFAULT_CONFIG_RUN = {
     "scenarios": ["Irzik1"],
     "simtimeinterval": [0, 600],
     "starttimedistribution": "poisson",
+    "policies": [
+        {
+            "type": "SUMOSpeedPolicy",
+            "behaviour": "deny",
+            "args": {
+                "speed_range": [0, 80]
+            }
+        }
+    ],
     "sumo": {
         "enabled": True,
         "gui-delay": 200,
