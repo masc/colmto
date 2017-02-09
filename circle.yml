@@ -54,7 +54,6 @@ test:
         - git checkout gh-pages
         - mv -f circle.yml /tmp
         - mv -f .gitignore /tmp
-        - mv -f radon.sh /tmp
         - git checkout master
         - git push origin :gh-pages
         - git branch -D gh-pages
@@ -63,7 +62,6 @@ test:
         - rm .pre-commit-config.yaml
         - mv -f /tmp/.gitignore .
         - mv -f /tmp/circle.yml .
-        - mv -f /tmp/radon.sh .
         - mv -f /tmp/optom .
         - mv -f /tmp/tests .
         - mv -f /tmp/run.py .
@@ -72,7 +70,7 @@ test:
         - mv -f /tmp/LICENSE.md .
         - pylint optom tests run.py -f html --import-graph=optom-imports.png > pylint.html; true
         - pandoc --from html --to markdown_github pylint.html -o pylint.md
-        - echo -e "\n## Import Graph" >> pylint.md
+        - echo -e "\n## Import Graph\n" >> pylint.md
         - cp pylint.md pylint_doc.md
         - echo -e "\n![ImportGraph](https://github.com/masc/optom/blob/gh-pages/optom-imports.png)" >> pylint.md
         - echo -e "\n![ImportGraph](optom-imports.png)" >> pylint_doc.md
@@ -81,11 +79,12 @@ test:
         - sh site/radon.sh > radon.md
         - cat radon.md >> README.md
         - cat radon.md >> README_doc.md
-        - echo -e "\n# Pylint\n" >> README.md
-        - echo -e "\n# Pylint\n" >> README_doc.md
+        - echo -e "\n# Pylint\n\n" >> README.md
+        - echo -e "\n# Pylint\n\n" >> README_doc.md
         - cat pylint.md >> README.md
         - cat pylint_doc.md >> README_doc.md
         - doxygen site/configuration.doxyfile
+        - cp optom-imports.png docs/sources
         - rm -Rf optom
         - rm -Rf tests
         - rm -Rf site
