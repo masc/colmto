@@ -106,7 +106,7 @@ class Runtime(object):
             self._log.debug("new vehicles: %s", traci.simulation.getDepartedIDList())
 
             # allow all new departing vehicles access to OTL
-            cse.allow_list(traci.simulation.getDepartedIDList())
+            # cse.allow_list(traci.simulation.getDepartedIDList())
 
             # TODO: Insert CSE push/pulls here
 
