@@ -32,6 +32,7 @@ dependencies:
         - pip install pylint
         - pip install radon
         - pip install codecov
+        - pip install doxypypy
 
 checkout:
   post:
