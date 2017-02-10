@@ -72,8 +72,12 @@ class BaseCSE(object):
                 vehicle.change_vehicle_class(
                     optom.cse.policy.SUMOPolicy.to_disallowed_class()
                 )
-                break
+                return self
 
+        # default case: no denying policy found -> allow
+        vehicle.change_vehicle_class(
+            optom.cse.policy.SUMOPolicy.to_allowed_class()
+        )
         return self
 
 
