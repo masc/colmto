@@ -60,6 +60,14 @@ class BasePolicy(object):
             return BEHAVIOUR.deny
         return or_else
 
+    @property
+    def behaviour(self):
+        """
+        Returns behaviour
+        :return: behaviour
+        """
+        return self._behaviour
+
 
 class SUMOPolicy(BasePolicy):
     """

@@ -68,16 +68,17 @@ class BaseCSE(object):
         :return: self
         """
         for i_policy in self._policies:
-            if i_policy.applies_to(vehicle):
+            if i_policy.applies_to(vehicle) and i_policy.behaviour == optom.cse.policy.BEHAVIOUR.deny:
                 vehicle.change_vehicle_class(
                     optom.cse.policy.SUMOPolicy.to_disallowed_class()
                 )
                 return self
 
-        # default case: no denying policy found -> allow
+        # default case: no applicable policy found
         vehicle.change_vehicle_class(
             optom.cse.policy.SUMOPolicy.to_allowed_class()
         )
+
         return self
 
 

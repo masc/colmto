@@ -100,8 +100,6 @@ class Runtime(object):
 
         l_arrived_count = 0
 
-        # TODO: Change lane states for all OTL lanes to deny access to "
-
         while traci.vehicle.getIDCount() > 0 or l_arrived_count == 0:
             l_arrived_count += traci.simulation.getArrivedNumber()
 
@@ -122,11 +120,6 @@ class Runtime(object):
                         i_vehicle_id
                 ) != run_config.get("vehicles").get(i_vehicle_id).vehicle_class:
                     traci.vehicle.setVehicleClass(
-                        i_vehicle_id,
-                        run_config.get("vehicles").get(i_vehicle_id).vehicle_class
-                    )
-                    self._log.info(
-                        "changed vclass of %s to %s",
                         i_vehicle_id,
                         run_config.get("vehicles").get(i_vehicle_id).vehicle_class
                     )
