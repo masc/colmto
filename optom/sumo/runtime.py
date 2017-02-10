@@ -51,8 +51,8 @@ class Runtime(object):
     def run_once(self, run_config):
         """
         Run provided scenario in one shot.
-
-        :param run_config Run configuration
+        Args:
+            run_config: run configuration object
         """
 
         self._log.info(
@@ -76,9 +76,9 @@ class Runtime(object):
     def run_traci(self, run_config, cse):
         """
         Run provided scenario with TraCI by providing a ref to an optimisation entity
-
-        :param run_config Run configuration
-        :param cse central optimisation entity
+        Args:
+            run_config: run configuration
+            cse: central optimisation entity object optom.cse.cse.SumoCSE
         """
 
         if not isinstance(cse, optom.cse.cse.SumoCSE):

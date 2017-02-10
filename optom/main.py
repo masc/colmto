@@ -35,6 +35,7 @@ class Optom(object):
     """Optom main class"""
 
     def __init__(self):
+        """C'tor."""
         l_config_dir = os.path.expanduser(u"~/.optom")
 
         l_parser = argparse.ArgumentParser(description="Process parameters for optom")

@@ -72,7 +72,8 @@ class SumoSim(object):
         """
         Run given scenario.
 
-        :param scenario_name Scenario name to look up cfgs.
+        Args:
+            scenario_name: Scenario name to look up cfgs.
         """
 
         if self._sumocfg.scenario_config.get(scenario_name) is None:

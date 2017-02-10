@@ -40,8 +40,9 @@ class BasePolicy(object):
     def __init__(self, behaviour=BEHAVIOUR.deny):
         """
         C'tor
-        :param behaviour: Default, i.e. baseline policy.
-                                  Enum of optom.cse.policy.BEHAVIOUR.deny/allow
+        Args:
+            behaviour: Default, i.e. baseline policy.
+                       Enum of optom.cse.policy.BEHAVIOUR.deny/allow
         """
         self._behaviour = behaviour
 
@@ -50,9 +51,11 @@ class BasePolicy(object):
         """
         Transforms string argument of behaviour, i.e. "allow", "deny" case insensitive to
         BEHAVIOUR enum value. Otherwise return passed or_else argument.
-        :param behaviour: string "allow", "deny"
-        :param or_else: otherwise returned argument
-        :return: BEHAVIOUR.allow, BEHAVIOUR.deny, or_else
+        Args:
+            behaviour: string "allow", "deny"
+            or_else: otherwise returned argument
+        Returns:
+            BEHAVIOUR.allow, BEHAVIOUR.deny, or_else
         """
         if behaviour.lower() == "allow":
             return BEHAVIOUR.allow
@@ -64,7 +67,8 @@ class BasePolicy(object):
     def behaviour(self):
         """
         Returns behaviour
-        :return: behaviour
+        Returns:
+            behaviour
         """
         return self._behaviour
 
@@ -103,8 +107,10 @@ class SUMOUniversalPolicy(SUMOPolicy):
     def applies_to(vehicle):
         """
         Test whether this policy applies to given vehicle
-        :param vehicle: Vehicle
-        :return: boolean
+        Args:
+            vehicle: Vehicle
+        Returns:
+            boolean
         """
         if vehicle:
             return True
@@ -114,8 +120,10 @@ class SUMOUniversalPolicy(SUMOPolicy):
     def apply(self, vehicles):
         """
         apply policy to vehicles
-        :param vehicles: iterable object containing BaseVehicles, or inherited objects
-        :return: List of vehicles with applied, i.e. set attributes, whether they can use otl or not
+        Args:
+            vehicles: iterable object containing BaseVehicles, or inherited objects
+        Returns:
+            List of vehicles with applied, i.e. set attributes, whether they can use otl or not
         """
 
         return [
@@ -138,8 +146,10 @@ class SUMONullPolicy(SUMOPolicy):
     def applies_to(vehicle):
         """
         Test whether this policy applies to given vehicle
-        :param vehicle: Vehicle
-        :return: boolean
+        Args:
+            vehicle: Vehicle
+        Returns:
+            boolean
         """
         if vehicle:
             return False
@@ -150,8 +160,10 @@ class SUMONullPolicy(SUMOPolicy):
     def apply(vehicles):
         """
         apply policy to vehicles
-        :param vehicles: iterable object containing BaseVehicles, or inherited objects
-        :return: List of vehicles with applied, i.e. set attributes, whether they can use otl or not
+        Args:
+            vehicles: iterable object containing BaseVehicles, or inherited objects
+        Returns:
+            List of vehicles with applied, i.e. set attributes, whether they can use otl or not
         """
         return vehicles
 
@@ -172,8 +184,10 @@ class SUMOSpeedPolicy(SUMOPolicy):
     def applies_to(self, vehicle):
         """
         Test whether this policy applies to given vehicle
-        :param vehicle: Vehicle
-        :return: boolean
+        Args:
+            vehicle: Vehicle
+        Returns:
+            boolean
         """
         if self._speed_range[0] <= vehicle.speed_max <= self._speed_range[1]:
             return True
@@ -182,8 +196,10 @@ class SUMOSpeedPolicy(SUMOPolicy):
     def apply(self, vehicles):
         """
         apply policy to vehicles
-        :param vehicles: iterable object containing BaseVehicles, or inherited objects
-        :return: List of vehicles with applied, i.e. set attributes, whether they can use otl or not
+        Args:
+            vehicles: iterable object containing BaseVehicles, or inherited objects
+        Returns:
+            List of vehicles with applied, i.e. set attributes, whether they can use otl or not
         """
 
         return [
@@ -209,8 +225,10 @@ class SUMOPositionPolicy(SUMOPolicy):
     def applies_to(self, vehicle):
         """
         Test whether this policy applies to given vehicle
-        :param vehicle: Vehicle
-        :return: boolean
+        Args:
+            vehicle: Vehicle
+        Returns:
+            boolean
         """
         if numpy.all(numpy.logical_and(self._position_box[0] <= vehicle.position,
                                        vehicle.position <= self._position_box[1])):
@@ -220,8 +238,10 @@ class SUMOPositionPolicy(SUMOPolicy):
     def apply(self, vehicles):
         """
         apply policy to vehicles
-        :param vehicles: iterable object containing BaseVehicles, or inherited objects
-        :return: List of vehicles with applied, i.e. set attributes, whether they can use otl or not
+        Args:
+            vehicles: iterable object containing BaseVehicles, or inherited objects
+        Returns:
+            List of vehicles with applied, i.e. set attributes, whether they can use otl or not
         """
 
         return [

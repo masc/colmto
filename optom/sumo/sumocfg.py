@@ -82,22 +82,34 @@ class SumoConfig(optom.common.configuration.Configuration):
 
     @property
     def sumo_config_dir(self):
-        """return directory of SUMO config"""
+        """
+        Returns:
+             directory of SUMO config
+        """
         return os.path.join(self.output_dir, "SUMO")
 
     @property
     def runsdir(self):
-        """return directory of runs"""
+        """
+        Returns:
+             directory of runs
+        """
         return os.path.join(self.output_dir, "SUMO", self.run_prefix, "runs")
 
     @property
     def resultsdir(self):
-        """return directory of results"""
+        """
+        Returns:
+            directory for results
+        """
         return os.path.join(self.output_dir, "SUMO", self.run_prefix, "results")
 
     @property
     def sumo_run_config(self):
-        """returns copy of sumo run config"""
+        """
+        Returns:
+             copy of sumo run config
+        """
         return copy.copy(
             self.run_config.get("sumo")
         )
@@ -149,9 +161,12 @@ class SumoConfig(optom.common.configuration.Configuration):
     def generate_run(self, scenario_run_config, initial_sorting, run_number):
         """generate run configurations
 
-        :param scenario_run_config: run configuration of scenario
-        :param initial_sorting: initial sorting of vehicles ("best", "random", "worst")
-        :param run_number: number of current run
+        Args:
+            scenario_run_config: run configuration of scenario
+            initial_sorting: initial sorting of vehicles ("best", "random", "worst")
+            run_number: number of current run
+        Returns:
+            run configuration dictionary
         """
         self._log.debug("Generating run %s for %s sorting", run_number, initial_sorting)
 
@@ -252,9 +267,10 @@ class SumoConfig(optom.common.configuration.Configuration):
         """
         Generate SUMO's node configuration file.
 
-        :param p_scenarioconfig: Scenario configuration
-        :param p_nodefile: Destination to write node file
-        :param p_forcerebuildscenarios: rebuild scenarios,
+        Args:
+            p_scenarioconfig: Scenario configuration
+            p_nodefile: Destination to write node file
+            p_forcerebuildscenarios: rebuild scenarios,
                                         even if they already exist for current run
         """
 
@@ -305,10 +321,11 @@ class SumoConfig(optom.common.configuration.Configuration):
         """
         Generate SUMO's edge configuration file.
 
-        :param p_scenario_name: Name of scenario (required to id detector positions)
-        :param p_scenario_config: Scenario configuration
-        :param p_edgefile: Destination to write edge file
-        :param p_forcerebuildscenarios: Rebuild scenarios,
+        Args:
+            p_scenario_name: Name of scenario (required to id detector positions)
+            p_scenario_config: Scenario configuration
+            p_edgefile: Destination to write edge file
+            p_forcerebuildscenarios: Rebuild scenarios,
                                         even if they already exist for current run
         """
 
@@ -396,8 +413,9 @@ class SumoConfig(optom.common.configuration.Configuration):
         """
         Generate switches if not pre-defined in scenario config.
 
-        :param p_21edge:
-        :return:
+        Args:
+            p_21edge: edge
+            p_scenario_config: scenario config dictionary
         """
         self._log.info("########### generating switches ###########")
 
@@ -451,10 +469,11 @@ class SumoConfig(optom.common.configuration.Configuration):
         """
         Generate SUMO's main configuration file.
 
-        :param p_config_files: Dictionary of config file locations,
+        Args:
+            p_config_files: Dictionary of config file locations,
                              i.e. netfile, routefile, settingsfile
-        :param p_simtimeinterval: Time interval of simulation
-        :param p_forcerebuildscenarios: Rebuild scenarios,
+            p_simtimeinterval: Time interval of simulation
+            p_forcerebuildscenarios: Rebuild scenarios,
                                         even if they already exist for current run
         """
 
@@ -495,10 +514,11 @@ class SumoConfig(optom.common.configuration.Configuration):
         """
         Generate SUMO's settings configuration file.
 
-        :param p_scenarioconfig: Scenario configuration
-        :param p_runcfg: Run configuration
-        :param p_settingsfile: Destination to write settings file
-        :param p_forcerebuildscenarios: Rebuild scenarios,
+        Args:
+            p_scenarioconfig: Scenario configuration
+            p_runcfg: Run configuration
+            p_settingsfile: Destination to write settings file
+            p_forcerebuildscenarios: Rebuild scenarios,
                                         even if they already exist for current run
         """
         if os.path.isfile(p_settingsfile) and not p_forcerebuildscenarios:
@@ -523,9 +543,12 @@ class SumoConfig(optom.common.configuration.Configuration):
         """
         Calculate next time step in poission or linear distribution.
 
-        :param p_lambda:
-        :param p_prevstarttime:
-        :param p_distribution:
+        Args:
+            p_lambda: lambda
+            p_prevstarttime: start time
+            p_distribution: distribution, i.e. "poisson" or "linear"
+        Returns:
+            next start time
         """
 
         if p_distribution == "poisson":
@@ -539,11 +562,14 @@ class SumoConfig(optom.common.configuration.Configuration):
         """
         Create a distribution of vehicles based on
 
-        :param p_nbvehicles: number of vehicles
-        :param p_aadt: anual average daily traffic (vehicles/day/lane)
-        :param p_initialsorting: initial sorting of vehicles (by max speed)
+        Args:
+            p_nbvehicles: number of vehicles
+            p_aadt: anual average daily traffic (vehicles/day/lane)
+            p_initialsorting: initial sorting of vehicles (by max speed)
                                 ["best", "random", "worst"]
-        :param p_scenario_name: name of scenario
+            p_scenario_name: name of scenario
+        Returns:
+            OrderedDict of ID -> optom.environment.vehicle.Vehicle
         """
 
         assert p_initialsorting in ["best", "random", "worst"]
@@ -611,11 +637,13 @@ class SumoConfig(optom.common.configuration.Configuration):
         """
         Generate SUMO's trip file.
 
-        :param p_scenario_runs:
-        :param p_initialsorting:
-        :param p_tripfile:
-        :param p_forcerebuildscenarios:
-        :return:
+        Args:
+            p_scenario_runs:
+            p_initialsorting:
+            p_tripfile:
+            p_forcerebuildscenarios:
+        Returns:
+            vehicles
         """
 
         if os.path.isfile(p_tripfile) and not p_forcerebuildscenarios:
@@ -719,11 +747,11 @@ class SumoConfig(optom.common.configuration.Configuration):
         """
         Generate SUMO's net xml.
 
-        :param p_nodefile:
-        :param p_edgefile:
-        :param p_netfile:
-        :param p_forcerebuildscenarios:
-        :return:
+        Args:
+            p_nodefile:
+            p_edgefile:
+            p_netfile:
+            p_forcerebuildscenarios:
         """
 
         if os.path.isfile(p_netfile) and not p_forcerebuildscenarios:
@@ -747,11 +775,11 @@ class SumoConfig(optom.common.configuration.Configuration):
         """
         Generate SUMO's route xml.
 
-        :param p_netfile:
-        :param p_tripfile:
-        :param p_routefile:
-        :param p_forcerebuildscenarios:
-        :return:
+        Args:
+            p_netfile:
+            p_tripfile:
+            p_routefile:
+            p_forcerebuildscenarios:
         """
 
         if os.path.isfile(p_routefile) and not p_forcerebuildscenarios:

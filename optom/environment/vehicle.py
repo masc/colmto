@@ -30,13 +30,17 @@ class BaseVehicle(object):
     """Base Vehicle."""
 
     def __init__(self, speed_max=0.0, speed_current=0.0, position=numpy.array([0.0, 0])):
+        """C'tor"""
         self._speed_max = speed_max
         self._speed_current = speed_current
         self._position = position
 
     @property
     def properties(self):
-        """Returns vehicle properties as dictionary bundle"""
+        """
+        Returns:
+            vehicle properties as dictionary bundle
+        """
         return {
             "position": self.position,
             "speed_current": self.speed_current,
@@ -45,32 +49,53 @@ class BaseVehicle(object):
 
     @property
     def speed_max(self):
-        """Returns maximum capable velocity of vehicle."""
+        """
+        Returns:
+            maximum capable velocity of vehicle
+        """
         return self._speed_max
 
     @speed_max.setter
     def speed_max(self, speed):
-        """Sets maximum speed."""
+        """
+        Sets maximum speed.
+        Args:
+            speed_max: maximum speed
+        """
         self._speed_max = speed
 
     @property
     def speed_current(self):
-        """Returns current speed."""
+        """
+        Returns:
+             current speed
+        """
         return self._speed_current
 
     @speed_current.setter
     def speed_current(self, speed):
-        """Sets current speed."""
+        """
+        Sets current speed
+        Args:
+            speed: current speed
+        """
         self._speed_current = speed
 
     @property
     def position(self):
-        """Returns current position."""
+        """
+        Returns:
+             current position
+        """
         return self._position
 
     @position.setter
     def position(self, p_position):
-        """Updates current position."""
+        """
+        Updates current position
+        Args:
+            p_position: current position
+        """
         self._position = p_position
 
 
@@ -80,7 +105,8 @@ class SUMOVehicle(BaseVehicle):
     def __init__(self, **kwargs):
         """
         C'tor.
-        :param kwargs: Recognised arguments (with default values) are
+        Args:
+            kwargs: Recognised arguments (with default values) are
                        speed_max=0.0, speed_current=0.0, position=(None,), speed_deviation=0.0,
                        vtype=None, vtype_sumo_cfg={}, color=(255, 255, 0, 255), start_time=0.0
         """
@@ -101,7 +127,10 @@ class SUMOVehicle(BaseVehicle):
 
     @property
     def properties(self):
-        """Returns vehicle's properties as a dict bundle."""
+        """
+        Returns:
+             vehicle's properties as a dict bundle
+        """
         return {
             "position": self._position,
             "speed_current": self._speed_current,
@@ -118,13 +147,18 @@ class SUMOVehicle(BaseVehicle):
 
     @property
     def vtype(self):
-        """Return vehicle type."""
+        """
+        Returns:
+             vehicle type
+        """
         return self._vtype
 
     @property
     def vtype_sumo_cfg(self):
         """
-        Convert values of vtype config to str for sumo xml handling and return cfg.
+        Convert values of vtype config to str for sumo xml handling and return cfg
+        Returns:
+            sumo config attributes
         """
         return {
             attr: str(value) for (attr, value) in self._vtype_sumo_cfg.iteritems()
@@ -132,45 +166,76 @@ class SUMOVehicle(BaseVehicle):
 
     @property
     def color(self):
-        """Return color."""
+        """
+        Returns:
+            color
+        """
         return self._color
 
     @color.setter
     def color(self, p_color):
-        """Update color."""
+        """
+        Update color
+        Args:
+            p_color: Color
+        """
         self._color = p_color
 
     @property
     def speed_deviation(self):
-        """Return speed deviation."""
+        """
+        Returns:
+             speed deviation
+        """
         return self._speed_deviation
 
     @property
     def start_time(self):
-        """Return vehicle's start time."""
+        """
+        Returns:
+             vehicle's start time
+        """
         return self._start_time
 
     @start_time.setter
     def start_time(self, p_start_time):
-        """Set start time of vehicle."""
+        """
+        Set start time of vehicle
+        Args:
+            p_start_time: start time
+        """
         self._start_time = p_start_time
 
     @property
     def travel_times(self):
-        """Return travel times."""
+        """
+        Returns:
+             travel times"""
         return self._travel_times
 
     @property
     def time_losses(self):
-        """Return time losses."""
+        """
+        Returns:
+             time losses
+        """
         return self._time_losses
 
     @property
     def vehicle_class(self):
-        """Return SUMO vehicle class"""
+        """
+        Returns:
+             SUMO vehicle class
+        """
         return self._vehicle_class
 
     def change_vehicle_class(self, p_class_name):
-        """Change vehicle class"""
+        """
+        Change vehicle class
+        Args:
+            p_class_name: vehicle class
+        Returns:
+            self
+        """
         self._vehicle_class = p_class_name
         return self

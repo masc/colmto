@@ -37,7 +37,8 @@ class BaseCSE(object):
     def __init__(self, args=None):
         """
         C'tor
-        :param args: argparse configuration
+        Args:
+            args: argparse configuration
         """
         if args is not None:
             self._log = optom.common.log.logger(__name__, args.loglevel, args.quiet, args.logfile)
@@ -46,15 +47,18 @@ class BaseCSE(object):
     def policies(self):
         """
         Policies of CSE
-        :return: policies tuple
+        Returns:
+            policies tuple
         """
         return tuple(self._policies)
 
     def apply(self, vehicles):
         """
         Apply policies to vehicles
-        :param vehicles: Iterable of vehicles or dictionary Id -> Vehicle
-        :return: self
+        Args:
+            vehicles: Iterable of vehicles or dictionary Id -> Vehicle
+        Returns:
+            self
         """
         for i_vehicle in vehicles.itervalues() if isinstance(vehicles, dict) else vehicles:
             self.apply_one(i_vehicle)
@@ -64,8 +68,10 @@ class BaseCSE(object):
     def apply_one(self, vehicle):
         """
         Apply policies to one vehicles
-        :param vehicle: Vehicle
-        :return: self
+        Args:
+            vehicle: Vehicle
+        Returns:
+            self
         """
         for i_policy in self._policies:
             if i_policy.applies_to(vehicle) and i_policy.behaviour == optom.cse.policy.BEHAVIOUR.deny:
@@ -101,9 +107,11 @@ class SumoCSE(BaseCSE):
 
     def add_policy(self, policy):
         """
-        adds policy to SumoCSE.
-        :param policy: policy object
-        :return: self
+        Add policy to SumoCSE.
+        Args:
+            policy: policy object
+        Returns:
+            self
         """
         self._policies.append(
             policy
@@ -113,9 +121,11 @@ class SumoCSE(BaseCSE):
 
     def add_policies_from_cfg(self, policies_config):
         """
-        adds policies to SumoCSE based on run config's "policies" section.
-        :param policies_config: run config's "policies" section
-        :return: self
+        Add policies to SumoCSE based on run config's "policies" section.
+        Args:
+            policies_config: run config's "policies" section
+        Returns:
+            self
         """
         for i_policy in policies_config:
             self.add_policy(

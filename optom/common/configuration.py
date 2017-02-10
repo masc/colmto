@@ -357,30 +357,46 @@ class Configuration(object):
 
     @property
     def run_config(self):
-        """Return run config."""
+        """
+        Returns:
+            run config
+        """
         return copy.copy(self._run_config)
 
     @property
     def scenario_config(self):
-        """Return scenario config."""
+        """
+        Returns:
+            scenario config
+        """
         return copy.copy(self._scenario_config)
 
     @property
     def scenario_dir(self):
-        """Return scenario directory."""
+        """
+        Returns: scenario directory."""
         return copy.copy(self._args.scenario_dir)
 
     @property
     def vtypes_config(self):
-        """Return vehicle type config."""
+        """
+        Return:
+            vehicle type config
+        """
         return copy.copy(self._vtypes_config)
 
     @property
     def output_dir(self):
-        """Return destination dir."""
+        """
+        Returns:
+            destination dir
+        """
         return copy.copy(self._args.output_dir)
 
     @property
     def run_prefix(self):
-        """Return run prefix."""
+        """
+        Returns:
+             run prefix
+        """
         return copy.copy(self._args.run_prefix)
