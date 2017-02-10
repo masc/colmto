@@ -60,7 +60,7 @@ _DEFAULT_CONFIG_RUN = {
             "type": "SUMOPositionPolicy",
             "behaviour": "deny",
             "args": {
-                "position_box": ((1350, -1.65), (6500, 1.65))
+                "position_box": ((1350., -2.), (6500., 2.))
             }
         }
     ],
