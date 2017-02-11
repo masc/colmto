@@ -136,6 +136,7 @@ class Runtime(object):
 
             # subscribe to values of newly entering vehicles
             for i_vehicle_id in traci.simulation.getDepartedIDList():
+                run_config.get("vehicles").get(i_vehicle_id).start_time = l_sim_current_time/10.**3
                 traci.vehicle.subscribe(
                     i_vehicle_id, [
                         traci.constants.VAR_POSITION,
@@ -150,16 +151,6 @@ class Runtime(object):
                 run_config.get("vehicles").get(i_vehicle_id).position = numpy.array(
                     i_results.get(traci.constants.VAR_POSITION)
                 )
-
-                # print(
-                #     "vehicle {}\n\t vehicle class: {}\n\tposition: {}\n\tcurrent time: {}\n\tmax speed: {}".format(
-                #         i_vehicle_id,
-                #         i_results.get(traci.constants.VAR_VEHICLECLASS),
-                #         i_results.get(traci.constants.VAR_POSITION),
-                #         traci.simulation.getCurrentTime(),
-                #         i_results.get(traci.constants.VAR_MAXSPEED)
-                #     )
-                # )
 
                 # set vclass according to policies for each vehicle, i.e.
                 # allow vehicles access to OTL depending on policy
