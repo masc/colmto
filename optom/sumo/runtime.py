@@ -41,6 +41,7 @@ except ImportError:
 class Runtime(object):
     """Runtime class"""
     # pylint: disable=too-few-public-methods
+
     def __init__(self, args, sumo_config, sumo_binary):
         """C'tor."""
         self._args = args
@@ -51,6 +52,7 @@ class Runtime(object):
     def run_once(self, run_config):
         """
         Run provided scenario in one shot.
+
         Args:
             run_config: run configuration object
         """
@@ -59,6 +61,7 @@ class Runtime(object):
             "Running scenario %s: run %d",
             run_config.get("scenarioname"), run_config.get("runnumber")
         )
+
         l_sumoprocess = subprocess.check_output(
             [
                 self._sumo_binary,
@@ -71,14 +74,16 @@ class Runtime(object):
             stderr=subprocess.STDOUT,
             bufsize=-1
         )
+
         self._log.debug("%s : %s", self._sumo_binary, l_sumoprocess.replace("\n", ""))
 
     def run_traci(self, run_config, cse):
         """
-        Run provided scenario with TraCI by providing a ref to an optimisation entity
+        Run provided scenario with TraCI by providing a ref to an optimisation entity.
+
         Args:
             run_config: run configuration
-            cse: central optimisation entity object optom.cse.cse.SumoCSE
+            cse: central optimisation entity instance of optom.cse.cse.SumoCSE
         """
 
         if not isinstance(cse, optom.cse.cse.SumoCSE):
@@ -98,27 +103,31 @@ class Runtime(object):
         )
         self._log.debug("connecting to TraCI instance on port %d", run_config.get("sumoport"))
 
-        l_arrived_count = 0
+        while traci.simulation.getMinExpectedNumber() > 0:
 
-        while traci.vehicle.getIDCount() > 0 or l_arrived_count == 0:
-            l_arrived_count += traci.simulation.getArrivedNumber()
-
-            self._log.debug("new vehicles: %s", traci.simulation.getDepartedIDList())
-
-            # iterate through every vehicle id currently active in simulation
-            for i_vehicle_id in traci.vehicle.getIDList():
-                # update vehicle position
-                run_config.get("vehicles").get(i_vehicle_id).position = numpy.array(
-                    traci.vehicle.getPosition(i_vehicle_id)
+            # subscribe to values of newly entering vehicles
+            for i_vehicle_id in traci.simulation.getDepartedIDList():
+                traci.vehicle.subscribe(
+                    i_vehicle_id, [
+                        traci.constants.VAR_POSITION,
+                        traci.constants.VAR_VEHICLECLASS
+                    ]
                 )
 
-                # set vclass according to policies for each new entering vehicle, i.e.
+            # retrieve results, update vehicle objects, apply cse policies
+            for i_vehicle_id, i_results in traci.vehicle.getSubscriptionResults().iteritems():
+                # update vehicle position
+                run_config.get("vehicles").get(i_vehicle_id).position = numpy.array(
+                    i_results.get(traci.constants.VAR_POSITION)
+                )
+
+                # set vclass according to policies for each vehicle, i.e.
                 # allow vehicles access to OTL depending on policy
                 cse.apply_one(run_config.get("vehicles").get(i_vehicle_id))
-                # update vehicle class via traci if changed
-                if traci.vehicle.getVehicleClass(
-                        i_vehicle_id
-                ) != run_config.get("vehicles").get(i_vehicle_id).vehicle_class:
+
+                # update vehicle class via traci if vclass changed
+                if i_results.get(traci.constants.VAR_VEHICLECLASS) \
+                        != run_config.get("vehicles").get(i_vehicle_id).vehicle_class:
                     traci.vehicle.setVehicleClass(
                         i_vehicle_id,
                         run_config.get("vehicles").get(i_vehicle_id).vehicle_class
