@@ -111,17 +111,21 @@ class Statistics(object):
     @staticmethod
     def h_spread(p_data):
         """
-        Calculate H-Spread of given data points
-        Weisstein, Eric W. "H-Spread." From MathWorld--A Wolfram Web Resource.
+        Calculate H-Spread of given data points.
+
+        Weisstein, Eric W. H-Spread. From MathWorld--A Wolfram Web Resource.
         http://mathworld.wolfram.com/H-Spread.html
-        Weisstein, Eric W. "Hinge." From MathWorld--A Wolfram Web Resource.
+        Weisstein, Eric W. Hinge. From MathWorld--A Wolfram Web Resource.
         http://mathworld.wolfram.com/Hinge.html
+
         Args:
             p_data: Iterable set of data elements of (preferably) $4n+5$ for $n=0,1,...,N$,
-                       i.e. minimum length is $5$
+            i.e. minimum length is $5$
+
         Returns:
             $H_2 - H_1$ if p_data contains at least 5 elements, otherwise raises ArithmeticError
         """
+
         l_data = sorted(p_data)
         l_len = len(l_data)
 
