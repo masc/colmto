@@ -216,11 +216,21 @@ class SUMOPositionPolicy(SUMOPolicy):
     [(left_lane_0, right_lane_0) -> (left_lane_1, right_lane_1)]
     """
 
-    def __init__(self, position_box=numpy.array(((0.0, 0), (100.0, 1))),
+    def __init__(self, position_bbox=numpy.array(((0.0, 0), (100.0, 1))),
                  behaviour=BEHAVIOUR.deny):
         """C'tor"""
         super(SUMOPositionPolicy, self).__init__(behaviour)
-        self._position_box = position_box
+        self._position_bbox = position_bbox
+
+    @property
+    def position_bbox(self):
+        """
+        Returns position bounding box.
+
+        Returns:
+            position bounding box
+        """
+        return self._position_bbox
 
     def applies_to(self, vehicle):
         """
@@ -230,8 +240,8 @@ class SUMOPositionPolicy(SUMOPolicy):
         Returns:
             boolean
         """
-        if numpy.all(numpy.logical_and(self._position_box[0] <= vehicle.position,
-                                       vehicle.position <= self._position_box[1])):
+        if numpy.all(numpy.logical_and(self._position_bbox[0] <= vehicle.position,
+                                       vehicle.position <= self._position_bbox[1])):
             return True
         return False
 

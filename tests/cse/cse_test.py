@@ -49,7 +49,7 @@ def test_sumo_cse():
     l_sumo_cse = optom.cse.cse.SumoCSE().add_policy(
         optom.cse.policy.SUMOSpeedPolicy(speed_range=numpy.array((0., 80.))),
     ).add_policy(
-        optom.cse.policy.SUMOPositionPolicy(position_box=numpy.array(((0., 0), (64.0, 1))))
+        optom.cse.policy.SUMOPositionPolicy(position_bbox=numpy.array(((0., 0), (64.0, 1))))
     )
     assert_is_instance(l_sumo_cse, optom.cse.cse.SumoCSE)
 
