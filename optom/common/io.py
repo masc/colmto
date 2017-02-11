@@ -76,8 +76,10 @@ import optom.common.log
 def xslt(p_template):
     """
     Wrapper to apply template to XSLT and return transformation object.
-    :param p_template: XSLT template
-    :return: transformation object
+    Args:
+        p_template: XSLT template
+    Returns:
+        transformation object
     """
     return XSLT(p_template)
 

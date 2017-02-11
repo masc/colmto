@@ -44,8 +44,10 @@ class Statistics(object):
     def fcd_stats(self, p_run_data):
         """
 
-        :param p_run_data:
-        :return: json object
+        Args:
+            p_run_data:
+        Returns:
+            json object
         """
 
         self._log.debug("Reading fcd file %s", p_run_data.get("fcdfile"))
@@ -114,9 +116,11 @@ class Statistics(object):
         http://mathworld.wolfram.com/H-Spread.html
         Weisstein, Eric W. "Hinge." From MathWorld--A Wolfram Web Resource.
         http://mathworld.wolfram.com/Hinge.html
-        :param p_data: Iterable set of data elements of (preferably) 4n+5 for n=0,1,...,N,
-                       i.e. minimum length is 5
-        :return: H_2 - H_1 if p_data contains at least 5 elements, otherwise raises ArithmeticError
+        Args:
+            p_data: Iterable set of data elements of (preferably) $4n+5$ for $n=0,1,...,N$,
+                       i.e. minimum length is $5$
+        Returns:
+            $H_2 - H_1$ if p_data contains at least 5 elements, otherwise raises ArithmeticError
         """
         l_data = sorted(p_data)
         l_len = len(l_data)
