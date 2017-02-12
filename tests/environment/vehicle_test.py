@@ -64,10 +64,10 @@ def test_sumovehicle():
 
     assert_equal(l_sumovehicle.speed_max, 0.0)
     assert_equal(l_sumovehicle.speed_current, 0.0)
-    assert_true(numpy.array_equal(l_sumovehicle.position, numpy.array([0.0, 0])))
+    assert_true(numpy.array_equal(l_sumovehicle.position, numpy.array((0.0, 0))))
     assert_equal(l_sumovehicle.speed_deviation, 0.0)
     assert_equal(l_sumovehicle.vtype, None)
-    assert_equal(l_sumovehicle.color, (255, 255, 0, 255))
+    assert_true(numpy.array_equal(l_sumovehicle.color, numpy.array((255, 255, 0, 255))))
     assert_equal(l_sumovehicle.start_time, 0.0)
     assert_equal(l_sumovehicle.vtype_sumo_cfg, {})
 
