@@ -163,6 +163,17 @@ class Runtime(object):
                         i_vehicle_id,
                         run_config.get("vehicles").get(i_vehicle_id).vehicle_class
                     )
+                    if run_config.get("vehicles").get(i_vehicle_id).vehicle_class \
+                            == optom.cse.policy.SUMOPolicy.to_disallowed_class():
+                        traci.vehicle.setColor(
+                            i_vehicle_id,
+                            (255, 0, 0, 255)
+                        )
+                    else:
+                        traci.vehicle.setColor(
+                            i_vehicle_id,
+                            tuple(run_config.get("vehicles").get(i_vehicle_id).color)
+                        )
 
             traci.simulationStep()
 

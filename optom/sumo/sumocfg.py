@@ -26,6 +26,7 @@ from __future__ import print_function
 
 import copy
 import itertools
+import numpy
 import os
 import random
 import subprocess
@@ -621,7 +622,7 @@ class SumoConfig(optom.common.configuration.Configuration):
         l_vehicles = OrderedDict()
         for i, i_vehicle in enumerate(l_vehicle_list):
             # update colors
-            i_vehicle.color = self._speed_colormap(i_vehicle.speed_max)
+            i_vehicle.color = numpy.array(self._speed_colormap(i_vehicle.speed_max))*255
             # update start time
             i_vehicle.start_time = self._next_timestep(
                 l_vehps,
@@ -690,7 +691,7 @@ class SumoConfig(optom.common.configuration.Configuration):
             l_vattr = i_vehicle.vtype_sumo_cfg
             l_vattr.update({
                 "id": str(i_vid),
-                "color": "{},{},{},{}".format(*i_vehicle.color)
+                "color": "{},{},{},{}".format(*i_vehicle.color/255.)
             })
 
             # override parameters speedDev, desiredSpeed, and length if defined in run config

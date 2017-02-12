@@ -108,12 +108,12 @@ class SUMOVehicle(BaseVehicle):
         Args:
             kwargs: Recognised arguments (with default values) are
                        speed_max=0.0, speed_current=0.0, position=(None,), speed_deviation=0.0,
-                       vtype=None, vtype_sumo_cfg={}, color=(255, 255, 0, 255), start_time=0.0
+                       vtype=None, vtype_sumo_cfg={}, color=numpy.array((255, 255, 0, 255)), start_time=0.0
         """
 
         self._vtype = kwargs.pop("vtype", None)
         self._vtype_sumo_cfg = kwargs.pop("vtype_sumo_cfg", {})
-        self._color = kwargs.pop("color", (255, 255, 0, 255))
+        self._color = kwargs.pop("color", numpy.array((255, 255, 0, 255)))
         self._speed_deviation = kwargs.pop("speed_deviation", 0.0)
         self._start_time = kwargs.pop("start_time", 0.0)
         self._vehicle_class = kwargs.pop(
@@ -179,7 +179,7 @@ class SUMOVehicle(BaseVehicle):
         Args:
             p_color: Color
         """
-        self._color = p_color
+        self._color = numpy.array(p_color)
 
     @property
     def speed_deviation(self):
