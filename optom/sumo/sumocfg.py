@@ -540,24 +540,32 @@ class SumoConfig(optom.common.configuration.Configuration):
             f_pconfigxml.write(optom.common.io.etree.tostring(l_viewsettings, pretty_print=True))
 
     @staticmethod
-    def _next_timestep(p_lambda, p_prevstarttime, p_distribution="poisson"):
+    def _next_timestep(p_lambda, p_prev_start_time, p_distribution="poisson"):
         """
-        Calculate next time step in poission or linear distribution.
+        Calculate next time step in Poisson or linear distribution.
+
+        Poisson (exponential) distribution with
+        $$F(x) := 1 - e^{-\lambda x}$$
+        by using random.expovariate(p_lambda).
+
+        Linear distribution just adds $$1/p\_lambda$$ to the previous start time.
+
+        For every other value of p_distribution this function just returns the input value of p_prev_start_time.
 
         Args:
             p_lambda: lambda
-            p_prevstarttime: start time
+            p_prev_start_time: start time
             p_distribution: distribution, i.e. "poisson" or "linear"
         Returns:
             next start time
         """
 
         if p_distribution == "poisson":
-            return p_prevstarttime + random.expovariate(p_lambda)
+            return p_prev_start_time + random.expovariate(p_lambda)
         elif p_distribution == "linear":
-            return p_prevstarttime + 1 / p_lambda
+            return p_prev_start_time + 1 / p_lambda
         else:
-            return p_prevstarttime
+            return p_prev_start_time
 
     def _create_vehicle_distribution(self, p_nbvehicles, p_aadt, p_initialsorting, p_scenario_name):
         """
