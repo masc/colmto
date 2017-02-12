@@ -107,8 +107,9 @@ class SUMOVehicle(BaseVehicle):
         C'tor.
         Args:
             kwargs: Recognised arguments (with default values) are
-                       speed_max=0.0, speed_current=0.0, position=(None,), speed_deviation=0.0,
-                       vtype=None, vtype_sumo_cfg={}, color=numpy.array((255, 255, 0, 255)), start_time=0.0
+                    speed_max=0.0, speed_current=0.0, position=(None,), speed_deviation=0.0,
+                    vtype=None, vtype_sumo_cfg={}, color=numpy.array((255, 255, 0, 255)),
+                    start_time=0.0
         """
 
         self._vtype = kwargs.pop("vtype", None)

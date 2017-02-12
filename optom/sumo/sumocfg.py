@@ -26,11 +26,11 @@ from __future__ import print_function
 
 import copy
 import itertools
-import numpy
 import os
 import random
 import subprocess
 from collections import OrderedDict
+import numpy
 
 import optom.common.configuration
 import optom.common.io
