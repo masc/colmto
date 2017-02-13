@@ -30,6 +30,7 @@ import os
 import random
 import subprocess
 from collections import OrderedDict
+
 import numpy
 
 import optom.common.configuration
@@ -545,12 +546,13 @@ class SumoConfig(optom.common.configuration.Configuration):
         Calculate next time step in Poisson or linear distribution.
 
         Poisson (exponential) distribution with
-        $$F(x) := 1 - e^{-lambda x}$$
+        $$F(x) := 1 - e^{-\\lambda x}$$
         by using random.expovariate(p_lambda).
 
         Linear distribution just adds 1/p_lambda to the previous start time.
 
-        For every other value of p_distribution this function just returns the input value of p_prev_start_time.
+        For every other value of p_distribution this function just returns the input value of
+        p_prev_start_time.
 
         Args:
             p_lambda: lambda
