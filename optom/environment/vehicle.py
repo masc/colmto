@@ -90,13 +90,13 @@ class BaseVehicle(object):
         return self._position
 
     @position.setter
-    def position(self, p_position):
+    def position(self, position):
         """
         Updates current position
         Args:
-            p_position: current position
+            position: current position
         """
-        self._position = p_position
+        self._position = position
 
 
 class SUMOVehicle(BaseVehicle):
@@ -104,7 +104,7 @@ class SUMOVehicle(BaseVehicle):
 
     def __init__(self, speed_max=0.0, position=numpy.array((0.0, 0)), speed_deviation=0.0,
                  vehicle_type=None, vehicle_class=optom.cse.policy.SUMOPolicy.to_allowed_class(),
-                 vtype_sumo_cfg={}, color=numpy.array((255, 255, 0, 255))):
+                 vtype_sumo_cfg=None, color=numpy.array((255, 255, 0, 255))):
         """
         C'tor.
         Args:
@@ -128,8 +128,6 @@ class SUMOVehicle(BaseVehicle):
         self._speed_deviation = speed_deviation
         self._start_time = 0.0
         self._vehicle_class = vehicle_class
-        self._travel_times = {}
-        self._time_losses = {}
 
     @property
     def properties(self):
@@ -145,8 +143,6 @@ class SUMOVehicle(BaseVehicle):
             "vtype_sumo_cfg": self.vtype_sumo_cfg,
             "color": self._color,
             "speed_deviation": self._speed_deviation,
-            "travel_times": self._travel_times,
-            "time_losses": self._time_losses,
             "start_time": self._start_time,
             "vehicle_class": self._vehicle_class
         }
@@ -168,7 +164,7 @@ class SUMOVehicle(BaseVehicle):
         """
         return {
             attr: str(value) for (attr, value) in self._vtype_sumo_cfg.iteritems()
-        }
+        } if self._vtype_sumo_cfg is not None else {}
 
     @property
     def color(self):
@@ -179,13 +175,13 @@ class SUMOVehicle(BaseVehicle):
         return self._color
 
     @color.setter
-    def color(self, p_color):
+    def color(self, color):
         """
         Update color
         Args:
-            p_color: Color
+            color: Color
         """
-        self._color = numpy.array(p_color)
+        self._color = numpy.array(color)
 
     @property
     def speed_deviation(self):
@@ -204,28 +200,13 @@ class SUMOVehicle(BaseVehicle):
         return self._start_time
 
     @start_time.setter
-    def start_time(self, p_start_time):
+    def start_time(self, start_time):
         """
         Set start time of vehicle
         Args:
-            p_start_time: start time
+            start_time: start time
         """
-        self._start_time = p_start_time
-
-    @property
-    def travel_times(self):
-        """
-        Returns:
-             travel times"""
-        return self._travel_times
-
-    @property
-    def time_losses(self):
-        """
-        Returns:
-             time losses
-        """
-        return self._time_losses
+        self._start_time = start_time
 
     @property
     def vehicle_class(self):
@@ -235,13 +216,13 @@ class SUMOVehicle(BaseVehicle):
         """
         return self._vehicle_class
 
-    def change_vehicle_class(self, p_class_name):
+    def change_vehicle_class(self, class_name):
         """
         Change vehicle class
         Args:
-            p_class_name: vehicle class
+            class_name: vehicle class
         Returns:
             self
         """
-        self._vehicle_class = p_class_name
+        self._vehicle_class = class_name
         return self

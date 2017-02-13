@@ -93,8 +93,7 @@ def test_sumovehicle():
     assert_equal(l_sumovehicle.vehicle_type, "passenger")
     assert_equal(l_sumovehicle.color, (128, 64, 255, 255))
     assert_equal(l_sumovehicle.start_time, 13)
-    assert_equal(
-        l_sumovehicle.vtype_sumo_cfg,
+    assert_equal(l_sumovehicle.vtype_sumo_cfg,
         {
             "length": "3.0",
             "minGap": "2.5"

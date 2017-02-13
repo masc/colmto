@@ -106,7 +106,7 @@ class SumoCSE(BaseCSE):
             [i_v.change_vehicle_class("custom1") for i_v in vehicles]
         )
 
-    def add_policy(self, policy, policy_cfg):
+    def add_policy(self, policy, policy_cfg=None):
         """
         Add policy to SumoCSE.
         Args:
@@ -116,7 +116,10 @@ class SumoCSE(BaseCSE):
             self
         """
 
-        if isinstance(policy, optom.cse.policy.SUMOVehiclePolicy) \
+        if not isinstance(policy, optom.cse.policy.SUMOVehiclePolicy):
+            raise AttributeError
+
+        if policy_cfg is not None \
                 and policy_cfg.get("vehicle_policies", {}).get("rule", False):
             # look for sub-policies
             policy.rule = policy_cfg.get("vehicle_policies", {}).get("rule")
