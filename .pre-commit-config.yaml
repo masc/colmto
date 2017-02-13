@@ -6,7 +6,7 @@
     -   id: check-xml
     -   id: check-json
     -   id: end-of-file-fixer
--   repo: git://github.com/asottile/reorder_python_imports
-    sha: v0.3.1
-    hooks:
-    -   id: reorder-python-imports
+#-   repo: git://github.com/asottile/reorder_python_imports
+#    sha: v0.3.1
+#    hooks:
+#    -   id: reorder-python-imports
