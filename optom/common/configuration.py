@@ -53,14 +53,26 @@ _DEFAULT_CONFIG_RUN = {
             "type": "SUMOSpeedPolicy",
             "behaviour": "deny",
             "args": {
-                "speed_range": (0., 85/3.6)
+                "speed_range": (0., 30/3.6)
             }
         },
         {
             "type": "SUMOPositionPolicy",
             "behaviour": "deny",
             "args": {
-                "position_bbox": ((1350., -2.), (6500., 2.))
+                "position_bbox": ((1350., -2.), (2500., 2.))
+            },
+            "vehicle_policies": {
+                "rule": "any",
+                "policies": [
+                    {
+                        "type": "SUMOSpeedPolicy",
+                        "behaviour": "deny",
+                        "args": {
+                            "speed_range": (0., 200/3.6)
+                        }
+                    }
+                ]
             }
         }
     ],

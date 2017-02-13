@@ -95,7 +95,8 @@ class SumoCSE(BaseCSE):
         "SUMOUniversalPolicy": optom.cse.policy.SUMOUniversalPolicy,
         "SUMONullPolicy": optom.cse.policy.SUMONullPolicy,
         "SUMOSpeedPolicy": optom.cse.policy.SUMOSpeedPolicy,
-        "SUMOPositionPolicy": optom.cse.policy.SUMOPositionPolicy
+        "SUMOPositionPolicy": optom.cse.policy.SUMOPositionPolicy,
+        "SUMOVTypePolicy": optom.cse.policy.SUMOVTypePolicy
     }
 
     @staticmethod
@@ -105,14 +106,31 @@ class SumoCSE(BaseCSE):
             [i_v.change_vehicle_class("custom1") for i_v in vehicles]
         )
 
-    def add_policy(self, policy):
+    def add_policy(self, policy, policy_cfg):
         """
         Add policy to SumoCSE.
         Args:
             policy: policy object
+            policy_cfg: policy configuration
         Returns:
             self
         """
+
+        if isinstance(policy, optom.cse.policy.SUMOVehiclePolicy) \
+                and policy_cfg.get("vehicle_policies", {}).get("rule", False):
+            # look for sub-policies
+            policy.rule = policy_cfg.get("vehicle_policies", {}).get("rule")
+            for i_subpolicy in policy_cfg.get("vehicle_policies", {}).get("policies", []):
+                policy.add_vehicle_policy(
+                    self._valid_policies.get(i_subpolicy.get("type"))(
+                        behaviour=optom.cse.policy.BasePolicy.behaviour_from_string_or_else(
+                            i_subpolicy.get("behaviour"),
+                            optom.cse.policy.BEHAVIOUR.deny
+                        ),
+                        **i_subpolicy.get("args")
+                    )
+                )
+
         self._policies.append(
             policy
         )
@@ -135,7 +153,8 @@ class SumoCSE(BaseCSE):
                         optom.cse.policy.BEHAVIOUR.deny
                     ),
                     **i_policy.get("args")
-                )
+                ),
+                i_policy
             )
 
         return self

@@ -713,13 +713,8 @@ class SumoConfig(optom.common.configuration.Configuration):
             if l_runcfgspeeddev is not None:
                 l_vattr["speedDev"] = str(l_runcfgspeeddev)
 
-            l_runcfgdesiredspeed = self.run_config \
-                .get("vtypedistribution"). \
-                get(l_vattr.get("vType")). \
-                get("desiredSpeed")
-
-            l_vattr["speedlimit"] = str(l_runcfgdesiredspeed) \
-                if l_runcfgdesiredspeed is not None else str(i_vehicle.speed_max)
+            l_vattr["speedlimit"] = str(i_vehicle.speed_max)
+            l_vattr["maxSpeed"] = str(i_vehicle.speed_max)
 
             l_runcfglength = self.run_config \
                 .get("vtypedistribution") \

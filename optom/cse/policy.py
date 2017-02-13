@@ -82,7 +82,6 @@ class SUMOPolicy(BasePolicy):
     def __init__(self, behaviour=BEHAVIOUR.deny):
         """C'tor."""
         super(SUMOPolicy, self).__init__(behaviour)
-        self._vehicle_policies = []
 
     @staticmethod
     def to_allowed_class():
@@ -93,6 +92,55 @@ class SUMOPolicy(BasePolicy):
     def to_disallowed_class():
         """Get the SUMO class for disallowed vehicles"""
         return SUMO_VCLASS.get(BEHAVIOUR.deny)
+
+
+class SUMOExtendablePolicy(object):
+    """Add ability to policies to be extended, i.e. to add sub-policies to them"""
+
+    def __init__(self, vehicle_policies, rule="any"):
+        """
+        C'tor.
+
+        Args:
+            vehicle_policies: List of policies
+
+            rule: Rule for applying sub-policies ("any", "all")
+        """
+        self._vehicle_policies = vehicle_policies
+        self._rule = rule
+        super(SUMOExtendablePolicy, self).__init__()
+
+    @property
+    def vehicle_policies(self):
+        """
+        Return vehicle related sub-policies.
+
+        Returns:
+            vehicle_policies
+        """
+        return self._vehicle_policies
+
+    @property
+    def rule(self):
+        """
+        Returns rule.
+
+        Returns:
+            rule
+        """
+        return self._rule
+
+    @rule.setter
+    def rule(self, rule):
+        """
+        Sets rule for applying sub-policies ("any", "all").
+
+        Args:
+            rule: Rule for applying sub-policies ("any", "all")
+        """
+        if rule not in ("any", "all"):
+            raise AttributeError
+        self._rule = rule
 
     def add_vehicle_policy(self, vehicle_policy):
         """
@@ -113,6 +161,30 @@ class SUMOPolicy(BasePolicy):
         self._vehicle_policies.append(vehicle_policy)
 
         return self
+
+    def subpolicies_apply_to(self, vehicle):
+        """
+        Check whether sub-policies apply to this vehicle.
+
+        Args:
+            vehicle: vehicle object
+
+        Returns:
+            boolean
+        """
+        print "subpolicies applying to {} at {}: {}".format(
+            vehicle, vehicle.position, [i_subpolicy.applies_to(vehicle) for i_subpolicy in self._vehicle_policies]
+        )
+        if self._rule == "any":
+            return any(
+                [i_subpolicy.applies_to(vehicle) for i_subpolicy in self._vehicle_policies]
+            )
+        elif self._rule == "all":
+            return all(
+                [i_subpolicy.applies_to(vehicle) for i_subpolicy in self._vehicle_policies]
+            )
+        else:
+            return False
 
 
 class SUMOUniversalPolicy(SUMOPolicy):
@@ -189,11 +261,13 @@ class SUMONullPolicy(SUMOPolicy):
         return vehicles
 
 
-class SUMOVehiclePolicy(SUMOPolicy):
+class SUMOVehiclePolicy(SUMOPolicy, SUMOExtendablePolicy):
     """Base class for vehicle attribute specific policies."""
 
     def __init__(self, behaviour=BEHAVIOUR.deny):
         """C'tor."""
+        self._vehicle_policies = []
+        self._rule = []
         super(SUMOVehiclePolicy, self).__init__(behaviour)
 
 
@@ -206,19 +280,21 @@ class SUMOVTypePolicy(SUMOVehiclePolicy):
         self._vehicle_type = vehicle_type
 
     def __str__(self):
-        return "SUMOVTypePolicy: vehicle_type = {}, behaviour = {}".format(
-            self._vehicle_type, self._behaviour
+        return "{}: vehicle_type = {}, behaviour = {}, subpolicies: {}: {}".format(
+            self.__class__, self._vehicle_type, self._behaviour,
+            self._rule, ",".join([str(i_policy) for i_policy in self._vehicle_policies])
         )
 
     def applies_to(self, vehicle):
         """
-        Test whether this policy applies to given vehicle.
+        Test whether this (and sub)policies apply to given vehicle.
         Args:
             vehicle: Vehicle
         Returns:
             boolean
         """
-        if self._vehicle_type == vehicle.vehicle_type:
+        if (self._vehicle_type == vehicle.vehicle_type) and \
+                (self.subpolicies_apply_to(vehicle) if len(self._vehicle_policies) > 0 else True):
             return True
         return False
 
@@ -248,19 +324,21 @@ class SUMOSpeedPolicy(SUMOVehiclePolicy):
         self._speed_range = numpy.array(speed_range)
 
     def __str__(self):
-        return "SUMOSpeedPolicy: speed_range = {}, behaviour = {}".format(
-            self._speed_range, self._behaviour
+        return "{}: speed_range = {}, behaviour = {}, subpolicies: {}: {}".format(
+            self.__class__, self._speed_range, self._behaviour,
+            self._rule, ",".join([str(i_policy) for i_policy in self._vehicle_policies])
         )
 
     def applies_to(self, vehicle):
         """
-        Test whether this policy applies to given vehicle
+        Test whether this (and sub)policies apply to given vehicle
         Args:
             vehicle: Vehicle
         Returns:
             boolean
         """
-        if self._speed_range[0] <= vehicle.speed_max <= self._speed_range[1]:
+        if (self._speed_range[0] <= vehicle.speed_max <= self._speed_range[1]) and \
+                (self.subpolicies_apply_to(vehicle) if len(self._vehicle_policies) > 0 else True):
             return True
         return False
 
@@ -293,6 +371,12 @@ class SUMOPositionPolicy(SUMOVehiclePolicy):
         super(SUMOPositionPolicy, self).__init__(behaviour)
         self._position_bbox = position_bbox
 
+    def __str__(self):
+        return "{}: position_bbox = {}, behaviour = {}, subpolicies: {}: {}".format(
+            self.__class__, self._position_bbox, self._behaviour,
+            self._rule, ",".join([str(i_policy) for i_policy in self._vehicle_policies])
+        )
+
     @property
     def position_bbox(self):
         """
@@ -305,14 +389,15 @@ class SUMOPositionPolicy(SUMOVehiclePolicy):
 
     def applies_to(self, vehicle):
         """
-        Test whether this policy applies to given vehicle
+        Test whether this (and sub)policies apply to given vehicle
         Args:
             vehicle: Vehicle
         Returns:
             boolean
         """
         if numpy.all(numpy.logical_and(self._position_bbox[0] <= vehicle.position,
-                                       vehicle.position <= self._position_bbox[1])):
+                                       vehicle.position <= self._position_bbox[1])) and \
+                (self.subpolicies_apply_to(vehicle) if len(self._vehicle_policies) > 0 else True):
             return True
         return False
 
