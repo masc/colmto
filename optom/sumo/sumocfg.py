@@ -607,7 +607,7 @@ class SumoConfig(optom.common.configuration.Configuration):
 
         l_vehicle_list = [
             optom.environment.vehicle.SUMOVehicle(
-                vtype=vtype,
+                vehicle_type=vtype,
                 vtype_sumo_cfg=self.vtypes_config.get(vtype),
                 speed_deviation=self._run_config.get(
                     "vtypedistribution"
@@ -695,7 +695,7 @@ class SumoConfig(optom.common.configuration.Configuration):
         # xml
         l_trips = optom.common.io.etree.Element("trips")
 
-        # create a sumo vtype for each vehicle
+        # create a sumo vehicle_type for each vehicle
         for i_vid, i_vehicle in l_vehicles.iteritems():
 
             # filter for relevant attributes and transform to string

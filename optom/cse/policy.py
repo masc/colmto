@@ -82,6 +82,7 @@ class SUMOPolicy(BasePolicy):
     def __init__(self, behaviour=BEHAVIOUR.deny):
         """C'tor"""
         super(SUMOPolicy, self).__init__(behaviour)
+        self._vehicle_policies = []
 
     @staticmethod
     def to_allowed_class():
@@ -92,6 +93,25 @@ class SUMOPolicy(BasePolicy):
     def to_disallowed_class():
         """Get the SUMO class for disallowed vehicles"""
         return SUMO_VCLASS.get(BEHAVIOUR.deny)
+
+    def add_vehicle_policy(self, vehicle_policy):
+        """
+        Adds a vehicle policy, specifically for vehicle attributes.
+        Policy must derive from optom.cse.policy.SUMOVehiclePolicy
+
+        Args:
+            vehicle_policy: Iterable of policies derived from optom.cse.policy.SUMOVehiclePolicy
+
+        Returns:
+            self
+        """
+
+        if not isinstance(vehicle_policy, optom.cse.policy.SUMOVehiclePolicy):
+            raise AttributeError("%s is not of optom.cse.policy.SUMOVehiclePolicy", vehicle_policy)
+
+        self._vehicle_policies.append(vehicle_policy)
+
+        return self
 
 
 class SUMOUniversalPolicy(SUMOPolicy):
@@ -168,7 +188,57 @@ class SUMONullPolicy(SUMOPolicy):
         return vehicles
 
 
-class SUMOSpeedPolicy(SUMOPolicy):
+class SUMOVehiclePolicy(SUMOPolicy):
+    """Base class for vehicle attribute specific policies."""
+
+    def __init__(self, behaviour=BEHAVIOUR.deny):
+        """C'tor"""
+        super(SUMOVehiclePolicy, self).__init__(behaviour)
+
+
+class SUMOVTypePolicy(SUMOVehiclePolicy):
+    """Vehicle type based policy: Applies to vehicles with a given SUMO vehicle type"""
+
+    def __init__(self, vehicle_type=None, behaviour=BEHAVIOUR.deny):
+        """C'tor"""
+        super(SUMOVTypePolicy, self).__init__(behaviour)
+        self._vehicle_type = vehicle_type
+
+    def __str__(self):
+        return "SUMOVTypePolicy: vehicle_type = {}, behaviour = {}".format(
+            self._vehicle_type, self._behaviour
+        )
+
+    def applies_to(self, vehicle):
+        """
+        Test whether this policy applies to given vehicle.
+        Args:
+            vehicle: Vehicle
+        Returns:
+            boolean
+        """
+        if self._vehicle_type == vehicle.vehicle_type:
+            return True
+        return False
+
+    def apply(self, vehicles):
+        """
+        apply policy to vehicles
+        Args:
+            vehicles: iterable object containing BaseVehicles, or inherited objects
+        Returns:
+            List of vehicles with applied, i.e. set attributes, whether they can use otl or not
+        """
+
+        return [
+            i_vehicle.change_vehicle_class(
+                SUMO_VCLASS.get(self._behaviour)
+            ) if self.applies_to(i_vehicle) else i_vehicle
+            for i_vehicle in vehicles
+        ]
+
+
+class SUMOSpeedPolicy(SUMOVehiclePolicy):
     """Speed based policy: Applies to vehicles within a given speed range"""
 
     def __init__(self, speed_range=(0, 120), behaviour=BEHAVIOUR.deny):
@@ -210,7 +280,7 @@ class SUMOSpeedPolicy(SUMOPolicy):
         ]
 
 
-class SUMOPositionPolicy(SUMOPolicy):
+class SUMOPositionPolicy(SUMOVehiclePolicy):
     """
     Position based policy: Applies to vehicles which are located inside a given bounding box, i.e.
     [(left_lane_0, right_lane_0) -> (left_lane_1, right_lane_1)]

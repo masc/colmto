@@ -30,10 +30,6 @@ import optom.cse.policy
 class BaseCSE(object):
     """Base class for the central optimisation entity (CSE)."""
 
-    _log = optom.common.log.logger(__name__)
-    _vehicles = set()
-    _policies = []
-
     def __init__(self, args=None):
         """
         C'tor
@@ -42,6 +38,9 @@ class BaseCSE(object):
         """
         if args is not None:
             self._log = optom.common.log.logger(__name__, args.loglevel, args.quiet, args.logfile)
+        self._log = optom.common.log.logger(__name__)
+        self._vehicles = set()
+        self._policies = []
 
     @property
     def policies(self):

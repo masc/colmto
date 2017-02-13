@@ -279,7 +279,7 @@ class Configuration(object):
 
     def __init__(self, args):
         """
-        C'tor: Read scenario/run/vtype configs and merge with command line arguments.
+        C'tor: Read scenario/run/vehicle_type configs and merge with command line arguments.
         Command line args override cfgs.
         """
 
@@ -295,7 +295,7 @@ class Configuration(object):
             raise BaseException("scenario configuration file flag is None")
 
         if self._args.vtypesconfigfile is None:
-            raise BaseException("vtype configuration file flag is None")
+            raise BaseException("vehicle_type configuration file flag is None")
 
         if not os.path.isfile(self._args.runconfigfile) or self._args.freshconfigs:
             self._log.info(
@@ -317,7 +317,7 @@ class Configuration(object):
 
         if not os.path.isfile(self._args.vtypesconfigfile) or self._args.freshconfigs:
             self._log.info(
-                "generating default vtype configuration %s", self._args.vtypesconfigfile
+                "generating default vehicle_type configuration %s", self._args.vtypesconfigfile
             )
             self._vtypes_config = copy.copy(_DEFAULT_CONFIG_VTYPES)
             self._writer.write_yaml(self._vtypes_config, self._args.vtypesconfigfile)

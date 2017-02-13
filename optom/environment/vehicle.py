@@ -29,10 +29,10 @@ import optom.cse.policy
 class BaseVehicle(object):
     """Base Vehicle."""
 
-    def __init__(self, speed_max=0.0, speed_current=0.0, position=numpy.array([0.0, 0])):
+    def __init__(self, speed_max=0.0, position=numpy.array((0.0, 0))):
         """C'tor"""
         self._speed_max = speed_max
-        self._speed_current = speed_current
+        self._speed_current = 0.
         self._position = position
 
     @property
@@ -102,27 +102,32 @@ class BaseVehicle(object):
 class SUMOVehicle(BaseVehicle):
     """SUMO vehicle class."""
 
-    def __init__(self, **kwargs):
+    def __init__(self, speed_max=0.0, position=numpy.array((0.0, 0)), speed_deviation=0.0,
+                 vehicle_type=None, vehicle_class=optom.cse.policy.SUMOPolicy.to_allowed_class(),
+                 vtype_sumo_cfg={}, color=numpy.array((255, 255, 0, 255))):
         """
         C'tor.
         Args:
-            kwargs: Recognised arguments (with default values) are
-                    speed_max=0.0, speed_current=0.0, position=(None,), speed_deviation=0.0,
-                    vtype=None, vtype_sumo_cfg={}, color=numpy.array((255, 255, 0, 255)),
-                    start_time=0.0
+            speed_max:
+            position:
+            speed_deviation:
+            vehicle_type:
+            vehicle_class:
+            vtype_sumo_cfg:
+            color:
         """
 
-        self._vtype = kwargs.pop("vtype", None)
-        self._vtype_sumo_cfg = kwargs.pop("vtype_sumo_cfg", {})
-        self._color = kwargs.pop("color", numpy.array((255, 255, 0, 255)))
-        self._speed_deviation = kwargs.pop("speed_deviation", 0.0)
-        self._start_time = kwargs.pop("start_time", 0.0)
-        self._vehicle_class = kwargs.pop(
-            "vehicle_class", optom.cse.policy.SUMOPolicy.to_allowed_class()
+        super(SUMOVehicle, self).__init__(
+            speed_max=speed_max,
+            position=position,
         )
 
-        super(SUMOVehicle, self).__init__(**kwargs)
-
+        self._vehicle_type = vehicle_type
+        self._vtype_sumo_cfg = vtype_sumo_cfg
+        self._color = color
+        self._speed_deviation = speed_deviation
+        self._start_time = 0.0
+        self._vehicle_class = vehicle_class
         self._travel_times = {}
         self._time_losses = {}
 
@@ -136,7 +141,7 @@ class SUMOVehicle(BaseVehicle):
             "position": self._position,
             "speed_current": self._speed_current,
             "speed_max": self._speed_max,
-            "vtype": self.vtype,
+            "vehicle_type": self.vehicle_type,
             "vtype_sumo_cfg": self.vtype_sumo_cfg,
             "color": self._color,
             "speed_deviation": self._speed_deviation,
@@ -147,17 +152,17 @@ class SUMOVehicle(BaseVehicle):
         }
 
     @property
-    def vtype(self):
+    def vehicle_type(self):
         """
         Returns:
              vehicle type
         """
-        return self._vtype
+        return self._vehicle_type
 
     @property
     def vtype_sumo_cfg(self):
         """
-        Convert values of vtype config to str for sumo xml handling and return cfg
+        Convert values of vehicle_type config to str for sumo xml handling and return cfg
         Returns:
             sumo config attributes
         """
