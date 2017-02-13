@@ -172,9 +172,7 @@ class SUMOExtendablePolicy(object):
         Returns:
             boolean
         """
-        print "subpolicies applying to {} at {}: {}".format(
-            vehicle, vehicle.position, [i_subpolicy.applies_to(vehicle) for i_subpolicy in self._vehicle_policies]
-        )
+
         if self._rule == "any":
             return any(
                 [i_subpolicy.applies_to(vehicle) for i_subpolicy in self._vehicle_policies]
