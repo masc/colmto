@@ -428,9 +428,8 @@ class SumoConfig(optom.common.configuration.Configuration):
 
         if isinstance(l_parameters.get("switchpositions"), (list, tuple)):
             # add splits and joins
+            l_add_otl_lane = True
             for i_segmentpos in l_parameters.get("switchpositions"):
-
-                l_add_otl_lane = True
                 optom.common.io.etree.SubElement(
                     p_21edge,
                     "split",
@@ -440,6 +439,8 @@ class SumoConfig(optom.common.configuration.Configuration):
                         "speed": str(p_scenario_config.get("parameters").get("speedlimit"))
                     }
                 )
+
+                l_add_otl_lane ^= True
         else:
             self._log.info("Rebuilding switches")
             p_scenario_config.get("parameters")["switchpositions"] = []
