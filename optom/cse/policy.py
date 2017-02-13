@@ -80,7 +80,7 @@ class SUMOPolicy(BasePolicy):
     """
 
     def __init__(self, behaviour=BEHAVIOUR.deny):
-        """C'tor"""
+        """C'tor."""
         super(SUMOPolicy, self).__init__(behaviour)
         self._vehicle_policies = []
 
@@ -97,7 +97,8 @@ class SUMOPolicy(BasePolicy):
     def add_vehicle_policy(self, vehicle_policy):
         """
         Adds a vehicle policy, specifically for vehicle attributes.
-        Policy must derive from optom.cse.policy.SUMOVehiclePolicy
+
+        Policy must derive from optom.cse.policy.SUMOVehiclePolicy.
 
         Args:
             vehicle_policy: Iterable of policies derived from optom.cse.policy.SUMOVehiclePolicy
@@ -120,7 +121,7 @@ class SUMOUniversalPolicy(SUMOPolicy):
     """
 
     def __init__(self, behaviour=BEHAVIOUR.deny):
-        """C'tor"""
+        """C'tor."""
         super(SUMOUniversalPolicy, self).__init__(behaviour)
 
     @staticmethod
@@ -159,7 +160,7 @@ class SUMONullPolicy(SUMOPolicy):
     """
 
     def __init__(self, behaviour=BEHAVIOUR.deny):
-        """C'tor"""
+        """C'tor."""
         super(SUMONullPolicy, self).__init__(behaviour)
 
     @staticmethod
@@ -192,7 +193,7 @@ class SUMOVehiclePolicy(SUMOPolicy):
     """Base class for vehicle attribute specific policies."""
 
     def __init__(self, behaviour=BEHAVIOUR.deny):
-        """C'tor"""
+        """C'tor."""
         super(SUMOVehiclePolicy, self).__init__(behaviour)
 
 
@@ -200,7 +201,7 @@ class SUMOVTypePolicy(SUMOVehiclePolicy):
     """Vehicle type based policy: Applies to vehicles with a given SUMO vehicle type"""
 
     def __init__(self, vehicle_type=None, behaviour=BEHAVIOUR.deny):
-        """C'tor"""
+        """C'tor."""
         super(SUMOVTypePolicy, self).__init__(behaviour)
         self._vehicle_type = vehicle_type
 
@@ -242,7 +243,7 @@ class SUMOSpeedPolicy(SUMOVehiclePolicy):
     """Speed based policy: Applies to vehicles within a given speed range"""
 
     def __init__(self, speed_range=(0, 120), behaviour=BEHAVIOUR.deny):
-        """C'tor"""
+        """C'tor."""
         super(SUMOSpeedPolicy, self).__init__(behaviour)
         self._speed_range = numpy.array(speed_range)
 
@@ -288,7 +289,7 @@ class SUMOPositionPolicy(SUMOVehiclePolicy):
 
     def __init__(self, position_bbox=numpy.array(((0.0, 0), (100.0, 1))),
                  behaviour=BEHAVIOUR.deny):
-        """C'tor"""
+        """C'tor."""
         super(SUMOPositionPolicy, self).__init__(behaviour)
         self._position_bbox = position_bbox
 
