@@ -115,6 +115,14 @@ class SUMOVehicle(BaseVehicle):
             }
         )
 
+        self._travel_stats = {
+            "start_time": 0.0,
+            "max_speed": speed_max,
+            "vehicle_type": vehicle_type,
+            "time_loss": {},
+            "position": {}
+        }
+
     @property
     def properties(self):
         """
@@ -130,6 +138,24 @@ class SUMOVehicle(BaseVehicle):
              vehicle type
         """
         return self._properties.get("vType")
+
+    @property
+    def start_time(self):
+        """
+        Returns:
+            start time
+        """
+        return self._properties.get("start_time")
+
+    @start_time.setter
+    def start_time(self, start_time):
+        """
+        Sets start time.
+
+        Args:
+            start_time: start time
+        """
+        self._properties["start_time"] = start_time
 
     @property
     def color(self):
@@ -163,6 +189,35 @@ class SUMOVehicle(BaseVehicle):
             maximum speed
         """
         return self._properties.get("maxSpeed")
+
+    @property
+    def travel_stats(self):
+        """
+        Returns travel stats dictionary
+
+        Returns:
+            travel stats
+        """
+        return self._travel_stats
+
+    def record_travel_stats(self, time_step):
+        """
+        Write travel stats, i.e. time losses and position of vehicle for a given time step.
+
+        $$time\\_loss := travel\\_time - \frac{position}{max\\_speed}.$$
+
+        Args:
+            time_step: current time step
+
+        Returns:
+            self
+        """
+
+        self._travel_stats.get("time_loss")[time_step] = time_step - self.start_time \
+            - self.position[0]/self.speed_max
+        self._travel_stats.get("position")[time_step] = self.position
+
+        return self
 
     def change_vehicle_class(self, class_name):
         """

@@ -84,6 +84,9 @@ class Runtime(object):
         Args:
             run_config: run configuration
             cse: central optimisation entity instance of optom.cse.cse.SumoCSE
+
+        Returns:
+            list of vehicles, containing travel stats
         """
 
         if not isinstance(cse, optom.cse.cse.SumoCSE):
@@ -98,7 +101,7 @@ class Runtime(object):
                 "--gui-settings-file", run_config.get("settingsfile"),
                 "--time-to-teleport", "-1",
                 "--no-step-log",
-                "--fcd-output", run_config.get("fcdfile")
+                "--fcd-output", run_config.get("fcdfile"),
             ]
         )
         self._log.debug("connecting to TraCI instance on port %d", run_config.get("sumoport"))
@@ -106,7 +109,10 @@ class Runtime(object):
         # subscribe to global simulation vars
         traci.simulation.subscribe(
             [
-                traci.constants.VAR_TIME_STEP
+                traci.constants.VAR_TIME_STEP,
+                traci.constants.VAR_DEPARTED_VEHICLES_IDS,
+                traci.constants.VAR_ARRIVED_VEHICLES_IDS,
+                traci.constants.VAR_MIN_EXPECTED_VEHICLES
             ]
         )
 
@@ -127,21 +133,22 @@ class Runtime(object):
                         fill=True,
                     )
 
-        # main loop through traci driven simulation runs
-        while traci.simulation.getMinExpectedNumber() > 0:
+        # initial fetch of subscription results
+        l_results_simulation = traci.simulation.getSubscriptionResults()
 
-            l_sim_current_time = traci.simulation.getSubscriptionResults().get(
-                traci.constants.VAR_TIME_STEP
-            )
+        # main loop through traci driven simulation runs
+        while l_results_simulation.get(traci.constants.VAR_MIN_EXPECTED_VEHICLES) > 0:
 
             # subscribe to values of newly entering vehicles
-            for i_vehicle_id in traci.simulation.getDepartedIDList():
-                run_config.get("vehicles").get(i_vehicle_id).start_time = l_sim_current_time/10.**3
+            for i_vehicle_id in l_results_simulation.get(traci.constants.VAR_DEPARTED_VEHICLES_IDS):
+                run_config.get("vehicles").get(i_vehicle_id).start_time = \
+                    l_results_simulation.get(traci.constants.VAR_TIME_STEP)/10.**3
                 traci.vehicle.subscribe(
                     i_vehicle_id, [
                         traci.constants.VAR_POSITION,
                         traci.constants.VAR_VEHICLECLASS,
                         traci.constants.VAR_MAXSPEED,
+                        traci.constants.VAR_SPEED
                     ]
                 )
 
@@ -175,7 +182,15 @@ class Runtime(object):
                             tuple(run_config.get("vehicles").get(i_vehicle_id).color)
                         )
 
+                # write travel time losses to vehicle
+                run_config.get("vehicles").get(i_vehicle_id).record_travel_stats(
+                    l_results_simulation.get(traci.constants.VAR_TIME_STEP)/10.**3
+                )
+
             traci.simulationStep()
+
+            # fetch new results for next simulation step/cycle
+            l_results_simulation = traci.simulation.getSubscriptionResults()
 
         traci.close()
 
@@ -183,3 +198,5 @@ class Runtime(object):
             "TraCI run of scenario %s, run %d completed.",
             run_config.get("scenarioname"), run_config.get("runnumber")
         )
+
+        return run_config.get("vehicles")

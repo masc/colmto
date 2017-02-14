@@ -93,6 +93,7 @@ class SumoSim(object):
                 )
 
                 if self._sumocfg.run_config.get("cse-enabled"):
+                    # cse mode: apply cse policies to vehicles and run with TraCI
                     self._runtime.run_traci(
                         l_run_config, optom.cse.cse.SumoCSE(
                             self._args

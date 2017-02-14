@@ -262,7 +262,8 @@ class SumoConfig(optom.common.configuration.Configuration):
             "tripfile": l_tripfile,
             "routefile": l_routefile,
             "configfile": l_configfile,
-            "fcdfile": l_fcdfile
+            "fcdfile": l_fcdfile,
+            "scenario_config": self.scenario_config.get(scenario_run_config.get("scenarioname"))
         }
 
     def _generate_node_xml(self, scenarioconfig, nodefile, forcerebuildscenarios=False):
