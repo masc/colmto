@@ -73,15 +73,15 @@ except ImportError:
 import optom.common.log
 
 
-def xslt(p_template):
+def xslt(template):
     """
     Wrapper to apply template to XSLT and return transformation object.
     Args:
-        p_template: XSLT template
+        template: XSLT template
     Returns:
         transformation object
     """
-    return XSLT(p_template)
+    return XSLT(template)
 
 
 class Reader(object):
@@ -94,35 +94,35 @@ class Reader(object):
         else:
             self._log = optom.common.log.logger(__name__)
 
-    def read_etree(self, p_fname):
+    def read_etree(self, fname):
         """Parses xml file with etree. Returns etree object"""
 
-        self._log.debug("Parsing %s with etree", p_fname)
+        self._log.debug("Parsing %s with etree", fname)
 
-        return etree.parse(p_fname)
+        return etree.parse(fname)
 
-    def read_json(self, p_filename):
+    def read_json(self, filename):
         """Reads json file. Returns dictionary."""
 
-        self._log.debug("Reading %s", p_filename)
+        self._log.debug("Reading %s", filename)
 
-        with gzip.GzipFile(p_filename, 'r') \
-                if p_filename.endswith(".gz") \
-                else open(p_filename, mode="r") as f_json:
+        with gzip.GzipFile(filename, 'r') \
+                if filename.endswith(".gz") \
+                else open(filename, mode="r") as f_json:
             l_file = f_json.read()
         return jsonloads(l_file)
 
-    def read_yaml(self, p_filename):
+    def read_yaml(self, filename):
         """
         Reads yaml file and returns dictionary.
         If filename ends with .gz treat file as gzipped yaml.
         """
-        self._log.debug("Reading %s", p_filename)
+        self._log.debug("Reading %s", filename)
 
-        if p_filename.endswith(".gz"):
-            return yaml.load(gzip.GzipFile(p_filename, 'r'), Loader=SafeLoader)
+        if filename.endswith(".gz"):
+            return yaml.load(gzip.GzipFile(filename, 'r'), Loader=SafeLoader)
         else:
-            return yaml.load(open(p_filename), Loader=SafeLoader)
+            return yaml.load(open(filename), Loader=SafeLoader)
 
 
 class Writer(object):
@@ -134,71 +134,71 @@ class Writer(object):
         else:
             self._log = optom.common.log.logger(__name__)
 
-    def write_json_pretty(self, p_object, p_filename):
+    def write_json_pretty(self, object, filename):
         """Write json in human readable form (slow!). If filename ends with .gz, compress file."""
 
-        self._log.debug("Writing %s", p_filename)
-        f_json = gzip.GzipFile(p_filename, 'w') \
-            if p_filename.endswith(".gz") \
-            else open(p_filename, mode="w")
-        json.dump(p_object, f_json, sort_keys=True, indent=4, separators=(', ', ' : '))
+        self._log.debug("Writing %s", filename)
+        f_json = gzip.GzipFile(filename, 'w') \
+            if filename.endswith(".gz") \
+            else open(filename, mode="w")
+        json.dump(object, f_json, sort_keys=True, indent=4, separators=(', ', ' : '))
         f_json.close()
 
-    def write_json(self, p_object, p_filename):
+    def write_json(self, object, filename):
         """Write json in compact form, compress file with gzip if filename ends with .gz."""
 
-        self._log.debug("Writing %s", p_filename)
-        with gzip.GzipFile(p_filename, 'w') \
-                if p_filename.endswith(".gz") \
-                else open(p_filename, mode="w") as f_json:
-            f_json.write(jsondumps(p_object))
+        self._log.debug("Writing %s", filename)
+        with gzip.GzipFile(filename, 'w') \
+                if filename.endswith(".gz") \
+                else open(filename, mode="w") as f_json:
+            f_json.write(jsondumps(object))
 
-    def write_yaml(self, p_object, p_filename, p_default_flow_style=False):
+    def write_yaml(self, object, filename, default_flow_style=False):
         """Write yaml, compress file with gzip if filename ends with .gz."""
 
-        self._log.debug("Writing %s", p_filename)
-        f_yaml = gzip.GzipFile(p_filename, 'w') \
-            if p_filename.endswith(".gz") \
-            else open(p_filename, mode="w")
-        yaml.dump(p_object, f_yaml, Dumper=SafeDumper, default_flow_style=p_default_flow_style)
+        self._log.debug("Writing %s", filename)
+        f_yaml = gzip.GzipFile(filename, 'w') \
+            if filename.endswith(".gz") \
+            else open(filename, mode="w")
+        yaml.dump(object, f_yaml, Dumper=SafeDumper, default_flow_style=default_flow_style)
         f_yaml.close()
 
-    def write_csv(self, p_fieldnames, p_rowdict, p_filename):
+    def write_csv(self, fieldnames, rowdict, filename):
         """Write row dictionary with provided fieldnames as csv with headers."""
 
-        self._log.debug("Writing %s", p_filename)
-        with open(p_filename, 'w') as f_csv:
-            csv_writer = csv.DictWriter(f_csv, fieldnames=p_fieldnames)
+        self._log.debug("Writing %s", filename)
+        with open(filename, 'w') as f_csv:
+            csv_writer = csv.DictWriter(f_csv, fieldnames=fieldnames)
             csv_writer.writeheader()
-            csv_writer.writerows(p_rowdict)
+            csv_writer.writerows(rowdict)
 
-    def write_hdf5(self, p_filename, p_path, p_objectdict, **kwargs):
+    def write_hdf5(self, filename, path, objectdict, **kwargs):
         """Write an object to a specific path into an open file, identified by fileid
 
         Args:
-            p_filename: The file name
-            p_path: Destination path in HDF5 structure, will be created if not existent.
-            p_objectdict: Object(s) to be stored in a named dictionary structure
+            filename: The file name
+            path: Destination path in HDF5 structure, will be created if not existent.
+            objectdict: Object(s) to be stored in a named dictionary structure
                           ([name] -> str|int|float|list|numpy)
             **kwargs: Optional arguments passed to create_dataset
         """
-        self._log.debug("Writing %s", p_filename)
+        self._log.debug("Writing %s", filename)
 
         # verify whether arguments are sane
-        if not isinstance(p_objectdict, dict):
-            raise TypeError(u"p_objectdict is not parameters")
+        if not isinstance(objectdict, dict):
+            raise TypeError(u"objectdict is not parameters")
 
-        f_hdf5 = h5py.File(p_filename, 'a')
+        f_hdf5 = h5py.File(filename, 'a')
 
         if not f_hdf5 and not isinstance(f_hdf5, h5py.File):
             raise Exception
 
         # create group if it doesn't exist
-        l_group = f_hdf5[p_path] if p_path in f_hdf5 else f_hdf5.create_group(p_path)
+        l_group = f_hdf5[path] if path in f_hdf5 else f_hdf5.create_group(path)
 
-        # add datasets for each element of p_objectdict,
+        # add datasets for each element of objectdict,
         # if they already exist by name, overwrite them
-        for i_objname, i_objvalue in p_objectdict.items():
+        for i_objname, i_objvalue in objectdict.items():
 
             # remove compression if we have a scalar object, i.e. string, int, float
             if isinstance(i_objvalue, (str, int, float)):

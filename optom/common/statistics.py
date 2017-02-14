@@ -41,18 +41,18 @@ class Statistics(object):
             self._log = optom.common.log.logger(__name__)
             self._writer = optom.common.io.Writer(None)
 
-    def fcd_stats(self, p_run_data):
+    def fcd_stats(self, run_data):
         """
 
         Args:
-            p_run_data:
+            run_data:
         Returns:
             json object
         """
 
-        self._log.debug("Reading fcd file %s", p_run_data.get("fcdfile"))
+        self._log.debug("Reading fcd file %s", run_data.get("fcdfile"))
         l_fcd_xml = optom.common.io.etree.parse(
-            p_run_data.get("fcdfile")
+            run_data.get("fcdfile")
         )
         l_fcd_stats_json = defaultdict(dict)
 
@@ -66,7 +66,7 @@ class Statistics(object):
                 if "maxspeed" not in l_fcd_stats_json[i_vehicle.get("id")]:
                     l_fcd_stats_json[
                         i_vehicle.get("id")
-                    ]["maxspeed"] = p_run_data.get("vehicles").get(i_vehicle.get("id")).speed_max
+                    ]["maxspeed"] = run_data.get("vehicles").get(i_vehicle.get("id")).speed_max
 
                 if "timesteps" not in l_fcd_stats_json[i_vehicle.get("id")]:
                     l_fcd_stats_json[i_vehicle.get("id")]["timesteps"] = OrderedDict()
@@ -109,7 +109,7 @@ class Statistics(object):
         return l_fcd_stats_json  # , l_fcd_stats_csv
 
     @staticmethod
-    def h_spread(p_data):
+    def h_spread(data):
         """
         Calculate H-Spread of given data points.
 
@@ -119,14 +119,14 @@ class Statistics(object):
         http://mathworld.wolfram.com/Hinge.html
 
         Args:
-            p_data: Iterable set of data elements of (preferably) $4n+5$ for $n=0,1,...,N$,
+            data: Iterable set of data elements of (preferably) $4n+5$ for $n=0,1,...,N$,
             i.e. minimum length is $5$
 
         Returns:
-            $H_2 - H_1$ if p_data contains at least 5 elements, otherwise raises ArithmeticError
+            $H_2 - H_1$ if data contains at least 5 elements, otherwise raises ArithmeticError
         """
 
-        l_data = sorted(p_data)
+        l_data = sorted(data)
         l_len = len(l_data)
 
         if l_len < 5:

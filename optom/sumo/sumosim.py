@@ -132,12 +132,12 @@ class SumoSim(object):
                 #     l_csv_header,
                 #     l_vehicle_data_csv,
                 #     os.path.join(
-                #         self._sumocfg.resultsdir, p_scenario_name, i_initial_sorting,
+                #         self._sumocfg.resultsdir, scenario_name, i_initial_sorting,
                 #         str(i_run),
                 #         "{}-{}-run{}-TT-TL.csv".format(
-                #             p_scenario_name,
+                #             scenario_name,
                 #             self._sumocfg.scenario_config.get(
-                #                 p_scenario_name
+                #                 scenario_name
                 #             ).get("parameters").get("aadt")
                 #             if self._sumocfg.run_config.get("aadt").get("enabled")
                 #             else "{}veh".format(
