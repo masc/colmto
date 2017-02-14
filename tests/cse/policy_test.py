@@ -66,8 +66,8 @@ def test_sumo_null_policy():
         optom.environment.vehicle.SUMOVehicle(
             vehicle_class=random.choice(
                 [
-                    optom.cse.policy.SUMOPolicy.to_disallowed_class,
-                    optom.cse.policy.SUMOPolicy.to_allowed_class
+                    optom.cse.policy.SUMOPolicy.to_disallowed_class(),
+                    optom.cse.policy.SUMOPolicy.to_allowed_class()
                 ]
             )
         ) for _ in xrange(23)
@@ -94,7 +94,7 @@ def test_sumo_speed_policy():
 
     l_results = l_sumo_policy.apply(l_vehicles)
 
-    for i in xrange(len(l_vehicles)):
+    for i in xrange(len(l_results)):
         if 0. <= l_vehicles[i].speed_max <= 60.0:
             assert_equal(
                 l_results[i].vehicle_class,

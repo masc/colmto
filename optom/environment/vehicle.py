@@ -50,7 +50,7 @@ class BaseVehicle(object):
         Returns:
              current speed
         """
-        return self._properties.get("speed_current")
+        return self._properties.get("speed")
 
     @speed.setter
     def speed(self, speed):
@@ -83,7 +83,8 @@ class SUMOVehicle(BaseVehicle):
     """SUMO vehicle class."""
 
     def __init__(self, speed_max=0.0, speed_deviation=0.0, position=numpy.array((0.0, 0.0)),
-                 vtype_sumo_cfg=None, vehicle_type=None, color=numpy.array((255, 255, 0, 255))):
+                 vtype_sumo_cfg=None, vehicle_class=optom.cse.policy.SUMOPolicy.to_allowed_class(),
+                 vehicle_type=None, color=numpy.array((255, 255, 0, 255))):
         """
         C'tor.
         Args:
@@ -91,6 +92,7 @@ class SUMOVehicle(BaseVehicle):
             speed_deviation:
             position:
             vtype_sumo_cfg:
+            vehicle_class:
             vehicle_type:
             color:
         """
@@ -99,14 +101,17 @@ class SUMOVehicle(BaseVehicle):
             position=position
         )
 
-        self._properties.update(vtype_sumo_cfg)
+        if type(vtype_sumo_cfg) is dict:
+            self._properties.update(vtype_sumo_cfg)
+
         self._properties.update(
             {
                 "color": color,
                 "start_time": 0.0,
                 "speedDev": speed_deviation,
                 "maxSpeed": speed_max,
-                "vType": vehicle_type
+                "vType": vehicle_type,
+                "vClass": vehicle_class
             }
         )
 
@@ -124,7 +129,7 @@ class SUMOVehicle(BaseVehicle):
         Returns:
              vehicle type
         """
-        return self._properties.get("vehicle_type")
+        return self._properties.get("vType")
 
     @property
     def color(self):
