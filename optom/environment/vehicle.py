@@ -29,11 +29,13 @@ import optom.cse.policy
 class BaseVehicle(object):
     """Base Vehicle."""
 
-    def __init__(self, speed_max=0.0, position=numpy.array((0.0, 0))):
+    def __init__(self, speed_max=0.0, position=numpy.array((0.0, 0.0)), speed_current=0.0):
         """C'tor"""
-        self._speed_max = speed_max
-        self._speed_current = 0.
-        self._position = position
+        self._properties = {
+            "position": position,
+            "speed_current": speed_current,
+            "speed_max": speed_max,
+        }
 
     @property
     def properties(self):
@@ -41,11 +43,7 @@ class BaseVehicle(object):
         Returns:
             vehicle properties as dictionary bundle
         """
-        return {
-            "position": self.position,
-            "speed_current": self.speed_current,
-            "speed_max": self.speed_max
-        }
+        return self._properties
 
     @property
     def speed_max(self):
@@ -53,16 +51,17 @@ class BaseVehicle(object):
         Returns:
             maximum capable velocity of vehicle
         """
-        return self._speed_max
+        return self._properties.get("speed_max")
 
     @speed_max.setter
     def speed_max(self, speed):
         """
         Sets maximum speed.
+
         Args:
-            speed_max: maximum speed
+            speed_max: maximum desired or capable speed
         """
-        self._speed_max = speed
+        self._properties["speed_max"] = speed
 
     @property
     def speed_current(self):
@@ -70,7 +69,7 @@ class BaseVehicle(object):
         Returns:
              current speed
         """
-        return self._speed_current
+        return self._properties.get("speed_current")
 
     @speed_current.setter
     def speed_current(self, speed):
@@ -79,7 +78,7 @@ class BaseVehicle(object):
         Args:
             speed: current speed
         """
-        self._speed_current = speed
+        self._properties["speed_current"] = speed
 
     @property
     def position(self):
@@ -87,7 +86,7 @@ class BaseVehicle(object):
         Returns:
              current position
         """
-        return self._position
+        return self._properties.get("position")
 
     @position.setter
     def position(self, position):
@@ -96,7 +95,7 @@ class BaseVehicle(object):
         Args:
             position: current position
         """
-        self._position = position
+        self._properties["position"] = position
 
 
 class SUMOVehicle(BaseVehicle):
@@ -122,12 +121,16 @@ class SUMOVehicle(BaseVehicle):
             position=position,
         )
 
-        self._vehicle_type = vehicle_type
-        self._vtype_sumo_cfg = vtype_sumo_cfg
-        self._color = color
-        self._speed_deviation = speed_deviation
-        self._start_time = 0.0
-        self._vehicle_class = vehicle_class
+        self._properties.update(
+            {
+                "vehicle_type": vehicle_type,
+                "vtype_sumo_cfg": vtype_sumo_cfg,
+                "color": color,
+                "speed_deviation": speed_deviation,
+                "start_time": 0.0,
+                "vehicle_class": vehicle_class,
+            }
+        )
 
     @property
     def properties(self):
@@ -135,17 +138,7 @@ class SUMOVehicle(BaseVehicle):
         Returns:
              vehicle's properties as a dict bundle
         """
-        return {
-            "position": self._position,
-            "speed_current": self._speed_current,
-            "speed_max": self._speed_max,
-            "vehicle_type": self.vehicle_type,
-            "vtype_sumo_cfg": self.vtype_sumo_cfg,
-            "color": self._color,
-            "speed_deviation": self._speed_deviation,
-            "start_time": self._start_time,
-            "vehicle_class": self._vehicle_class
-        }
+        return self._properties
 
     @property
     def vehicle_type(self):
@@ -153,7 +146,7 @@ class SUMOVehicle(BaseVehicle):
         Returns:
              vehicle type
         """
-        return self._vehicle_type
+        return self._properties.get("vehicle_type")
 
     @property
     def vtype_sumo_cfg(self):
@@ -163,8 +156,8 @@ class SUMOVehicle(BaseVehicle):
             sumo config attributes
         """
         return {
-            attr: str(value) for (attr, value) in self._vtype_sumo_cfg.iteritems()
-        } if self._vtype_sumo_cfg is not None else {}
+            attr: str(value) for (attr, value) in self._properties.get("vtype_sumo_cfg").iteritems()
+        } if self._properties.get("vtype_sumo_cfg") is not None else {}
 
     @property
     def color(self):
@@ -172,7 +165,7 @@ class SUMOVehicle(BaseVehicle):
         Returns:
             color
         """
-        return self._color
+        return self._properties.get("color")
 
     @color.setter
     def color(self, color):
@@ -181,7 +174,7 @@ class SUMOVehicle(BaseVehicle):
         Args:
             color: Color
         """
-        self._color = numpy.array(color)
+        self._properties["color"] = numpy.array(color)
 
     @property
     def speed_deviation(self):
@@ -189,7 +182,7 @@ class SUMOVehicle(BaseVehicle):
         Returns:
              speed deviation
         """
-        return self._speed_deviation
+        return self._properties.get("speed_deviation")
 
     @property
     def start_time(self):
@@ -197,7 +190,7 @@ class SUMOVehicle(BaseVehicle):
         Returns:
              vehicle's start time
         """
-        return self._start_time
+        return self._properties.get("start_time")
 
     @start_time.setter
     def start_time(self, start_time):
@@ -206,7 +199,7 @@ class SUMOVehicle(BaseVehicle):
         Args:
             start_time: start time
         """
-        self._start_time = start_time
+        self._properties["start_time"] = start_time
 
     @property
     def vehicle_class(self):
@@ -214,7 +207,7 @@ class SUMOVehicle(BaseVehicle):
         Returns:
              SUMO vehicle class
         """
-        return self._vehicle_class
+        return self._properties.get("vehicle_class")
 
     def change_vehicle_class(self, class_name):
         """
@@ -224,5 +217,5 @@ class SUMOVehicle(BaseVehicle):
         Returns:
             self
         """
-        self._vehicle_class = class_name
+        self._properties["vehicle_class"] = class_name
         return self
