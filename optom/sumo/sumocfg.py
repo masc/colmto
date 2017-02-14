@@ -619,7 +619,7 @@ class SumoConfig(optom.common.configuration.Configuration):
                     self.scenario_config.get(scenario_name).get("parameters").get("speedlimit")
                 )
             ) for vtype in [random.choice(l_vtypedistribution) for _ in xrange(nbvehicles)]
-            ]
+        ]
 
         # sort speeds according to initial sorting flag
         if initialsorting == "best":
@@ -699,7 +699,7 @@ class SumoConfig(optom.common.configuration.Configuration):
         for i_vid, i_vehicle in l_vehicles.iteritems():
 
             # filter for relevant attributes and transform to string
-            l_vattr = i_vehicle.vtype_sumo_cfg
+            l_vattr = {k: str(v) for k, v in i_vehicle.properties.iteritems()}
             l_vattr.update({
                 "id": str(i_vid),
                 "color": "{},{},{},{}".format(*i_vehicle.color/255.)

@@ -29,12 +29,11 @@ import optom.cse.policy
 class BaseVehicle(object):
     """Base Vehicle."""
 
-    def __init__(self, speed_max=0.0, position=numpy.array((0.0, 0.0)), speed_current=0.0):
+    def __init__(self, position=numpy.array((0.0, 0.0)), speed=0.0):
         """C'tor"""
         self._properties = {
             "position": position,
-            "speed_current": speed_current,
-            "speed_max": speed_max,
+            "speed": speed,
         }
 
     @property
@@ -46,39 +45,21 @@ class BaseVehicle(object):
         return self._properties
 
     @property
-    def speed_max(self):
-        """
-        Returns:
-            maximum capable velocity of vehicle
-        """
-        return self._properties.get("speed_max")
-
-    @speed_max.setter
-    def speed_max(self, speed):
-        """
-        Sets maximum speed.
-
-        Args:
-            speed_max: maximum desired or capable speed
-        """
-        self._properties["speed_max"] = speed
-
-    @property
-    def speed_current(self):
+    def speed(self):
         """
         Returns:
              current speed
         """
         return self._properties.get("speed_current")
 
-    @speed_current.setter
-    def speed_current(self, speed):
+    @speed.setter
+    def speed(self, speed):
         """
         Sets current speed
         Args:
             speed: current speed
         """
-        self._properties["speed_current"] = speed
+        self._properties["speed"] = speed
 
     @property
     def position(self):
@@ -101,34 +82,31 @@ class BaseVehicle(object):
 class SUMOVehicle(BaseVehicle):
     """SUMO vehicle class."""
 
-    def __init__(self, speed_max=0.0, position=numpy.array((0.0, 0)), speed_deviation=0.0,
-                 vehicle_type=None, vehicle_class=optom.cse.policy.SUMOPolicy.to_allowed_class(),
-                 vtype_sumo_cfg=None, color=numpy.array((255, 255, 0, 255))):
+    def __init__(self, speed_max=0.0, speed_deviation=0.0, position=numpy.array((0.0, 0.0)),
+                 vtype_sumo_cfg=None, vehicle_type=None, color=numpy.array((255, 255, 0, 255))):
         """
         C'tor.
         Args:
             speed_max:
-            position:
             speed_deviation:
-            vehicle_type:
-            vehicle_class:
+            position:
             vtype_sumo_cfg:
+            vehicle_type:
             color:
         """
 
         super(SUMOVehicle, self).__init__(
-            speed_max=speed_max,
-            position=position,
+            position=position
         )
 
+        self._properties.update(vtype_sumo_cfg)
         self._properties.update(
             {
-                "vehicle_type": vehicle_type,
-                "vtype_sumo_cfg": vtype_sumo_cfg,
                 "color": color,
-                "speed_deviation": speed_deviation,
                 "start_time": 0.0,
-                "vehicle_class": vehicle_class,
+                "speedDev": speed_deviation,
+                "maxSpeed": speed_max,
+                "vType": vehicle_type
             }
         )
 
@@ -149,17 +127,6 @@ class SUMOVehicle(BaseVehicle):
         return self._properties.get("vehicle_type")
 
     @property
-    def vtype_sumo_cfg(self):
-        """
-        Convert values of vehicle_type config to str for sumo xml handling and return cfg
-        Returns:
-            sumo config attributes
-        """
-        return {
-            attr: str(value) for (attr, value) in self._properties.get("vtype_sumo_cfg").iteritems()
-        } if self._properties.get("vtype_sumo_cfg") is not None else {}
-
-    @property
     def color(self):
         """
         Returns:
@@ -177,37 +144,20 @@ class SUMOVehicle(BaseVehicle):
         self._properties["color"] = numpy.array(color)
 
     @property
-    def speed_deviation(self):
-        """
-        Returns:
-             speed deviation
-        """
-        return self._properties.get("speed_deviation")
-
-    @property
-    def start_time(self):
-        """
-        Returns:
-             vehicle's start time
-        """
-        return self._properties.get("start_time")
-
-    @start_time.setter
-    def start_time(self, start_time):
-        """
-        Set start time of vehicle
-        Args:
-            start_time: start time
-        """
-        self._properties["start_time"] = start_time
-
-    @property
     def vehicle_class(self):
         """
         Returns:
              SUMO vehicle class
         """
-        return self._properties.get("vehicle_class")
+        return self._properties.get("vClass")
+
+    @property
+    def speed_max(self):
+        """
+        Returns:
+            maximum speed
+        """
+        return self._properties.get("maxSpeed")
 
     def change_vehicle_class(self, class_name):
         """
@@ -217,5 +167,5 @@ class SUMOVehicle(BaseVehicle):
         Returns:
             self
         """
-        self._properties["vehicle_class"] = class_name
+        self._properties["vClass"] = class_name
         return self
