@@ -76,10 +76,8 @@ import optom.common.log
 def xslt(template):
     """
     Wrapper to apply template to XSLT and return transformation object.
-    Args:
-        template: XSLT template
-    Returns:
-        transformation object
+    @param template XSLT template
+    @retval transformation object
     """
     return XSLT(template)
 
@@ -134,33 +132,33 @@ class Writer(object):
         else:
             self._log = optom.common.log.logger(__name__)
 
-    def write_json_pretty(self, object, filename):
+    def write_json_pretty(self, obj, filename):
         """Write json in human readable form (slow!). If filename ends with .gz, compress file."""
 
         self._log.debug("Writing %s", filename)
         f_json = gzip.GzipFile(filename, 'w') \
             if filename.endswith(".gz") \
             else open(filename, mode="w")
-        json.dump(object, f_json, sort_keys=True, indent=4, separators=(', ', ' : '))
+        json.dump(obj, f_json, sort_keys=True, indent=4, separators=(', ', ' : '))
         f_json.close()
 
-    def write_json(self, object, filename):
+    def write_json(self, obj, filename):
         """Write json in compact form, compress file with gzip if filename ends with .gz."""
 
         self._log.debug("Writing %s", filename)
         with gzip.GzipFile(filename, 'w') \
                 if filename.endswith(".gz") \
                 else open(filename, mode="w") as f_json:
-            f_json.write(jsondumps(object))
+            f_json.write(jsondumps(obj))
 
-    def write_yaml(self, object, filename, default_flow_style=False):
+    def write_yaml(self, obj, filename, default_flow_style=False):
         """Write yaml, compress file with gzip if filename ends with .gz."""
 
         self._log.debug("Writing %s", filename)
         f_yaml = gzip.GzipFile(filename, 'w') \
             if filename.endswith(".gz") \
             else open(filename, mode="w")
-        yaml.dump(object, f_yaml, Dumper=SafeDumper, default_flow_style=default_flow_style)
+        yaml.dump(obj, f_yaml, Dumper=SafeDumper, default_flow_style=default_flow_style)
         f_yaml.close()
 
     def write_csv(self, fieldnames, rowdict, filename):
@@ -175,12 +173,11 @@ class Writer(object):
     def write_hdf5(self, filename, path, objectdict, **kwargs):
         """Write an object to a specific path into an open file, identified by fileid
 
-        Args:
-            filename: The file name
-            path: Destination path in HDF5 structure, will be created if not existent.
-            objectdict: Object(s) to be stored in a named dictionary structure
+        @param filename The file name
+        @param path Destination path in HDF5 structure, will be created if not existent.
+        @param objectdict Object(s) to be stored in a named dictionary structure
                           ([name] -> str|int|float|list|numpy)
-            **kwargs: Optional arguments passed to create_dataset
+        @param **kwargs Optional arguments passed to create_dataset
         """
         self._log.debug("Writing %s", filename)
 

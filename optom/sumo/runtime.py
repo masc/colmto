@@ -181,37 +181,40 @@ class Runtime(object):
 
                 # write travel stats to vehicle
                 run_config.get("vehicles").get(i_vehicle_id).record_travel_stats(
-                    l_results_simulation.get(traci.constants.VAR_TIME_STEP)/10.**3,
-                    run_config.get("scenario_config").get("parameters").get("length")
+                    l_results_simulation.get(traci.constants.VAR_TIME_STEP)/10.**3
                 )
 
                 if i_vehicle_id == "vehicle10":
-                    print(
-                        "actual travel time: {}, optimal travel time: {}, ".format(
-                            run_config.get("vehicles").get(i_vehicle_id).travel_time,
+                    self._log.debug(
+                        "actual TT: %s, opt TT: %s, time loss: %s (%s pct.), dsat: %s",
+                        run_config.get("vehicles").get(i_vehicle_id).travel_time,
+                        round(
                             run_config.get("vehicles").get(i_vehicle_id).position[0] /
                             run_config.get("vehicles").get(i_vehicle_id).speed_max,
+                            2
                         ),
-                        "time loss: {} ({} %), dsat: {}".format(
+                        round(
                             run_config.get("vehicles").get(i_vehicle_id).travel_stats.get(
                                 "time_loss"
                             ).get(l_results_simulation.get(traci.constants.VAR_TIME_STEP)/10.**3),
-                            round(
-                                run_config.get("vehicles").get(i_vehicle_id).travel_stats.get(
-                                    "time_loss"
-                                ).get(l_results_simulation.get(
-                                    traci.constants.VAR_TIME_STEP)/10.**3
-                                ) /
-                                (run_config.get("vehicles").get(i_vehicle_id).position[0] /
-                                 run_config.get("vehicles").get(i_vehicle_id).speed_max) * 100,
-                                2),
-                            round(
-                                run_config.get("vehicles").get(i_vehicle_id).travel_stats.get(
-                                    "dissatisfaction"
-                                ).get(l_results_simulation.get(
-                                    traci.constants.VAR_TIME_STEP)/10.**3
-                                ),
-                                32)
+                            2
+                        ),
+                        round(
+                            run_config.get("vehicles").get(i_vehicle_id).travel_stats.get(
+                                "time_loss"
+                            ).get(l_results_simulation.get(
+                                traci.constants.VAR_TIME_STEP)/10.**3
+                                 ) /
+                            (run_config.get("vehicles").get(i_vehicle_id).position[0] /
+                             run_config.get("vehicles").get(i_vehicle_id).speed_max) * 100,
+                            2),
+                        round(
+                            run_config.get("vehicles").get(i_vehicle_id).travel_stats.get(
+                                "dissatisfaction"
+                            ).get(l_results_simulation.get(
+                                traci.constants.VAR_TIME_STEP)/10.**3
+                                 ),
+                            32
                         )
                     )
 

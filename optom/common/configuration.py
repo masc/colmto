@@ -376,45 +376,41 @@ class Configuration(object):
     @property
     def run_config(self):
         """
-        Returns:
-            run config
+        @retval run config
         """
         return copy.copy(self._run_config)
 
     @property
     def scenario_config(self):
         """
-        Returns:
-            scenario config
+        @retval scenario config
         """
         return copy.copy(self._scenario_config)
 
     @property
     def scenario_dir(self):
         """
-        Returns: scenario directory."""
+        @retval scenario directory.
+        """
         return copy.copy(self._args.scenario_dir)
 
     @property
     def vtypes_config(self):
         """
-        Return:
-            vehicle type config
+        @retval vehicle type config
         """
         return copy.copy(self._vtypes_config)
 
     @property
     def output_dir(self):
         """
-        Returns:
-            destination dir
+        @retval destination dir
         """
         return copy.copy(self._args.output_dir)
 
     @property
     def run_prefix(self):
         """
-        Returns:
-             run prefix
+        @retval run prefix
         """
         return copy.copy(self._args.run_prefix)

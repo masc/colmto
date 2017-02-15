@@ -103,7 +103,7 @@ class SUMOVehicle(BaseVehicle):
             position=position
         )
 
-        if type(vtype_sumo_cfg) is dict:
+        if isinstance(vtype_sumo_cfg, dict):
             self._properties.update(vtype_sumo_cfg)
 
         self._properties.update(
@@ -212,8 +212,8 @@ class SUMOVehicle(BaseVehicle):
         """
         Calculate driver's dissatisfaction
 
-        $$dissatisfaction := dsat(time\\_loss, \widehat{optimal\\_travel\\_time},
-        time\\_loss\\_threshold) = \frac{1}{1+e^{\widehat{time\\_loss}-time\\_loss}}$$
+        $$dissatisfaction := dsat(time\\_loss, \\widehat{optimal\\_travel\\_time},
+        time\\_loss\\_threshold) = \frac{1}{1+e^{\\widehat{time\\_loss}-time\\_loss}}$$
 
         @param time_loss time loss
         @param time_loss_threshold cut-off point of acceptable time loss
@@ -223,14 +223,14 @@ class SUMOVehicle(BaseVehicle):
         """
         return 1/(1+math.exp(-time_loss + optimal_travel_time * time_loss_threshold))
 
-    def record_travel_stats(self, time_step, route_length):
+    def record_travel_stats(self, time_step):
         """
         @brief Write travel stats, i.e. travel time, time loss, position,
         and dissatisfaction of vehicle for a given time step.
 
         $$time\\_loss := travel\\_time - \frac{position}{max\\_speed}.$$
-        $$dissatisfaction := dsat(time\\_loss, \widehat{optimal\\_travel\\_time},
-        time\\_loss\\_threshold) = \frac{1}{1+e^{\widehat{time\\_loss}-time\\_loss}}$$
+        $$dissatisfaction := dsat(time\\_loss, \\widehat{optimal\\_travel\\_time},
+        time\\_loss\\_threshold) = \frac{1}{1+e^{\\widehat{time\\_loss}-time\\_loss}}$$
 
 
         @param time_step current time step

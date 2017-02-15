@@ -40,8 +40,7 @@ class BasePolicy(object):
     def __init__(self, behaviour=BEHAVIOUR.deny):
         """
         C'tor
-        Args:
-            behaviour: Default, i.e. baseline policy.
+        @param behaviour Default, i.e. baseline policy.
                        Enum of optom.cse.policy.BEHAVIOUR.deny/allow
         """
         self._behaviour = behaviour
@@ -51,11 +50,9 @@ class BasePolicy(object):
         """
         Transforms string argument of behaviour, i.e. "allow", "deny" case insensitive to
         BEHAVIOUR enum value. Otherwise return passed or_else argument.
-        Args:
-            behaviour: string "allow", "deny"
-            or_else: otherwise returned argument
-        Returns:
-            BEHAVIOUR.allow, BEHAVIOUR.deny, or_else
+        @param behaviour string "allow", "deny"
+        @param or_else otherwise returned argument
+        @retval BEHAVIOUR.allow, BEHAVIOUR.deny, or_else
         """
         if behaviour.lower() == "allow":
             return BEHAVIOUR.allow
@@ -67,8 +64,7 @@ class BasePolicy(object):
     def behaviour(self):
         """
         Returns behaviour
-        Returns:
-            behaviour
+        @retval behaviour
         """
         return self._behaviour
 
@@ -101,10 +97,8 @@ class SUMOExtendablePolicy(object):
         """
         C'tor.
 
-        Args:
-            vehicle_policies: List of policies
-
-            rule: Rule for applying sub-policies ("any", "all")
+        @param vehicle_policies List of policies
+        @param rule Rule for applying sub-policies ("any", "all")
         """
         self._vehicle_policies = vehicle_policies
         self._rule = rule
@@ -135,8 +129,7 @@ class SUMOExtendablePolicy(object):
         """
         Sets rule for applying sub-policies ("any", "all").
 
-        Args:
-            rule: Rule for applying sub-policies ("any", "all")
+        @param rule Rule for applying sub-policies ("any", "all")
         """
         if rule not in ("any", "all"):
             raise AttributeError
@@ -148,11 +141,9 @@ class SUMOExtendablePolicy(object):
 
         Policy must derive from optom.cse.policy.SUMOVehiclePolicy.
 
-        Args:
-            vehicle_policy: Iterable of policies derived from optom.cse.policy.SUMOVehiclePolicy
+        @param vehicle_policy Iterable of policies derived from optom.cse.policy.SUMOVehiclePolicy
 
-        Returns:
-            self
+        @retval self
         """
 
         if not isinstance(vehicle_policy, optom.cse.policy.SUMOVehiclePolicy):
@@ -166,11 +157,8 @@ class SUMOExtendablePolicy(object):
         """
         Check whether sub-policies apply to this vehicle.
 
-        Args:
-            vehicle: vehicle object
-
-        Returns:
-            boolean
+        @param vehicle vehicle object
+        @retval boolean
         """
 
         if self._rule == "any":
@@ -198,10 +186,8 @@ class SUMOUniversalPolicy(SUMOPolicy):
     def applies_to(vehicle):
         """
         Test whether this policy applies to given vehicle
-        Args:
-            vehicle: Vehicle
-        Returns:
-            boolean
+        @param vehicle Vehicle
+        @retval boolean
         """
         if vehicle:
             return True
@@ -211,10 +197,8 @@ class SUMOUniversalPolicy(SUMOPolicy):
     def apply(self, vehicles):
         """
         apply policy to vehicles
-        Args:
-            vehicles: iterable object containing BaseVehicles, or inherited objects
-        Returns:
-            List of vehicles with applied, i.e. set attributes, whether they can use otl or not
+        @param vehicles iterable object containing BaseVehicles, or inherited objects
+        @retval List of vehicles with applied, i.e. set attributes, whether they can use otl or not
         """
 
         return [
@@ -237,10 +221,8 @@ class SUMONullPolicy(SUMOPolicy):
     def applies_to(vehicle):
         """
         Test whether this policy applies to given vehicle
-        Args:
-            vehicle: Vehicle
-        Returns:
-            boolean
+        @param vehicle Vehicle
+        @retval boolean
         """
         if vehicle:
             return False
@@ -251,10 +233,8 @@ class SUMONullPolicy(SUMOPolicy):
     def apply(vehicles):
         """
         apply policy to vehicles
-        Args:
-            vehicles: iterable object containing BaseVehicles, or inherited objects
-        Returns:
-            List of vehicles with applied, i.e. set attributes, whether they can use otl or not
+        @param vehicles iterable object containing BaseVehicles, or inherited objects
+        @retval List of vehicles with applied, i.e. set attributes, whether they can use otl or not
         """
         return vehicles
 
@@ -286,10 +266,8 @@ class SUMOVTypePolicy(SUMOVehiclePolicy):
     def applies_to(self, vehicle):
         """
         Test whether this (and sub)policies apply to given vehicle.
-        Args:
-            vehicle: Vehicle
-        Returns:
-            boolean
+        @param vehicle Vehicle
+        @retval boolean
         """
         if (self._vehicle_type == vehicle.vehicle_type) and \
                 (self.subpolicies_apply_to(vehicle) if len(self._vehicle_policies) > 0 else True):
@@ -299,10 +277,8 @@ class SUMOVTypePolicy(SUMOVehiclePolicy):
     def apply(self, vehicles):
         """
         apply policy to vehicles
-        Args:
-            vehicles: iterable object containing BaseVehicles, or inherited objects
-        Returns:
-            List of vehicles with applied, i.e. set attributes, whether they can use otl or not
+        @param vehicles iterable object containing BaseVehicles, or inherited objects
+        @retval List of vehicles with applied, i.e. set attributes, whether they can use otl or not
         """
 
         return [
@@ -330,10 +306,8 @@ class SUMOSpeedPolicy(SUMOVehiclePolicy):
     def applies_to(self, vehicle):
         """
         Test whether this (and sub)policies apply to given vehicle
-        Args:
-            vehicle: Vehicle
-        Returns:
-            boolean
+        @param vehicle Vehicle
+        @retval boolean
         """
         if (self._speed_range[0] <= vehicle.speed_max <= self._speed_range[1]) and \
                 (self.subpolicies_apply_to(vehicle) if len(self._vehicle_policies) > 0 else True):
@@ -343,10 +317,8 @@ class SUMOSpeedPolicy(SUMOVehiclePolicy):
     def apply(self, vehicles):
         """
         apply policy to vehicles
-        Args:
-            vehicles: iterable object containing BaseVehicles, or inherited objects
-        Returns:
-            List of vehicles with applied, i.e. set attributes, whether they can use otl or not
+        @param vehicles iterable object containing BaseVehicles, or inherited objects
+        @retval List of vehicles with applied, i.e. set attributes, whether they can use otl or not
         """
 
         return [
@@ -379,19 +351,15 @@ class SUMOPositionPolicy(SUMOVehiclePolicy):
     def position_bbox(self):
         """
         Returns position bounding box.
-
-        Returns:
-            position bounding box
+        @retval position bounding box
         """
         return self._position_bbox
 
     def applies_to(self, vehicle):
         """
         Test whether this (and sub)policies apply to given vehicle
-        Args:
-            vehicle: Vehicle
-        Returns:
-            boolean
+        @param vehicle Vehicle
+        @retval boolean
         """
         if numpy.all(numpy.logical_and(self._position_bbox[0] <= vehicle.position,
                                        vehicle.position <= self._position_bbox[1])) and \
@@ -402,10 +370,8 @@ class SUMOPositionPolicy(SUMOVehiclePolicy):
     def apply(self, vehicles):
         """
         apply policy to vehicles
-        Args:
-            vehicles: iterable object containing BaseVehicles, or inherited objects
-        Returns:
-            List of vehicles with applied, i.e. set attributes, whether they can use otl or not
+        @param vehicles iterable object containing BaseVehicles, or inherited objects
+        @retval List of vehicles with applied, i.e. set attributes, whether they can use otl or not
         """
 
         return [
