@@ -216,7 +216,8 @@ _DEFAULT_CONFIG_VTYPES = {
         "speedFactor": 1,
         "vClass": "custom2",
         "vType": "delivery",
-        "width": 2.16
+        "width": 2.16,
+        "dsat_threshold": 0.2
     },
     "heavytransport": {
         "accel": 1.3,
@@ -229,7 +230,8 @@ _DEFAULT_CONFIG_VTYPES = {
         "speedFactor": 1,
         "vClass": "custom2",
         "vType": "trailer",
-        "width": 2.4
+        "width": 2.4,
+        "dsat_threshold": 0.2
     },
     "passenger": {
         "accel": 2.9,
@@ -242,7 +244,8 @@ _DEFAULT_CONFIG_VTYPES = {
         "speedFactor": 1,
         "vClass": "custom2",
         "vType": "passenger",
-        "width": 1.8
+        "width": 1.8,
+        "dsat_threshold": 0.2
     },
     "tractor": {
         "accel": 1.3,
@@ -255,7 +258,8 @@ _DEFAULT_CONFIG_VTYPES = {
         "speedFactor": 1,
         "vClass": "custom2",
         "vType": "tractor",
-        "width": 2.4
+        "width": 2.4,
+        "dsat_threshold": 0.2
     },
     "truck": {
         "accel": 1.3,
@@ -268,7 +272,8 @@ _DEFAULT_CONFIG_VTYPES = {
         "speedFactor": 1,
         "vClass": "custom2",
         "vType": "truck",
-        "width": 2.4
+        "width": 2.4,
+        "dsat_threshold": 0.2
     },
     "van": {
         "accel": 2.9,
@@ -281,7 +286,8 @@ _DEFAULT_CONFIG_VTYPES = {
         "speedFactor": 1,
         "vClass": "custom2",
         "vType": "delivery",
-        "width": 1.9
+        "width": 1.9,
+        "dsat_threshold": 0.2
     }
 }
 

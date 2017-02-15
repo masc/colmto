@@ -21,6 +21,7 @@
 # #############################################################################
 # @endcond
 """Vehicle classes for storing vehicle data/attributes/states."""
+import math
 import numpy
 
 import optom.cse.policy
@@ -30,25 +31,29 @@ class BaseVehicle(object):
     """Base Vehicle."""
 
     def __init__(self, position=numpy.array((0.0, 0.0)), speed=0.0):
-        """C'tor"""
+        """
+        C'tor
+
+        @param position position (n-tuple)
+        @param speed vehicle speed
+        """
+
         self._properties = {
-            "position": position,
+            "position": numpy.array(position),
             "speed": speed,
         }
 
     @property
     def properties(self):
         """
-        Returns:
-            vehicle properties as dictionary bundle
+        @retval vehicle properties as dictionary bundle
         """
         return self._properties
 
     @property
     def speed(self):
         """
-        Returns:
-             current speed
+        @retval current speed
         """
         return self._properties.get("speed")
 
@@ -56,16 +61,14 @@ class BaseVehicle(object):
     def speed(self, speed):
         """
         Sets current speed
-        Args:
-            speed: current speed
+        @param speed current speed
         """
         self._properties["speed"] = speed
 
     @property
     def position(self):
         """
-        Returns:
-             current position
+        @retval current position
         """
         return self._properties.get("position")
 
@@ -73,8 +76,7 @@ class BaseVehicle(object):
     def position(self, position):
         """
         Updates current position
-        Args:
-            position: current position
+        @param position current position
         """
         self._properties["position"] = position
 
@@ -87,14 +89,14 @@ class SUMOVehicle(BaseVehicle):
                  vehicle_type=None, color=numpy.array((255, 255, 0, 255))):
         """
         C'tor.
-        Args:
-            speed_max:
-            speed_deviation:
-            position:
-            vtype_sumo_cfg:
-            vehicle_class:
-            vehicle_type:
-            color:
+
+        @param speed_max
+        @param speed_deviation
+        @param position
+        @param vtype_sumo_cfg
+        @param vehicle_class
+        @param vehicle_type
+        @param color
         """
 
         super(SUMOVehicle, self).__init__(
@@ -117,33 +119,34 @@ class SUMOVehicle(BaseVehicle):
 
         self._travel_stats = {
             "start_time": 0.0,
+            "travel_time": 0.0,
             "max_speed": speed_max,
             "vehicle_type": vehicle_type,
             "time_loss": {},
-            "position": {}
+            "position": {},
+            "dissatisfaction": {}
         }
 
     @property
     def properties(self):
         """
-        Returns:
-             vehicle's properties as a dict bundle
+        @retval vehicle's properties as a dict bundle
         """
         return self._properties
 
     @property
     def vehicle_type(self):
         """
-        Returns:
-             vehicle type
+        @retval vehicle type
         """
         return self._properties.get("vType")
 
     @property
     def start_time(self):
         """
-        Returns:
-            start time
+        Returns start time
+
+        @retval start time
         """
         return self._properties.get("start_time")
 
@@ -152,8 +155,7 @@ class SUMOVehicle(BaseVehicle):
         """
         Sets start time.
 
-        Args:
-            start_time: start time
+        @param start_time start time
         """
         self._properties["start_time"] = start_time
 
@@ -169,63 +171,97 @@ class SUMOVehicle(BaseVehicle):
     def color(self, color):
         """
         Update color
-        Args:
-            color: Color
+        @param color Color (rgba-tuple, e.g. (255, 255, 0, 255))
         """
         self._properties["color"] = numpy.array(color)
 
     @property
     def vehicle_class(self):
         """
-        Returns:
-             SUMO vehicle class
+        @retval SUMO vehicle class
         """
         return self._properties.get("vClass")
 
     @property
     def speed_max(self):
         """
-        Returns:
-            maximum speed
+        @retval self._properties.get("maxSpeed")
         """
         return self._properties.get("maxSpeed")
 
     @property
+    def travel_time(self):
+        """
+        Returns current travel time
+
+        @retval travel time
+        """
+        return self._travel_stats.get("travel_time")
+
+    @property
     def travel_stats(self):
         """
-        Returns travel stats dictionary
+        @brief Returns travel stats dictionary
 
-        Returns:
-            travel stats
+        @retval self._travel_stats
         """
         return self._travel_stats
 
-    def record_travel_stats(self, time_step):
+    @staticmethod
+    def _dissatisfaction(time_loss, optimal_travel_time, time_loss_threshold=0.2):
         """
-        Write travel stats, i.e. time losses and position of vehicle for a given time step.
+        Calculate driver's dissatisfaction
+
+        $$dissatisfaction := dsat(time\\_loss, \widehat{optimal\\_travel\\_time},
+        time\\_loss\\_threshold) = \frac{1}{1+e^{\widehat{time\\_loss}-time\\_loss}}$$
+
+        @param time_loss time loss
+        @param time_loss_threshold cut-off point of acceptable time loss
+            relative to optimal travel time in [0,1]
+        @param optimal_travel_time optimal travel time
+        @retval dissatisfaction ([0,1] normalised)
+        """
+        return 1/(1+math.exp(-time_loss + optimal_travel_time * time_loss_threshold))
+
+    def record_travel_stats(self, time_step, route_length):
+        """
+        @brief Write travel stats, i.e. travel time, time loss, position,
+        and dissatisfaction of vehicle for a given time step.
 
         $$time\\_loss := travel\\_time - \frac{position}{max\\_speed}.$$
+        $$dissatisfaction := dsat(time\\_loss, \widehat{optimal\\_travel\\_time},
+        time\\_loss\\_threshold) = \frac{1}{1+e^{\widehat{time\\_loss}-time\\_loss}}$$
 
-        Args:
-            time_step: current time step
 
-        Returns:
-            self
+        @param time_step current time step
+
+        @retval self
         """
 
+        # current travel time
+        self._travel_stats["travel_time"] = time_step - self.start_time
+
+        # time loss
         self._travel_stats.get("time_loss")[time_step] = time_step - self.start_time \
-            - self.position[0]/self.speed_max
+            - self.position[0] / self.speed_max
+
+        # position
         self._travel_stats.get("position")[time_step] = self.position
+
+        # dissatisfaction
+        self._travel_stats.get("dissatisfaction")[time_step] = self._dissatisfaction(
+            self._travel_stats.get("time_loss")[time_step],
+            self.position[0] / self.speed_max,
+            self._properties.get("dsat_threshold")
+        )
 
         return self
 
     def change_vehicle_class(self, class_name):
         """
         Change vehicle class
-        Args:
-            class_name: vehicle class
-        Returns:
-            self
+        @param class_name vehicle class
+        @retval self
         """
         self._properties["vClass"] = class_name
         return self

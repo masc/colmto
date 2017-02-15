@@ -30,7 +30,7 @@ INLINE_INHERITED_MEMB  = NO
 FULL_PATH_NAMES        = NO
 STRIP_FROM_PATH        =
 STRIP_FROM_INC_PATH    =
-SHORT_NAMES            = NO
+SHORT_NAMES            = YES
 JAVADOC_AUTOBRIEF      = YES
 QT_AUTOBRIEF           = NO
 MULTILINE_CPP_IS_BRIEF = NO
@@ -127,7 +127,7 @@ EXAMPLE_PATTERNS       = *.md
 EXAMPLE_RECURSIVE      = YES
 IMAGE_PATH             = .
 INPUT_FILTER           =
-FILTER_PATTERNS        = *.py=site/py_filter
+FILTER_PATTERNS        = *.py=doxypy.py
 FILTER_SOURCE_FILES    = YES
 FILTER_SOURCE_PATTERNS =
 USE_MDFILE_AS_MAINPAGE = README_doc.md
@@ -213,23 +213,24 @@ EXTRA_SEARCH_MAPPINGS  =
 #---------------------------------------------------------------------------
 # Configuration options related to the LaTeX output
 #---------------------------------------------------------------------------
-GENERATE_LATEX         = NO
+GENERATE_LATEX         = YES
 LATEX_OUTPUT           = latex
 LATEX_CMD_NAME         = latex
 MAKEINDEX_CMD_NAME     = makeindex
-COMPACT_LATEX          = NO
+COMPACT_LATEX          = YES
 PAPER_TYPE             = a4
-EXTRA_PACKAGES         =
+EXTRA_PACKAGES         = amsmath
 LATEX_HEADER           =
 LATEX_FOOTER           =
 LATEX_EXTRA_STYLESHEET =
 LATEX_EXTRA_FILES      =
 PDF_HYPERLINKS         = YES
 USE_PDFLATEX           = YES
-LATEX_BATCHMODE        = NO
+LATEX_BATCHMODE        = YES
 LATEX_HIDE_INDICES     = NO
-LATEX_SOURCE_CODE      = NO
-LATEX_BIB_STYLE        = plain
+LATEX_SOURCE_CODE      = YES
+LATEX_TIMESTAMP        = YES
+LATEX_BIB_STYLE        = alpha
 #---------------------------------------------------------------------------
 # Configuration options related to the RTF output
 #---------------------------------------------------------------------------
@@ -259,7 +260,7 @@ XML_PROGRAMLISTING     = NO
 #---------------------------------------------------------------------------
 GENERATE_DOCBOOK       = NO
 DOCBOOK_OUTPUT         = docbook
-DOCBOOK_PROGRAMLISTING = NO
+DOCBOOK_PROGRAMLISTING = YES
 #---------------------------------------------------------------------------
 # Configuration options for the AutoGen Definitions output
 #---------------------------------------------------------------------------

@@ -51,10 +51,9 @@ class Runtime(object):
 
     def run_once(self, run_config):
         """
-        Run provided scenario in one shot.
+        @brief Run provided scenario in one shot.
 
-        Args:
-            run_config: run configuration object
+        @param run_config run configuration object
         """
 
         self._log.info(
@@ -81,12 +80,10 @@ class Runtime(object):
         """
         Run provided scenario with TraCI by providing a ref to an optimisation entity.
 
-        Args:
-            run_config: run configuration
-            cse: central optimisation entity instance of optom.cse.cse.SumoCSE
+        @param run_config run configuration
+        @param cse central optimisation entity instance of optom.cse.cse.SumoCSE
 
-        Returns:
-            list of vehicles, containing travel stats
+        @retval list of vehicles, containing travel stats
         """
 
         if not isinstance(cse, optom.cse.cse.SumoCSE):
@@ -182,10 +179,41 @@ class Runtime(object):
                             tuple(run_config.get("vehicles").get(i_vehicle_id).color)
                         )
 
-                # write travel time losses to vehicle
+                # write travel stats to vehicle
                 run_config.get("vehicles").get(i_vehicle_id).record_travel_stats(
-                    l_results_simulation.get(traci.constants.VAR_TIME_STEP)/10.**3
+                    l_results_simulation.get(traci.constants.VAR_TIME_STEP)/10.**3,
+                    run_config.get("scenario_config").get("parameters").get("length")
                 )
+
+                if i_vehicle_id == "vehicle10":
+                    print(
+                        "actual travel time: {}, optimal travel time: {}, ".format(
+                            run_config.get("vehicles").get(i_vehicle_id).travel_time,
+                            run_config.get("vehicles").get(i_vehicle_id).position[0] /
+                            run_config.get("vehicles").get(i_vehicle_id).speed_max,
+                        ),
+                        "time loss: {} ({} %), dsat: {}".format(
+                            run_config.get("vehicles").get(i_vehicle_id).travel_stats.get(
+                                "time_loss"
+                            ).get(l_results_simulation.get(traci.constants.VAR_TIME_STEP)/10.**3),
+                            round(
+                                run_config.get("vehicles").get(i_vehicle_id).travel_stats.get(
+                                    "time_loss"
+                                ).get(l_results_simulation.get(
+                                    traci.constants.VAR_TIME_STEP)/10.**3
+                                ) /
+                                (run_config.get("vehicles").get(i_vehicle_id).position[0] /
+                                 run_config.get("vehicles").get(i_vehicle_id).speed_max) * 100,
+                                2),
+                            round(
+                                run_config.get("vehicles").get(i_vehicle_id).travel_stats.get(
+                                    "dissatisfaction"
+                                ).get(l_results_simulation.get(
+                                    traci.constants.VAR_TIME_STEP)/10.**3
+                                ),
+                                32)
+                        )
+                    )
 
             traci.simulationStep()
 
