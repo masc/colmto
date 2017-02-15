@@ -25,6 +25,10 @@ machine:
         version: 2.7.12
 
 dependencies:
+    cache_directories:
+        - "~/texmf"
+        - "/usr/local/texlive/"
+        
     pre:
         - sudo add-apt-repository -y ppa:sumo/stable
         - sudo apt-get update
