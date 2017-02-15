@@ -77,7 +77,8 @@ test:
         - echo -e "\n![ImportGraph](https://github.com/masc/optom/blob/gh-pages/optom-imports.png)" >> pylint.md
         - echo -e "\n![ImportGraph](optom-imports.png)" >> pylint_doc.md
         - echo -e "\n# Code Statistics\n\n" >> README.md
-        - echo -e "# Code Statistics\n\n" > README_doc.md
+        - echo -e "# Copyright & License\n\n* Copyright 2017, Malte Aschermann\n* License: LGPL" > README_doc.md
+        - echo -e "# Code Statistics\n\n" >> README_doc.md
         - sh site/radon.sh > radon.md
         - cat radon.md >> README.md
         - cat radon.md >> README_doc.md
