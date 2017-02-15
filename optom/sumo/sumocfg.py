@@ -163,11 +163,10 @@ class SumoConfig(optom.common.configuration.Configuration):
     def generate_run(self, scenario_run_config, initial_sorting, run_number):
         """generate run configurations
 
-        Args:
-            scenario_run_config: run configuration of scenario
-            initial_sorting: initial sorting of vehicles ("best", "random", "worst")
-            run_number: number of current run
-        Returns:
+        @param scenario_run_config: run configuration of scenario
+        @param initial_sorting: initial sorting of vehicles ("best", "random", "worst")
+        @param run_number: number of current run
+        @retval
             run configuration dictionary
         """
         self._log.debug("Generating run %s for %s sorting", run_number, initial_sorting)
@@ -270,10 +269,9 @@ class SumoConfig(optom.common.configuration.Configuration):
         """
         Generate SUMO's node configuration file.
 
-        Args:
-            scenarioconfig: Scenario configuration
-            nodefile: Destination to write node file
-            forcerebuildscenarios: rebuild scenarios,
+        @param scenarioconfig: Scenario configuration
+        @param nodefile: Destination to write node file
+        @param forcerebuildscenarios: rebuild scenarios,
                                         even if they already exist for current run
         """
 
@@ -324,11 +322,10 @@ class SumoConfig(optom.common.configuration.Configuration):
         """
         Generate SUMO's edge configuration file.
 
-        Args:
-            scenario_name: Name of scenario (required to id detector positions)
-            scenario_config: Scenario configuration
-            edgefile: Destination to write edge file
-            forcerebuildscenarios: Rebuild scenarios,
+        @param scenario_name: Name of scenario (required to id detector positions)
+        @param scenario_config: Scenario configuration
+        @param edgefile: Destination to write edge file
+        @param forcerebuildscenarios: Rebuild scenarios,
                                         even if they already exist for current run
         """
 
@@ -416,9 +413,8 @@ class SumoConfig(optom.common.configuration.Configuration):
         """
         Generate switches if not pre-defined in scenario config.
 
-        Args:
-            edge: edge
-            scenario_config: scenario config dictionary
+        @param edge: edge
+        @param scenario_config: scenario config dictionary
         """
         self._log.info("########### generating switches ###########")
 
@@ -473,11 +469,10 @@ class SumoConfig(optom.common.configuration.Configuration):
         """
         Generate SUMO's main configuration file.
 
-        Args:
-            config_files: Dictionary of config file locations,
+        @param config_files: Dictionary of config file locations,
                              i.e. netfile, routefile, settingsfile
-            simtimeinterval: Time interval of simulation
-            forcerebuildscenarios: Rebuild scenarios,
+        @param simtimeinterval: Time interval of simulation
+        @param forcerebuildscenarios: Rebuild scenarios,
                                         even if they already exist for current run
         """
 
@@ -518,11 +513,10 @@ class SumoConfig(optom.common.configuration.Configuration):
         """
         Generate SUMO's settings configuration file.
 
-        Args:
-            scenarioconfig: Scenario configuration
-            runcfg: Run configuration
-            settingsfile: Destination to write settings file
-            forcerebuildscenarios: Rebuild scenarios,
+        @param scenarioconfig: Scenario configuration
+        @param runcfg: Run configuration
+        @param settingsfile: Destination to write settings file
+        @param forcerebuildscenarios: Rebuild scenarios,
                                         even if they already exist for current run
         """
         if os.path.isfile(settingsfile) and not forcerebuildscenarios:
@@ -548,7 +542,7 @@ class SumoConfig(optom.common.configuration.Configuration):
         Calculate next time step in Poisson or linear distribution.
 
         Poisson (exponential) distribution with
-        $$F(x) := 1 - e^{-\\lambda x}$$
+        \f$F(x) := 1 - e^{-\lambda x}\f$
         by using random.expovariate(lamb).
 
         Linear distribution just adds 1/lamb to the previous start time.
@@ -556,12 +550,10 @@ class SumoConfig(optom.common.configuration.Configuration):
         For every other value of distribution this function just returns the input value of
         prev_start_time.
 
-        Args:
-            lamb: lambda
-            prev_start_time: start time
-            distribution: distribution, i.e. "poisson" or "linear"
-        Returns:
-            next start time
+        @param lamb: lambda
+        @param prev_start_time: start time
+        @param distribution: distribution, i.e. "poisson" or "linear"
+        @retval next start time
         """
 
         if distribution == "poisson":
@@ -575,14 +567,12 @@ class SumoConfig(optom.common.configuration.Configuration):
         """
         Create a distribution of vehicles based on
 
-        Args:
-            nbvehicles: number of vehicles
-            aadt: anual average daily traffic (vehicles/day/lane)
-            initialsorting: initial sorting of vehicles (by max speed)
+        @param nbvehicles: number of vehicles
+        @param aadt: anual average daily traffic (vehicles/day/lane)
+        @param initialsorting: initial sorting of vehicles (by max speed)
                                 ["best", "random", "worst"]
-            scenario_name: name of scenario
-        Returns:
-            OrderedDict of ID -> optom.environment.vehicle.Vehicle
+        @param scenario_name: name of scenario
+        @retval OrderedDict of ID -> optom.environment.vehicle.Vehicle
         """
 
         assert initialsorting in ["best", "random", "worst"]
@@ -650,13 +640,11 @@ class SumoConfig(optom.common.configuration.Configuration):
         """
         Generate SUMO's trip file.
 
-        Args:
-            scenario_runs:
-            initialsorting:
-            tripfile:
-            forcerebuildscenarios:
-        Returns:
-            vehicles
+        @param scenario_runs:
+        @param initialsorting:
+        @param tripfile:
+        @param forcerebuildscenarios:
+        @retval vehicles
         """
 
         if os.path.isfile(tripfile) and not forcerebuildscenarios:
@@ -755,11 +743,10 @@ class SumoConfig(optom.common.configuration.Configuration):
         """
         Generate SUMO's net xml.
 
-        Args:
-            nodefile:
-            edgefile:
-            netfile:
-            forcerebuildscenarios:
+        @param nodefile:
+        @param edgefile:
+        @param netfile:
+        @param forcerebuildscenarios:
         """
 
         if os.path.isfile(netfile) and not forcerebuildscenarios:
@@ -783,11 +770,10 @@ class SumoConfig(optom.common.configuration.Configuration):
         """
         Generate SUMO's route xml.
 
-        Args:
-            netfile:
-            tripfile:
-            routefile:
-            forcerebuildscenarios:
+        @param netfile:
+        @param tripfile:
+        @param routefile:
+        @param forcerebuildscenarios:
         """
 
         if os.path.isfile(routefile) and not forcerebuildscenarios:

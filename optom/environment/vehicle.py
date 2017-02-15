@@ -209,16 +209,16 @@ class SUMOVehicle(BaseVehicle):
 
     @staticmethod
     def _dissatisfaction(time_loss, optimal_travel_time, time_loss_threshold=0.2):
-        """
-        Calculate driver's dissatisfaction
-
-        $$TT^{*} := \\text{optimal travel time},$$
-        $$TL := \\text{time loss},$$
-        $$TLT := \\text{time loss threshold}.$$
-
-        $$\\text{dissatisfaction} := dsat(TL, TT^{*},
-        TLT) = \\frac{1}{1+e^{-TL + TLT \\cdot TT^{*}}}.$$
-
+        """Calculate driver's dissatisfaction.
+        Calculate driver's dissatisfaction.
+        \f{eqnarray*}{
+            TT &:=& \text{travel time}, \\
+            TT^{*} &:=& \text{optimal travel time}, \\
+            TL &:=& \text{time loss}, \\
+            TLT &:=& \text{time loss threshold}, \\
+            \text{dissatisfaction} &:=& dsat(TL, TT^{*}, TLT) \\
+            &=&\frac{1}{1+e^{-TL + TLT \cdot TT^{*}}}.
+        \f}
         @param time_loss time loss
         @param time_loss_threshold cut-off point of acceptable time loss
             relative to optimal travel time in [0,1]
@@ -228,23 +228,19 @@ class SUMOVehicle(BaseVehicle):
         return 1/(1+math.exp(-time_loss + time_loss_threshold * optimal_travel_time))
 
     def record_travel_stats(self, time_step):
-        """
-        @brief Write travel stats, i.e. travel time, time loss, position,
-        and dissatisfaction of vehicle for a given time step.
-
-        $$TT := \\text{travel time},$$
-        $$TT^{*} := \\text{optimal travel time},$$
-        $$TL := \\text{time loss},$$
-        $$TLT := \\text{time loss threshold},$$
-        $$\\widehat{v} := \\text{maximum speed of vehicle}.$$
-
-        $$TL := TT - \\frac{\\text{travelled distance}}{\\widehat{v}}.$$
-
-        $$\\text{dissatisfaction} := dsat(TL, TT^{*},
-        TLT) = \\frac{1}{1+e^{-TL + TLT \\cdot TT^{*}}}.$$
-
+        """Record travel statistics to vehicle.
+        Write travel stats, i.e. travel time, time loss, position,
+        and dissatisfaction of vehicle for a given time step into self._travel_stats
+        \f{eqnarray*}{
+            TT &:=& \text{travel time}, \\
+            TT^{*} &:=& \text{optimal travel time}, \\
+            TL &:=& \text{time loss}, \\
+            TLT &:=& \text{time loss threshold}, \\
+            \widehat{v} &:=& \text{maximum speed of vehicle}, \\
+            \text{dissatisfaction} &:=& dsat(TL, TT^{*}, TLT) \\
+            &=&\frac{1}{1+e^{-TL + TLT \cdot TT^{*}}}.
+        \f}
         @param time_step current time step
-
         @retval self
         """
 
