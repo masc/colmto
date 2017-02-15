@@ -10,4 +10,4 @@ Copyright & License
 -------------------
 
   * Copyright 2017, Malte Aschermann
-  * License: LGPL
+  * [License: LGPL](http://masc.github.io/optom/LICENSE.md)
