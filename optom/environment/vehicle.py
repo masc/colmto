@@ -212,8 +212,12 @@ class SUMOVehicle(BaseVehicle):
         """
         Calculate driver's dissatisfaction
 
-        $$dissatisfaction := dsat(time\\_loss, \\widehat{optimal\\_travel\\_time},
-        time\\_loss\\_threshold) = \frac{1}{1+e^{\\widehat{time\\_loss}-time\\_loss}}$$
+        $$TT^{*} := \\text{optimal travel time},$$
+        $$TL := \\text{time loss},$$
+        $$TLT := \\text{time loss threshold}.$$
+
+        $$\\text{dissatisfaction} := dsat(TL, TT^{*},
+        TLT) = \\frac{1}{1+e^{-TL + TLT \\cdot TT^{*}}}.$$
 
         @param time_loss time loss
         @param time_loss_threshold cut-off point of acceptable time loss
@@ -221,17 +225,23 @@ class SUMOVehicle(BaseVehicle):
         @param optimal_travel_time optimal travel time
         @retval dissatisfaction ([0,1] normalised)
         """
-        return 1/(1+math.exp(-time_loss + optimal_travel_time * time_loss_threshold))
+        return 1/(1+math.exp(-time_loss + time_loss_threshold * optimal_travel_time))
 
     def record_travel_stats(self, time_step):
         """
         @brief Write travel stats, i.e. travel time, time loss, position,
         and dissatisfaction of vehicle for a given time step.
 
-        $$time\\_loss := travel\\_time - \frac{position}{max\\_speed}.$$
-        $$dissatisfaction := dsat(time\\_loss, \\widehat{optimal\\_travel\\_time},
-        time\\_loss\\_threshold) = \frac{1}{1+e^{\\widehat{time\\_loss}-time\\_loss}}$$
+        $$TT := \\text{travel time},$$
+        $$TT^{*} := \\text{optimal travel time},$$
+        $$TL := \\text{time loss},$$
+        $$TLT := \\text{time loss threshold},$$
+        $$\\widehat{v} := \\text{maximum speed of vehicle}.$$
 
+        $$TL := TT - \\frac{\\text{travelled distance}}{\\widehat{v}}.$$
+
+        $$\\text{dissatisfaction} := dsat(TL, TT^{*},
+        TLT) = \\frac{1}{1+e^{-TL + TLT \\cdot TT^{*}}}.$$
 
         @param time_step current time step
 
