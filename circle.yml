@@ -82,7 +82,7 @@ test:
         - echo -e "\n![ImportGraph](https://github.com/masc/optom/blob/gh-pages/optom-imports.png)" >> pylint.md
         - echo -e "\n![ImportGraph](optom-imports.png)" >> pylint_doc.md
         - echo -e "\n# Code Statistics\n\n" >> README.md
-        - echo -e "# Copyright & License\n\n-Copyright 2017, Malte Aschermann\n- License LGPL\n\n" > README_doc.md
+        - echo -e "# Copyright & License\n\n- Copyright 2017, Malte Aschermann\n- License LGPL\n\n" > README_doc.md
         - echo -e "# Code Statistics\n\n" >> README_doc.md
         - sh site/radon.sh > radon.md
         - cat radon.md >> README.md
@@ -94,7 +94,7 @@ test:
         - doxygen site/configuration.doxyfile
         # build latex
         - cd docs/latex/ && make && cd ..
-        - mv docs/latex/refman.pdf $DOCUMENT.pdf
+        - mv docs/latex/refman.pdf docs/$DOCUMENT.pdf
         - rm -Rf docs/latex
         - cp optom-imports.png docs/sources
         - rm -Rf optom
