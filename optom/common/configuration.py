@@ -70,6 +70,13 @@ _DEFAULT_CONFIG_RUN = {
                         "behaviour": "deny",
                         "args": {
                             "speed_range": (0., 85/3.6)
+                        },
+                    },
+                    {
+                        "type": "SUMOVTypePolicy",
+                        "behaviour": "deny",
+                        "args": {
+                            "vehicle_type": "passenger"
                         }
                     }
                 ]

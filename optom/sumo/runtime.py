@@ -136,10 +136,15 @@ class Runtime(object):
         # main loop through traci driven simulation runs
         while l_results_simulation.get(traci.constants.VAR_MIN_EXPECTED_VEHICLES) > 0:
 
-            # subscribe to values of newly entering vehicles
+            # set initial attribute start_time of newly entering vehicles
+            # and subscribe to parameters
             for i_vehicle_id in l_results_simulation.get(traci.constants.VAR_DEPARTED_VEHICLES_IDS):
+
+                # set TraCI -> vehicle.start_time
                 run_config.get("vehicles").get(i_vehicle_id).start_time = \
                     l_results_simulation.get(traci.constants.VAR_TIME_STEP)/10.**3
+
+                # subscribe to parameters
                 traci.vehicle.subscribe(
                     i_vehicle_id, [
                         traci.constants.VAR_POSITION,
