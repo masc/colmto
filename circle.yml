@@ -18,7 +18,7 @@ machine:
         GIT_COMMITTER_NAME: CircleCI
         GIT_COMMITTER_EMAIL: masc@tu-clausthal.de
         SUMO_HOME: /usr/share/sumo
-        TEXINSTALL: minimal
+        TEXINSTALL: full
         DOCUMENT: OPTOM-doc
 
     python:
