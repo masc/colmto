@@ -1,10 +1,10 @@
 """
-OPTOM: Optimisation of Overtaking Manoevres
+OPTOM: Optimisation of Overtaking Manoeuvres
 
 Note that "python setup.py test" invokes pytest on the package. With appropriately
 configured setup.cfg, this will check both xxx_test modules and docstrings.
 
-Copyright 2016, Malte Aschermann.
+Copyright 2017, Malte Aschermann.
 Licensed under LGPL.
 """
 import sys
@@ -31,10 +31,9 @@ version = "0.1"
 
 setup(name="optom",
       version=version,
-      description="Overtaking Optimization",
+      description="Optimisation of Overtaking Manoeuvres",
       long_description=open("README.rst").read(),
       classifiers=[  # Get strings from http://pypi.python.org/pypi?%3Aaction=list_classifiers
-        "Development Status :: 1 - Planning",
         "Programming Language :: Python"
       ],
       keywords="",  # Separate with spaces
