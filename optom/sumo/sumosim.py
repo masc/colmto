@@ -94,39 +94,41 @@ class SumoSim(object):
 
                 if self._sumocfg.run_config.get("cse-enabled"):
                     # cse mode: apply cse policies to vehicles and run with TraCI
-                    self._runtime.run_traci(
-                        l_run_config, optom.cse.cse.SumoCSE(
-                            self._args
-                        ).add_policies_from_cfg(
-                            self._sumocfg.run_config.get("policies")
+                    self._statistics.vehicle_stats(
+                        self._runtime.run_traci(
+                            l_run_config, optom.cse.cse.SumoCSE(
+                                self._args
+                            ).add_policies_from_cfg(
+                                self._sumocfg.run_config.get("policies")
+                            )
                         )
                     )
                 else:
                     self._runtime.run_once(l_run_config)
 
-                l_vehicle_data_json = self._statistics.fcd_stats(l_run_config)
-
-                self._log.debug("Writing %s results", scenario_name)
-                self._writer.write_json(
-                    dict(l_vehicle_data_json),
-                    os.path.join(
-                        self._sumocfg.resultsdir, scenario_name, i_initial_sorting,
-                        str(i_run),
-                        "{}-{}-run{}-TT-TL.json.gz".format(
-                            scenario_name,
-                            self._sumocfg.scenario_config.get(
-                                scenario_name
-                            ).get("parameters").get("aadt")
-                            if self._sumocfg.run_config.get("aadt").get("enabled")
-                            else "{}veh".format(
-                                self._sumocfg.run_config.get("nbvehicles").get("value")
-                            ),
-                            str(i_run).zfill(
-                                int(math.ceil(math.log10(self._sumocfg.run_config.get("runs"))))
-                            )
-                        )
-                    )
-                )
+                # l_vehicle_data_json = self._statistics.fcd_stats(l_run_config)
+                #
+                # self._log.debug("Writing %s results", scenario_name)
+                # self._writer.write_json(
+                #     dict(l_vehicle_data_json),
+                #     os.path.join(
+                #         self._sumocfg.resultsdir, scenario_name, i_initial_sorting,
+                #         str(i_run),
+                #         "{}-{}-run{}-TT-TL.json.gz".format(
+                #             scenario_name,
+                #             self._sumocfg.scenario_config.get(
+                #                 scenario_name
+                #             ).get("parameters").get("aadt")
+                #             if self._sumocfg.run_config.get("aadt").get("enabled")
+                #             else "{}veh".format(
+                #                 self._sumocfg.run_config.get("nbvehicles").get("value")
+                #             ),
+                #             str(i_run).zfill(
+                #                 int(math.ceil(math.log10(self._sumocfg.run_config.get("runs"))))
+                #             )
+                #         )
+                #     )
+                # )
 
                 # l_csv_header = next(iter(l_vehicle_data_csv), {}).keys()
                 # self._writer.write_csv(
