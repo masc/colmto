@@ -1,4 +1,4 @@
-echo "#Radon\n"
+echo "# Radon\n"
 echo "## Cyclomatic Complexity\n"
 echo "| File | Type | R:C | Module | CC  |\n|:---- |:---- |:---:|:------ |:--- |"
 radon cc --show-closures -x F --total-average -s optom | sed \

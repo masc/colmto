@@ -161,6 +161,17 @@ class Runtime(object):
                     i_results.get(traci.constants.VAR_POSITION)
                 )
 
+                # update current "grid cell" the vehicle is in
+                run_config.get("vehicles").get(i_vehicle_id).grid_position = numpy.array(
+                    (
+                        int(round(i_results.get(traci.constants.VAR_POSITION)[0]/4.)-1),
+                        0 if i_results.get(traci.constants.VAR_POSITION)[1] < 0 else 1
+                    )
+                )
+
+                # update vehicle speed
+                run_config.get("vehicles").get(i_vehicle_id).speed = i_results.get(traci.constants.VAR_SPEED)
+
                 # set vclass according to policies for each vehicle, i.e.
                 # allow vehicles access to OTL depending on policy
                 cse.apply_one(run_config.get("vehicles").get(i_vehicle_id))
@@ -189,39 +200,39 @@ class Runtime(object):
                     l_results_simulation.get(traci.constants.VAR_TIME_STEP)/10.**3
                 )
 
-                if i_vehicle_id == "vehicle10":
-                    self._log.debug(
-                        "actual TT: %s, opt TT: %s, time loss: %s (%s pct.), dsat: %s",
-                        run_config.get("vehicles").get(i_vehicle_id).travel_time,
-                        round(
-                            run_config.get("vehicles").get(i_vehicle_id).position[0] /
-                            run_config.get("vehicles").get(i_vehicle_id).speed_max,
-                            2
-                        ),
-                        round(
-                            run_config.get("vehicles").get(i_vehicle_id).travel_stats.get(
-                                "time_loss"
-                            ).get(l_results_simulation.get(traci.constants.VAR_TIME_STEP)/10.**3),
-                            2
-                        ),
-                        round(
-                            run_config.get("vehicles").get(i_vehicle_id).travel_stats.get(
-                                "time_loss"
-                            ).get(l_results_simulation.get(
-                                traci.constants.VAR_TIME_STEP)/10.**3
-                                 ) /
-                            (run_config.get("vehicles").get(i_vehicle_id).position[0] /
-                             run_config.get("vehicles").get(i_vehicle_id).speed_max) * 100,
-                            2),
-                        round(
-                            run_config.get("vehicles").get(i_vehicle_id).travel_stats.get(
-                                "dissatisfaction"
-                            ).get(l_results_simulation.get(
-                                traci.constants.VAR_TIME_STEP)/10.**3
-                                 ),
-                            32
-                        )
-                    )
+                # if i_vehicle_id == "vehicle10":
+                #     self._log.debug(
+                #         "actual TT: %s, opt TT: %s, time loss: %s (%s pct.), dsat: %s",
+                #         run_config.get("vehicles").get(i_vehicle_id).travel_time,
+                #         round(
+                #             run_config.get("vehicles").get(i_vehicle_id).position[0] /
+                #             run_config.get("vehicles").get(i_vehicle_id).speed_max,
+                #             2
+                #         ),
+                #         round(
+                #             run_config.get("vehicles").get(i_vehicle_id).travel_stats.get("step").get(
+                #                 "time_loss"
+                #             ).get(l_results_simulation.get(traci.constants.VAR_TIME_STEP)/10.**3),
+                #             2
+                #         ),
+                #         round(
+                #             run_config.get("vehicles").get(i_vehicle_id).travel_stats.get("step").get(
+                #                 "time_loss"
+                #             ).get(l_results_simulation.get(
+                #                 traci.constants.VAR_TIME_STEP)/10.**3
+                #                  ) /
+                #             (run_config.get("vehicles").get(i_vehicle_id).position[0] /
+                #              run_config.get("vehicles").get(i_vehicle_id).speed_max) * 100,
+                #             2),
+                #         round(
+                #             run_config.get("vehicles").get(i_vehicle_id).travel_stats.get("step").get(
+                #                 "dissatisfaction"
+                #             ).get(l_results_simulation.get(
+                #                 traci.constants.VAR_TIME_STEP)/10.**3
+                #                  ),
+                #             32
+                #         )
+                #     )
 
             traci.simulationStep()
 

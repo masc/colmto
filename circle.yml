@@ -18,21 +18,25 @@ machine:
         GIT_COMMITTER_NAME: CircleCI
         GIT_COMMITTER_EMAIL: masc@tu-clausthal.de
         SUMO_HOME: /usr/share/sumo
+        TEXINSTALL: small
+        DOCUMENT: OPTOM-doc
 
     python:
         version: 2.7.12
 
 dependencies:
+    cache_directories:
+        - "~/texmf"
+        - "/usr/local/texlive/"
+        
     pre:
         - sudo add-apt-repository -y ppa:sumo/stable
         - sudo apt-get update
-        - sudo apt-get install doxygen graphviz
-        - sudo apt-get install sumo sumo-tools sumo-doc
-        - sudo apt-get install libhdf5-dev pandoc tk-dev python-tk
-        - pip install pylint
-        - pip install radon
-        - pip install codecov
-        - pip install doxypy
+        - sudo apt-get install doxygen graphviz sumo libhdf5-dev pandoc tk-dev python-tk
+        - pip install pylint radon codecov doxypy
+        - mkdir -p /tmp/tex && curl -L http://mirror.ctan.org/systems/texlive/tlnet/install-tl-unx.tar.gz | tar xz --strip 1 -C /tmp/tex
+        - if [ ! -d /usr/local/texlive/ ]; then echo -e "selected_scheme scheme-$TEXINSTALL\nTEXDIR /usr/local/texlive/\nTEXMFCONFIG ~/.texlive/texmf-config\nTEXMFHOME ~/texmf\nTEXMFLOCAL /usr/local/texlive/texmf-local\nTEXMFSYSCONFIG /usr/local/texlive/texmf-config\nTEXMFSYSVAR /usr/local/texlive/texmf-var\nTEXMFVAR ~/.texlive/texmf-var\nbinary_x86_64-linux 1\ncollection-basic 1\ncollection-bibtexextra 1\ncollection-binextra 1\ncollection-context 0\ncollection-fontsextra 1\ncollection-fontsrecommended 1\ncollection-fontutils 1\ncollection-formatsextra 1\ncollection-games 1\ncollection-genericextra 1\ncollection-genericrecommended 1\ncollection-htmlxml 1\ncollection-humanities 1\ncollection-langafrican 0\ncollection-langarabic 0\ncollection-langchinese 0\ncollection-langcjk 0\ncollection-langcyrillic 0\ncollection-langczechslovak 0\ncollection-langenglish 1\ncollection-langeuropean 1\ncollection-langfrench 0\ncollection-langgerman 1\ncollection-langgreek 0\ncollection-langindic 0\ncollection-langitalian 0\ncollection-langjapanese 0\ncollection-langkorean 0\ncollection-langother 0\ncollection-langpolish 0\ncollection-langportuguese 0\ncollection-langspanish 0\ncollection-latex 1\ncollection-latexextra 1\ncollection-latexrecommended 1\ncollection-luatex 0\ncollection-mathscience 1\ncollection-metapost 1\ncollection-music 0\ncollection-omega 1\ncollection-pictures 1\ncollection-plainextra 1\ncollection-pstricks 1\ncollection-publishers 1\ncollection-texworks 0\ncollection-xetex 0\nin_place 0\noption_adjustrepo 1\noption_autobackup 0\noption_backupdir tlpkg/backups\noption_desktop_integration 0\noption_doc 0\noption_file_assocs 0\noption_fmt 1\noption_letter 0\noption_menu_integration 0\noption_path 1\noption_post_code 1\noption_src 1\noption_sys_bin /usr/local/bin\noption_sys_info /usr/local/share/info\noption_sys_man /usr/local/share/man\noption_w32_multi_user 1\noption_write18_restricted 1\nportable 0\n" > /tmp/tex/textlive.profile; sudo /tmp/tex/install-tl -profile /tmp/tex/textlive.profile; fi
+        - sudo tlmgr update --self --all --reinstall-forcibly-removed
 
 checkout:
   post:
@@ -42,56 +46,42 @@ checkout:
 test:
     post:
         - git checkout master
-        - codecov --token=910321f1-7584-4bc8-b264-bce881241d83
-        - bash <(curl -s https://codecov.io/bash) -t 910321f1-7584-4bc8-b264-bce881241d83
         - python setup.py install
+        - python setup.py test
         - SUMO_HOME=/usr/share/sumo python -m run --fresh-configs
         - SUMO_HOME=/usr/share/sumo python -m run --fresh-configs --cse
-        - mv -f optom /tmp
-        - mv -f tests /tmp
-        - mv -f site /tmp
-        - mv -f run.py /tmp
-        - mv -f README.md /tmp
-        - mv -f LICENSE.md /tmp
+        # codecov
+        - nosetests -w tests --with-coverage
+        - bash <(curl -s https://codecov.io/bash) -t 910321f1-7584-4bc8-b264-bce881241d83
+        - mv -f optom tests site run.py README.md LICENSE.md /tmp
         - git checkout gh-pages
-        - mv -f circle.yml /tmp
-        - mv -f .gitignore /tmp
+        - mv -f circle.yml .gitignore /tmp
         - git checkout master
         - git push origin :gh-pages
         - git branch -D gh-pages
         - git checkout --orphan gh-pages
         - rm -Rf *
         - rm .pre-commit-config.yaml
-        - mv -f /tmp/.gitignore .
-        - mv -f /tmp/circle.yml .
-        - mv -f /tmp/optom .
-        - mv -f /tmp/tests .
-        - mv -f /tmp/run.py .
-        - mv -f /tmp/site .
-        - mv -f /tmp/README.md .
-        - mv -f /tmp/LICENSE.md .
+        - mv -f /tmp/.gitignore /tmp/circle.yml /tmp/optom /tmp/tests /tmp/run.py /tmp/site /tmp/README.md /tmp/LICENSE.md .
         - pylint optom tests run.py -f html --import-graph=optom-imports.png > pylint.html; true
         - pandoc --from html --to markdown_github pylint.html -o pylint.md
         - echo -e "\n## Import Graph\n" >> pylint.md
         - cp pylint.md pylint_doc.md
-        - echo -e "\n![ImportGraph](https://github.com/masc/optom/blob/gh-pages/optom-imports.png)" >> pylint.md
-        - echo -e "\n![ImportGraph](optom-imports.png)" >> pylint_doc.md
+        - echo -e "\n![ImportGraph](https://github.com/masc/optom/blob/gh-pages/docs/source/optom-imports.png)" >> pylint.md
         - echo -e "\n# Code Statistics\n\n" >> README.md
-        - echo -e "# Code Statistics\n\n" > README_doc.md
+        - echo -e "# Copyright & License\n\n- Copyright 2017, Malte Aschermann\n- License LGPL\n\n" > README_doc.md
         - sh site/radon.sh > radon.md
         - cat radon.md >> README.md
-        - cat radon.md >> README_doc.md
         - echo -e "\n# Pylint\n\n" >> README.md
-        - echo -e "\n# Pylint\n\n" >> README_doc.md
         - cat pylint.md >> README.md
-        - cat pylint_doc.md >> README_doc.md
         - doxygen site/configuration.doxyfile
-        - cp optom-imports.png docs/sources
-        - rm -Rf optom
-        - rm -Rf tests
-        - rm -Rf site
-        - rm run.py
-        - rm README_doc.md
+        # build latex
+        - cd docs/latex/ && make && cd ..
+        - mv docs/latex/refman.pdf docs/$DOCUMENT.pdf
+        - rm -Rf docs/latex
+        - mv optom-imports.png docs/sources
+        - rm -Rf optom tests site run.py README_doc.md pylint.html pylint.md pylint_doc.md radon.md
+        # add & commit
         - git add --all .
         - git commit -m "CircleCI run complete. Report https://github.com/masc/optom/blob/gh-pages/README.md , Doku http://masc.github.io/optom/docs/sources/index.html"
         - git push origin gh-pages
