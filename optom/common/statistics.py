@@ -80,7 +80,7 @@ class Statistics(object):
         Weisstein, Eric W. Hinge. From MathWorld--A Wolfram Web Resource.
         http://mathworld.wolfram.com/Hinge.html
 
-        @param data: Iterable set of data elements of (preferably) \f$4n+5$ for $n=0,1,...,N\f$,
+        @param data: Iterable set of data elements of (preferably) \f$4n+5\f$ for \f$n=0,1,...,N\f$,
             i.e. minimum length is \f$5\f$
 
         @retval \f$H_2 - H_1\f$ if data contains at least 5 elements,
