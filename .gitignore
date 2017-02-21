@@ -4,14 +4,12 @@
 !buildout.cfg
 !optom.iml
 !circle.yml
-!optom/MANIFEST.in
-!optom/README.rst
-!optom/setup.cfg
+!setup.cfg
 !optom/resources/*.yaml
+!site/*
 !*.txt
 !*.py
 !*.md
-!radon.sh
-!build-sumo-osx.sh
 !*.png
+!build-sumo-osx.sh
 !.pre-commit-config.yaml
