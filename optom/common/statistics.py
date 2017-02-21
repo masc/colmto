@@ -83,12 +83,11 @@ class Statistics(object):
         Weisstein, Eric W. Hinge. From MathWorld--A Wolfram Web Resource.
         http://mathworld.wolfram.com/Hinge.html
 
-        Args:
-            data: Iterable set of data elements of (preferably) $4n+5$ for $n=0,1,...,N$,
-            i.e. minimum length is $5$
+        @param data: Iterable set of data elements of (preferably) \f$4n+5$ for $n=0,1,...,N\f$,
+            i.e. minimum length is \f$5\f$
 
-        Returns:
-            $H_2 - H_1$ if data contains at least 5 elements, otherwise raises ArithmeticError
+        @retval \f$H_2 - H_1\f$ if data contains at least 5 elements,
+            otherwise raises ArithmeticError
         """
 
         l_data = sorted(data)
