@@ -170,7 +170,9 @@ class Runtime(object):
                 )
 
                 # update vehicle speed
-                run_config.get("vehicles").get(i_vehicle_id).speed = i_results.get(traci.constants.VAR_SPEED)
+                run_config.get("vehicles").get(i_vehicle_id).speed = i_results.get(
+                    traci.constants.VAR_SPEED
+                )
 
                 # set vclass according to policies for each vehicle, i.e.
                 # allow vehicles access to OTL depending on policy
@@ -210,26 +212,28 @@ class Runtime(object):
                 #             2
                 #         ),
                 #         round(
-                #             run_config.get("vehicles").get(i_vehicle_id).travel_stats.get("step").get(
+                #             run_config.get("vehicles").get(i_vehicle_id).travel_stats.get(
+                #                 "step"
+                #             ).get(
                 #                 "time_loss"
-                #             ).get(l_results_simulation.get(traci.constants.VAR_TIME_STEP)/10.**3),
+                #             )[-1],
                 #             2
                 #         ),
                 #         round(
-                #             run_config.get("vehicles").get(i_vehicle_id).travel_stats.get("step").get(
+                #             run_config.get("vehicles").get(i_vehicle_id).travel_stats.get(
+                #                 "step"
+                #             ).get(
                 #                 "time_loss"
-                #             ).get(l_results_simulation.get(
-                #                 traci.constants.VAR_TIME_STEP)/10.**3
-                #                  ) /
+                #             )[-1] /
                 #             (run_config.get("vehicles").get(i_vehicle_id).position[0] /
                 #              run_config.get("vehicles").get(i_vehicle_id).speed_max) * 100,
                 #             2),
                 #         round(
-                #             run_config.get("vehicles").get(i_vehicle_id).travel_stats.get("step").get(
+                #             run_config.get("vehicles").get(i_vehicle_id).travel_stats.get(
+                #                 "step"
+                #             ).get(
                 #                 "dissatisfaction"
-                #             ).get(l_results_simulation.get(
-                #                 traci.constants.VAR_TIME_STEP)/10.**3
-                #                  ),
+                #             )[-1],
                 #             32
                 #         )
                 #     )
@@ -247,3 +251,5 @@ class Runtime(object):
         )
 
         return run_config.get("vehicles")
+
+    # pylint: enable=too-few-public-methods

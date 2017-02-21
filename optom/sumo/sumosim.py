@@ -22,7 +22,6 @@
 # @endcond
 """Main module to run/initialise SUMO scenarios."""
 from __future__ import division
-from __future__ import print_function
 
 import os
 import sys
@@ -35,7 +34,7 @@ except ImportError:
     raise ("please declare environment variable 'SUMO_HOME' as the root"
            "directory of your sumo installation (it should contain folders 'bin',"
            "'tools' and 'docs')")
-import math
+
 import optom.common.io
 import optom.common.statistics
 import optom.common.log
@@ -79,11 +78,8 @@ class SumoSim(object):
             self._log.error(r"/!\ scenario %s not found in configuration", scenario_name)
             return
 
-        l_scenario_runs = self._sumocfg.generate_scenario(scenario_name)
-
         for i_initial_sorting in self._sumocfg.run_config.get("initialsortings"):
             # l_scenario_runs.get("runs")[i_initial_sorting] = {}
-            print(l_scenario_runs.get("runs"))
             for i_run in xrange(self._sumocfg.run_config.get("runs")):
 
                 if self._sumocfg.run_config.get("cse-enabled"):
@@ -91,7 +87,9 @@ class SumoSim(object):
                     self._statistics.vehicle_stats(
                         self._runtime.run_traci(
                             self._sumocfg.generate_run(
-                                l_scenario_runs, i_initial_sorting, i_run
+                                self._sumocfg.generate_scenario(scenario_name),
+                                i_initial_sorting,
+                                i_run
                             ),
                             optom.cse.cse.SumoCSE(
                                 self._args
@@ -103,7 +101,9 @@ class SumoSim(object):
                 else:
                     self._runtime.run_once(
                         self._sumocfg.generate_run(
-                            l_scenario_runs, i_initial_sorting, i_run
+                            self._sumocfg.generate_scenario(scenario_name),
+                            i_initial_sorting,
+                            i_run
                         )
                     )
 

@@ -23,7 +23,6 @@
 """Vehicle classes for storing vehicle data/attributes/states."""
 import math
 import numpy
-import collections
 
 import optom.cse.policy
 
@@ -120,21 +119,21 @@ class SUMOVehicle(BaseVehicle):
             "start_time": 0.0,
             "travel_time": 0.0,
             "vehicle_type": vehicle_type,
-            "grid_cell": collections.defaultdict(dict),
-                #{
-                # "index": collections.defaultdict(list),
-                # "time_loss": collections.defaultdict(list),
-                # "speed": collections.defaultdict(list),
-                # "dissatisfaction": collections.defaultdict(list)
-                #},
-            "step": collections.defaultdict(dict)
-                #{
-                # "number": [],
-                # "time_loss": [],
-                # "position": [],
-                # "speed": [],
-                # "dissatisfaction": []
-                #}
+            "grid": {
+                "pos_x": [],
+                "pos_y": [],
+                "time_loss": [],
+                "speed": [],
+                "dissatisfaction": []
+            },
+            "step": {
+                "number": [],
+                "pos_x": [],
+                "pos_y": [],
+                "time_loss": [],
+                "speed": [],
+                "dissatisfaction": []
+            }
         }
 
     @property
@@ -272,60 +271,29 @@ class SUMOVehicle(BaseVehicle):
         # update current travel time
         self._travel_stats["travel_time"] = time_step - self.start_time
 
-        # time losses
-        self._travel_stats.get("step")[time_step][
-            "time_loss"
-        ] = time_step - self.start_time - self.position[0] / self.speed_max
+        # current step number
+        self._travel_stats.get("step").get("number").append(time_step)
 
-        if self._travel_stats.get("grid_cell")[tuple(self.grid_position)].get("time_loss") is None:
-            self._travel_stats.get("grid_cell")[
-                tuple(self.grid_position)]["time_loss"
-            ] = [time_step - self.start_time - self.position[0] / self.speed_max]
-        else:
-            self._travel_stats.get("grid_cell").get(
-                tuple(self.grid_position)
-            ).get("time_loss").append(
-                time_step - self.start_time - self.position[0] / self.speed_max
-            )
+        # time losses
+        self._travel_stats.get("step").get("time_loss").append(
+            time_step - self.start_time - self.position[0] / self.speed_max
+        )
 
         # position
-        self._travel_stats.get("step")[time_step]["position"] = self.position
+        self._travel_stats.get("step").get("pos_x").append(self.position[0])
+        self._travel_stats.get("step").get("pos_y").append(self.position[1])
 
         # speed
-        self._travel_stats.get("step")[time_step]["speed"] = self.speed
-        if self._travel_stats.get("grid_cell")[tuple(self.grid_position)].get("speed") is None:
-            self._travel_stats.get("grid_cell")[tuple(self.grid_position)]["speed"] = [self.speed]
-        else:
-            self._travel_stats.get("grid_cell")[tuple(self.grid_position)].get("speed").append(
-                self.speed
-            )
+        self._travel_stats.get("step").get("speed").append(self.speed)
 
         # dissatisfaction
-        self._travel_stats.get("step")[time_step]["dissatisfaction"] = self._dissatisfaction(
+        self._travel_stats.get("step").get("dissatisfaction").append(
+            self._dissatisfaction(
                 time_step - self.start_time - self.position[0] / self.speed_max,
                 self.position[0] / self.speed_max,
                 self._properties.get("dsat_threshold")
-        )
-        if self._travel_stats.get("grid_cell")[
-            tuple(self.grid_position)
-        ].get("dissatisfaction") is None:
-            self._travel_stats.get("grid_cell")[tuple(self.grid_position)]["dissatisfaction"] = [
-                self._dissatisfaction(
-                    time_step - self.start_time - self.position[0] / self.speed_max,
-                    self.position[0] / self.speed_max,
-                    self._properties.get("dsat_threshold")
-                )
-            ]
-        else:
-            self._travel_stats.get("grid_cell")[
-                tuple(self.grid_position)
-            ].get("dissatisfaction").append(
-                self._dissatisfaction(
-                    time_step - self.start_time - self.position[0] / self.speed_max,
-                    self.position[0] / self.speed_max,
-                    self._properties.get("dsat_threshold")
-                )
             )
+        )
 
         return self
 

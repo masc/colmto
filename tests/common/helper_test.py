@@ -41,7 +41,9 @@ def test_namespace():
     """
     Test namespace
     """
+    # pylint: disable=no-member
     l_namespace = optom.common.helper.Namespace(foo=0, bar=1, baz=2)
     assert_equal(l_namespace.foo, 0)
     assert_equal(l_namespace.bar, 1)
     assert_equal(l_namespace.baz, 2)
+    # pylint: enable=no-member

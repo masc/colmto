@@ -23,10 +23,6 @@
 """Statistics module"""
 from __future__ import division
 
-import numpy
-from collections import defaultdict
-from collections import OrderedDict
-
 import optom.common.io
 import optom.common.log
 
@@ -43,7 +39,7 @@ class Statistics(object):
             self._writer = optom.common.io.Writer(None)
 
     @staticmethod
-    def _aggregate_vehicle_stats(travel_stats):
+    def _aggregate_vehicle_grid_stats(travel_stats):
         """
         Aggregates vehicle stats related to cells.
 
@@ -52,13 +48,13 @@ class Statistics(object):
         @params travel_stats: travel_stats from vehicle object
         @retval aggregated vehicle stats
         """
-        for i_cell_index, i_item in travel_stats.get("grid_cell").iteritems():
-            if isinstance(i_item.get("time_loss"), list):
-                i_item["time_loss"] = numpy.median(i_item.get("time_loss"))
-            if isinstance(i_item.get("speed"), list):
-                i_item["speed"] = numpy.median(i_item.get("speed"))
-            if isinstance(i_item.get("dissatisfaction"), list):
-                i_item["dissatisfaction"] = numpy.median(i_item.get("dissatisfaction"))
+        # for i_item in travel_stats.get("grid_cell").itervalues():
+        #     if isinstance(i_item.get("time_loss"), list):
+        #         i_item["time_loss"] = numpy.median(i_item.get("time_loss"))
+        #     if isinstance(i_item.get("speed"), list):
+        #         i_item["speed"] = numpy.median(i_item.get("speed"))
+        #     if isinstance(i_item.get("dissatisfaction"), list):
+        #         i_item["dissatisfaction"] = numpy.median(i_item.get("dissatisfaction"))
 
         return travel_stats
 
@@ -69,8 +65,8 @@ class Statistics(object):
         @retval
         """
         return [
-            self._aggregate_vehicle_stats(i_vobj.travel_stats)
-            for i_vid, i_vobj in vehicles.iteritems()
+            self._aggregate_vehicle_grid_stats(i_vobj.travel_stats)
+            for i_vobj in vehicles.itervalues()
         ]
 
     @staticmethod
