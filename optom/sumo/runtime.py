@@ -97,8 +97,7 @@ class Runtime(object):
                 "-c", run_config.get("configfile"),
                 "--gui-settings-file", run_config.get("settingsfile"),
                 "--time-to-teleport", "-1",
-                "--no-step-log",
-                "--fcd-output", run_config.get("fcdfile"),
+                "--no-step-log"
             ]
         )
         self._log.debug("connecting to TraCI instance on port %d", run_config.get("sumoport"))
