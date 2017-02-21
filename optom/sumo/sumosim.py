@@ -72,8 +72,7 @@ class SumoSim(object):
         """
         Run given scenario.
 
-        Args:
-            scenario_name: Scenario name to look up cfgs.
+        @param scenario_name: Scenario name to look up in cfgs.
         """
 
         if self._sumocfg.scenario_config.get(scenario_name) is None:
@@ -81,22 +80,20 @@ class SumoSim(object):
             return
 
         l_scenario_runs = self._sumocfg.generate_scenario(scenario_name)
-        l_initial_sortings = self._sumocfg.run_config.get("initialsortings")
 
-        for i_initial_sorting in l_initial_sortings:
-            l_scenario_runs.get("runs")[i_initial_sorting] = {}
-
+        for i_initial_sorting in self._sumocfg.run_config.get("initialsortings"):
+            # l_scenario_runs.get("runs")[i_initial_sorting] = {}
+            print(l_scenario_runs.get("runs"))
             for i_run in xrange(self._sumocfg.run_config.get("runs")):
-
-                l_run_config = self._sumocfg.generate_run(
-                    l_scenario_runs, i_initial_sorting, i_run
-                )
 
                 if self._sumocfg.run_config.get("cse-enabled"):
                     # cse mode: apply cse policies to vehicles and run with TraCI
                     self._statistics.vehicle_stats(
                         self._runtime.run_traci(
-                            l_run_config, optom.cse.cse.SumoCSE(
+                            self._sumocfg.generate_run(
+                                l_scenario_runs, i_initial_sorting, i_run
+                            ),
+                            optom.cse.cse.SumoCSE(
                                 self._args
                             ).add_policies_from_cfg(
                                 self._sumocfg.run_config.get("policies")
@@ -104,67 +101,23 @@ class SumoSim(object):
                         )
                     )
                 else:
-                    self._runtime.run_once(l_run_config)
-
-                # l_vehicle_data_json = self._statistics.fcd_stats(l_run_config)
-                #
-                # self._log.debug("Writing %s results", scenario_name)
-                # self._writer.write_json(
-                #     dict(l_vehicle_data_json),
-                #     os.path.join(
-                #         self._sumocfg.resultsdir, scenario_name, i_initial_sorting,
-                #         str(i_run),
-                #         "{}-{}-run{}-TT-TL.json.gz".format(
-                #             scenario_name,
-                #             self._sumocfg.scenario_config.get(
-                #                 scenario_name
-                #             ).get("parameters").get("aadt")
-                #             if self._sumocfg.run_config.get("aadt").get("enabled")
-                #             else "{}veh".format(
-                #                 self._sumocfg.run_config.get("nbvehicles").get("value")
-                #             ),
-                #             str(i_run).zfill(
-                #                 int(math.ceil(math.log10(self._sumocfg.run_config.get("runs"))))
-                #             )
-                #         )
-                #     )
-                # )
-
-                # l_csv_header = next(iter(l_vehicle_data_csv), {}).keys()
-                # self._writer.write_csv(
-                #     l_csv_header,
-                #     l_vehicle_data_csv,
-                #     os.path.join(
-                #         self._sumocfg.resultsdir, scenario_name, i_initial_sorting,
-                #         str(i_run),
-                #         "{}-{}-run{}-TT-TL.csv".format(
-                #             scenario_name,
-                #             self._sumocfg.scenario_config.get(
-                #                 scenario_name
-                #             ).get("parameters").get("aadt")
-                #             if self._sumocfg.run_config.get("aadt").get("enabled")
-                #             else "{}veh".format(
-                #                 self._sumocfg.run_config.get("nbvehicles").get("value")
-                #             ),
-                #             str(i_run).zfill(
-                #                 int(math.ceil(math.log10(self._sumocfg.run_config.get("runs"))))
-                #             )
-                #         )
-                #     )
-                # )
-
-                if i_run % 10 == 0:
-                    self._log.info(
-                        "Scenario %s, AADT %d (%d vps), sorting %s: Finished run %d/%d",
-                        scenario_name,
-                        self._sumocfg.run_config.get("aadt").get("value"),
-                        int(self._sumocfg.run_config.get("aadt").get("value") / 24),
-                        i_initial_sorting,
-                        i_run + 1,
-                        self._sumocfg.run_config.get("runs")
+                    self._runtime.run_once(
+                        self._sumocfg.generate_run(
+                            l_scenario_runs, i_initial_sorting, i_run
+                        )
                     )
 
-        # dump configuration
+                self._log.info(
+                    "Scenario %s, AADT %d (%d vps), sorting %s: Finished run %d/%d",
+                    scenario_name,
+                    self._sumocfg.run_config.get("aadt").get("value"),
+                    int(self._sumocfg.run_config.get("aadt").get("value") / 24),
+                    i_initial_sorting,
+                    i_run + 1,
+                    self._sumocfg.run_config.get("runs")
+                )
+
+        # dump configuration to run dir
         self._writer.write_json_pretty(
             {
                 "run_config": self._sumocfg.run_config,
@@ -176,7 +129,9 @@ class SumoSim(object):
         )
 
     def run_scenarios(self):
-        """Run all scenarios defined by cfgs/commandline."""
+        """
+        Run all scenarios defined by cfgs/commandline.
+        """
 
         for i_scenarioname in self._sumocfg.run_config.get("scenarios"):
             self.run_scenario(i_scenarioname)

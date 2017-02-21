@@ -195,7 +195,7 @@ class Runtime(object):
                             tuple(run_config.get("vehicles").get(i_vehicle_id).color)
                         )
 
-                # write travel stats to vehicle
+                # record travel stats to vehicle
                 run_config.get("vehicles").get(i_vehicle_id).record_travel_stats(
                     l_results_simulation.get(traci.constants.VAR_TIME_STEP)/10.**3
                 )

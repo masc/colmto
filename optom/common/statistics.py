@@ -30,7 +30,6 @@ from collections import OrderedDict
 import optom.common.io
 import optom.common.log
 
-import pprint
 
 class Statistics(object):
     """Statistics class for computing/aggregating SUMO results"""
@@ -69,78 +68,10 @@ class Statistics(object):
         @params vehicles:
         @retval
         """
-        pprint.pprint(
-            [
-                self._aggregate_vehicle_stats(i_vobj.travel_stats) for i_vid, i_vobj in vehicles.iteritems()
-            ][0]
-        )
-
-    def fcd_stats(self, run_data):
-        """
-
-        Args:
-            run_data:
-        Returns:
-            json object
-        """
-
-        self._log.debug("Reading fcd file %s", run_data.get("fcdfile"))
-        l_fcd_xml = optom.common.io.etree.parse(
-            run_data.get("fcdfile")
-        )
-        l_fcd_stats_json = defaultdict(dict)
-
-        for i_timestep in l_fcd_xml.getiterator("timestep"):
-
-            for i_vehicle in i_timestep.getiterator("vehicle"):
-
-                if "type" not in l_fcd_stats_json[i_vehicle.get("id")]:
-                    l_fcd_stats_json[i_vehicle.get("id")]["type"] = i_vehicle.get("type")
-
-                if "maxspeed" not in l_fcd_stats_json[i_vehicle.get("id")]:
-                    l_fcd_stats_json[
-                        i_vehicle.get("id")
-                    ]["maxspeed"] = run_data.get("vehicles").get(i_vehicle.get("id")).speed_max
-
-                if "timesteps" not in l_fcd_stats_json[i_vehicle.get("id")]:
-                    l_fcd_stats_json[i_vehicle.get("id")]["timesteps"] = OrderedDict()
-
-                l_fcd_stats_json[i_vehicle.get("id")]["timesteps"][i_timestep.get("time")] = {
-                    "x": i_vehicle.get("x"),
-                    "y": i_vehicle.get("y"),
-                    "angle": i_vehicle.get("angle"),
-                    "speed": i_vehicle.get("speed"),
-                    "lane": i_vehicle.get("lane"),
-                    "lanepos": i_vehicle.get("pos")
-                }
-
-                if "posx" not in l_fcd_stats_json[i_vehicle.get("id")]:
-                    l_fcd_stats_json[i_vehicle.get("id")]["posx"] = OrderedDict()
-
-                l_fcd_stats_json[i_vehicle.get("id")]["posx"][i_vehicle.get("x")] = {
-                    "timestep": float(i_timestep.get("time")),
-                    "y": i_vehicle.get("y"),
-                    "angle": i_vehicle.get("angle"),
-                    "speed": i_vehicle.get("speed"),
-                    "lane": i_vehicle.get("lane"),
-                    "lanepos": i_vehicle.get("pos")
-                }
-
-        # CSV
-        # l_fcd_stats_csv = []
-        # for i_vid in l_fcd_stats_json.iterkeys():
-        #
-        #     l_fcd_stats_csv_row = OrderedDict()
-        #
-        #     l_fcd_stats_csv_row["id"] = i_vid
-        #     l_fcd_stats_csv_row["type"] = l_fcd_stats_json.get(i_vid).get("type")
-        #     l_fcd_stats_csv_row["maxspeed"] = l_fcd_stats_json.get(i_vid).get("maxspeed")
-        #     for i_posx, i_posx_data in l_fcd_stats_json.get(i_vid).get("posx").iteritems():
-        #         l_fcd_stats_csv_row["x_{}".format(i_posx)] = i_posx_data.get("timestep")
-        #
-        #     l_fcd_stats_csv.append(l_fcd_stats_csv_row)
-
-        return l_fcd_stats_json  # , l_fcd_stats_csv
+        return [
+            self._aggregate_vehicle_stats(i_vobj.travel_stats)
+            for i_vid, i_vobj in vehicles.iteritems()
+        ]
 
     @staticmethod
     def h_spread(data):

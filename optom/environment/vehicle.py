@@ -111,9 +111,8 @@ class SUMOVehicle(BaseVehicle):
                 "speedDev": speed_deviation,
                 "maxSpeed": speed_max,
                 "vType": vehicle_type,
-                "vClass": vehicle_class,
-                "grid_position": (0, 0)
-                "vClass": optom.cse.policy.SUMOPolicy.to_allowed_class()
+                "vClass": optom.cse.policy.SUMOPolicy.to_allowed_class(),
+                "grid_position": numpy.array((0, 0))
             }
         )
 
@@ -274,14 +273,18 @@ class SUMOVehicle(BaseVehicle):
         self._travel_stats["travel_time"] = time_step - self.start_time
 
         # time losses
-        self._travel_stats.get("step")[time_step]["time_loss"] \
-            = time_step - self.start_time - self.position[0] / self.speed_max
+        self._travel_stats.get("step")[time_step][
+            "time_loss"
+        ] = time_step - self.start_time - self.position[0] / self.speed_max
 
         if self._travel_stats.get("grid_cell")[tuple(self.grid_position)].get("time_loss") is None:
-            self._travel_stats.get("grid_cell")[tuple(self.grid_position)]["time_loss"] \
-                = [time_step - self.start_time - self.position[0] / self.speed_max]
+            self._travel_stats.get("grid_cell")[
+                tuple(self.grid_position)]["time_loss"
+            ] = [time_step - self.start_time - self.position[0] / self.speed_max]
         else:
-            self._travel_stats.get("grid_cell").get(tuple(self.grid_position)).get("time_loss").append(
+            self._travel_stats.get("grid_cell").get(
+                tuple(self.grid_position)
+            ).get("time_loss").append(
                 time_step - self.start_time - self.position[0] / self.speed_max
             )
 
@@ -293,7 +296,9 @@ class SUMOVehicle(BaseVehicle):
         if self._travel_stats.get("grid_cell")[tuple(self.grid_position)].get("speed") is None:
             self._travel_stats.get("grid_cell")[tuple(self.grid_position)]["speed"] = [self.speed]
         else:
-            self._travel_stats.get("grid_cell")[tuple(self.grid_position)].get("speed").append(self.speed)
+            self._travel_stats.get("grid_cell")[tuple(self.grid_position)].get("speed").append(
+                self.speed
+            )
 
         # dissatisfaction
         self._travel_stats.get("step")[time_step]["dissatisfaction"] = self._dissatisfaction(
@@ -301,7 +306,9 @@ class SUMOVehicle(BaseVehicle):
                 self.position[0] / self.speed_max,
                 self._properties.get("dsat_threshold")
         )
-        if self._travel_stats.get("grid_cell")[tuple(self.grid_position)].get("dissatisfaction") is None:
+        if self._travel_stats.get("grid_cell")[
+            tuple(self.grid_position)
+        ].get("dissatisfaction") is None:
             self._travel_stats.get("grid_cell")[tuple(self.grid_position)]["dissatisfaction"] = [
                 self._dissatisfaction(
                     time_step - self.start_time - self.position[0] / self.speed_max,
@@ -310,7 +317,9 @@ class SUMOVehicle(BaseVehicle):
                 )
             ]
         else:
-            self._travel_stats.get("grid_cell")[tuple(self.grid_position)].get("dissatisfaction").append(
+            self._travel_stats.get("grid_cell")[
+                tuple(self.grid_position)
+            ].get("dissatisfaction").append(
                 self._dissatisfaction(
                     time_step - self.start_time - self.position[0] / self.speed_max,
                     self.position[0] / self.speed_max,
