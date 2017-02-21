@@ -67,13 +67,13 @@ test:
         - pandoc --from html --to markdown_github pylint.html -o pylint.md
         - echo -e "\n## Import Graph\n" >> pylint.md
         - cp pylint.md pylint_doc.md
-        - echo -e "\n![ImportGraph](https://github.com/masc/optom/blob/gh-pages/docs/source/optom-imports.png)" >> pylint.md
-        - echo -e "\n# Code Statistics\n\n" >> README.md
+        - echo -e "\n![ImportGraph](https://github.com/masc/optom/blob/gh-pages/docs/sources/optom-imports.png)" >> pylint.md
+        - echo -e "\n# Code Statistics\n\n" > REPORT.md
         - echo -e "# Copyright & License\n\n- Copyright 2017, Malte Aschermann\n- License LGPL\n\n" > README_doc.md
         - sh site/radon.sh > radon.md
-        - cat radon.md >> README.md
-        - echo -e "\n# Pylint\n\n" >> README.md
-        - cat pylint.md >> README.md
+        - cat radon.md >> REPORT.md
+        - echo -e "\n# Pylint\n\n" >> REPORT.md
+        - cat pylint.md >> REPORT.md
         - doxygen site/configuration.doxyfile
         # build latex
         - cd docs/latex/ && make && cd ..
@@ -83,5 +83,5 @@ test:
         - rm -Rf optom tests site run.py README_doc.md pylint.html pylint.md pylint_doc.md radon.md
         # add & commit
         - git add --all .
-        - git commit -m "CircleCI run complete. Report https://github.com/masc/optom/blob/gh-pages/README.md , Doku http://masc.github.io/optom/docs/sources/index.html"
+        - git commit -m "CircleCI run complete. Report https://github.com/masc/optom/blob/gh-pages/REPORT.md , Doku http://masc.github.io/optom/docs/sources/index.html"
         - git push origin gh-pages
