@@ -32,7 +32,7 @@ version = "0.1"
 setup(name="optom",
       version=version,
       description="Optimisation of Overtaking Manoeuvres",
-      long_description=open("README.rst").read(),
+      long_description=open("README.md").read(),
       classifiers=[  # Get strings from http://pypi.python.org/pypi?%3Aaction=list_classifiers
         "Programming Language :: Python"
       ],
