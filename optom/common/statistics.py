@@ -77,6 +77,7 @@ class Statistics(object):
 
         Weisstein, Eric W. H-Spread. From MathWorld--A Wolfram Web Resource.
         http://mathworld.wolfram.com/H-Spread.html
+
         Weisstein, Eric W. Hinge. From MathWorld--A Wolfram Web Resource.
         http://mathworld.wolfram.com/Hinge.html
 
