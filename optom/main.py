@@ -38,7 +38,8 @@ class Optom(object):
         """C'tor."""
         l_config_dir = os.path.expanduser(u"~/.optom")
 
-        l_parser = argparse.ArgumentParser(description="Process parameters for optom")
+        l_parser = argparse.ArgumentParser(description="Process parameters for OPTOM.")
+
         l_parser.add_argument(
             "--runconfigfile", dest="runconfigfile", type=str,
             default=os.path.join(l_config_dir, u"runconfig.yaml")
