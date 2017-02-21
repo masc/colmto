@@ -63,15 +63,17 @@ def test_sumo_null_policy():
     assert_is_instance(l_sumo_policy, optom.cse.policy.SUMONullPolicy)
 
     l_vehicles = [
-        optom.environment.vehicle.SUMOVehicle(
-            vehicle_class=random.choice(
+        optom.environment.vehicle.SUMOVehicle() for _ in xrange(23)
+    ]
+    for i_vehicle in l_vehicles:
+        i_vehicle.change_vehicle_class(
+            random.choice(
                 [
                     optom.cse.policy.SUMOPolicy.to_disallowed_class(),
                     optom.cse.policy.SUMOPolicy.to_allowed_class()
                 ]
             )
-        ) for _ in xrange(23)
-    ]
+        )
 
     l_results = l_sumo_policy.apply(l_vehicles)
 

@@ -55,10 +55,11 @@ def test_sumo_cse():
 
     l_vehicles = [
         optom.environment.vehicle.SUMOVehicle(
-            position=numpy.array((random.randrange(0, 120), random.randint(0, 1))),
-            speed_max=random.randrange(0, 120)
-        ) for _ in xrange(4711)
+            speed_max=random.randrange(0, 250)
+        ) for _ in xrange(2342)
     ]
+    for i_vehicle in l_vehicles:
+        i_vehicle.position = numpy.array((random.randrange(0, 120), random.randint(0, 1)))
 
     l_sumo_cse.apply(l_vehicles)
 

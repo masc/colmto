@@ -42,10 +42,9 @@ def test_basevehicle():
     assert_true(numpy.array_equal(l_basevehicle.position, numpy.array([0.0, 0])))
 
     # test custom values
-    l_basevehicle = optom.environment.vehicle.BaseVehicle(
-        speed=27.777,
-        position=numpy.array([23.0, 0])
-    )
+    l_basevehicle = optom.environment.vehicle.BaseVehicle()
+    l_basevehicle.speed = 27.777
+    l_basevehicle.position = numpy.array([23.0, 0])
     l_basevehicle.speed = 12.1
 
     assert_equal(l_basevehicle.speed, 12.1)
@@ -69,15 +68,15 @@ def test_sumovehicle():
     # test custom values
     l_sumovehicle = optom.environment.vehicle.SUMOVehicle(
         speed_max=27.777,
-        position=numpy.array([42.0, 0]),
         speed_deviation=1.2,
         vehicle_type="passenger",
-        color=(128, 64, 255, 255),
         vtype_sumo_cfg={
             "length": 3.00,
             "minGap": 2.50
         }
     )
+    l_sumovehicle.position = numpy.array([42.0, 0])
+    l_sumovehicle.color = (128, 64, 255, 255)
     l_sumovehicle.speed_current = 12.1
     l_sumovehicle.start_time = 13
 
@@ -85,5 +84,5 @@ def test_sumovehicle():
     assert_equal(l_sumovehicle.speed_current, 12.1)
     assert_true(numpy.array_equal(l_sumovehicle.position, numpy.array([42.0, 0])))
     assert_equal(l_sumovehicle.vehicle_type, "passenger")
-    assert_equal(l_sumovehicle.color, (128, 64, 255, 255))
+    assert_true(numpy.array_equal(l_sumovehicle.color, numpy.array((128, 64, 255, 255))))
     assert_equal(l_sumovehicle.start_time, 13)

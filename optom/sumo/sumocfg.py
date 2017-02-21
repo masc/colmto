@@ -538,7 +538,7 @@ class SumoConfig(optom.common.configuration.Configuration):
 
     @staticmethod
     def _next_timestep(lamb, prev_start_time, distribution="poisson"):
-        """
+        r"""
         Calculate next time step in Poisson or linear distribution.
 
         Poisson (exponential) distribution with

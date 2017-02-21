@@ -361,11 +361,13 @@ class SUMOPositionPolicy(SUMOVehiclePolicy):
         @param vehicle Vehicle
         @retval boolean
         """
+        # pylint: disable=no-member
         if numpy.all(numpy.logical_and(self._position_bbox[0] <= vehicle.position,
                                        vehicle.position <= self._position_bbox[1])) and \
                 (self.subpolicies_apply_to(vehicle) if len(self._vehicle_policies) > 0 else True):
             return True
         return False
+        # pylint: enable=no-member
 
     def apply(self, vehicles):
         """
