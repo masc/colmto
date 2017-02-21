@@ -47,7 +47,8 @@ class Statistics(object):
         Aggregate time losses in cells by using the median time loss
 
         @params travel_stats: travel_stats from vehicle object
-        @retval aggregated vehicle stats
+        @retval travel_stats median aggregated
+
         """
         # for i_item in travel_stats.get("grid_cell").itervalues():
         #     if isinstance(i_item.get("time_loss"), list):
@@ -73,18 +74,25 @@ class Statistics(object):
     @staticmethod
     def h_spread(data):
         """
-        Calculate H-Spread of given data points.
+        Calculate H-Spread of Hinge for given data points.
 
-        Weisstein, Eric W. H-Spread. From MathWorld--A Wolfram Web Resource.
+        \f{eqnarray}{
+            \text{Hinge} &=& H_2 - H_1 \text{with} \\
+            H_1 &=& a_{n+2} = a_{(N+3)/4} \\
+            M &=& a_{2n+3} = a_{(N+1)/2} \\
+            H_2 &=& a_{3n+4} = a_{(3N+1)/4}.
+        \f}
+
+        @see Weisstein, Eric W. H-Spread. From MathWorld--A Wolfram Web Resource.
         http://mathworld.wolfram.com/H-Spread.html
 
-        Weisstein, Eric W. Hinge. From MathWorld--A Wolfram Web Resource.
+        @see Weisstein, Eric W. Hinge. From MathWorld--A Wolfram Web Resource.
         http://mathworld.wolfram.com/Hinge.html
 
         @param data: Iterable set of data elements of (preferably) \f$4n+5\f$ for \f$n=0,1,...,N\f$,
             i.e. minimum length is \f$5\f$
 
-        @retval \f$H_2 - H_1\f$ if data contains at least 5 elements,
+        @retval Hinge if data contains at least 5 elements,
             otherwise raises ArithmeticError
         """
 
