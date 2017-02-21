@@ -571,7 +571,7 @@ _COLORMAP = dict(
             ('viridis', _VIRIDIS_DATA),
             ('viridis_r', tuple(reversed(_VIRIDIS_DATA)))
         )
-        ]
+    ]
 )
 
 
@@ -584,9 +584,9 @@ def mapped_cmap(cmap_name, range_max):
     """
     Return colormap scaled to range_max.
 
-    Args:
-        cmap_name: Colormap name
-        range_max: scale colormap from 0 up to this value
+    @param cmap_name: Colormap name
+    @param range_max: scale colormap from 0 up to this value
+    @retval colormap scaled to range_max
     """
     l_cnorm = matplotlib.colors.Normalize(vmin=0, vmax=range_max)
     return matplotlib.cm.ScalarMappable(norm=l_cnorm, cmap=_COLORMAP[cmap_name]).to_rgba
