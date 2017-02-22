@@ -28,7 +28,6 @@ import subprocess
 
 import optom.common.log
 import optom.cse.cse
-import numpy
 
 try:
     import traci

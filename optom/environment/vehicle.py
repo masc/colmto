@@ -57,12 +57,28 @@ class BaseVehicle(object):
         """
         return self._properties.get("speed")
 
+    @speed.setter
+    def speed(self, speed):
+        """
+        Set vehicle speed
+        @param speed current position
+        """
+        self._properties["speed"] = speed
+
     @property
     def position(self):
         """
         @retval current position
         """
         return self._properties.get("position")
+
+    @position.setter
+    def position(self, position):
+        """
+        Set vehicle position
+        @param position current position
+        """
+        self._properties["position"] = position
 
 
 class SUMOVehicle(BaseVehicle):
@@ -264,9 +280,9 @@ class SUMOVehicle(BaseVehicle):
 
         # grid based stats
         # check whether vehicle stayed in this grid cell
-        if len(self._travel_stats.get("grid").get("pos_x")) > 0 \
-            and len(self._travel_stats.get("grid").get("pos_y")) > 0 \
-            and isinstance(self._travel_stats.get("grid").get("pos_x")[-1], list) \
+        if len(self._travel_stats.get("grid").get("pos_x")) + \
+                len(self._travel_stats.get("grid").get("pos_y")) > 0 \
+                and isinstance(self._travel_stats.get("grid").get("pos_x")[-1], list) \
                 and isinstance(self._travel_stats.get("grid").get("pos_y")[-1], list) \
                 and self._travel_stats.get("grid").get("pos_x")[-1][0] == self.grid_position[0] \
                 and self._travel_stats.get("grid").get("pos_y")[-1][0] == self.grid_position[1]:
