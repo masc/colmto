@@ -147,6 +147,7 @@ class Runtime(object):
                 traci.vehicle.subscribe(
                     i_vehicle_id, [
                         traci.constants.VAR_POSITION,
+                        traci.constants.VAR_LANE_INDEX,
                         traci.constants.VAR_VEHICLECLASS,
                         traci.constants.VAR_MAXSPEED,
                         traci.constants.VAR_SPEED
@@ -159,29 +160,20 @@ class Runtime(object):
                 # vehicle object corresponding to current vehicle fetched from traci
                 l_vehicle = run_config.get("vehicles").get(i_vehicle_id)
 
-                # update vehicle position
-                l_vehicle.position = numpy.array(
-                    i_results.get(traci.constants.VAR_POSITION)
-                )
-
-                # update current "grid cell" the vehicle is in
-                l_vehicle.grid_position = numpy.array(
-                    (
-                        int(round(i_results.get(traci.constants.VAR_POSITION)[0]/4.)-1),
-                        0 if i_results.get(traci.constants.VAR_POSITION)[1] < 0 else 1
-                    )
-                )
-
-                # update vehicle speed
-                l_vehicle.speed = i_results.get(
-                    traci.constants.VAR_SPEED
-                )
-
                 # set vclass according to policies for each vehicle, i.e.
                 # allow vehicles access to OTL depending on policy
-                cse.apply_one(l_vehicle)
+                cse.apply_one(
 
-                # update vehicle class via traci if vclass changed
+                    # update vehicle position and speed
+                    l_vehicle.update(
+                        i_results.get(traci.constants.VAR_POSITION),
+                        i_results.get(traci.constants.VAR_LANE_INDEX),
+                        i_results.get(traci.constants.VAR_SPEED)
+                    )
+
+                )
+
+                # update vehicle class via traci if vclass changed due to applying CSE
                 if i_results.get(traci.constants.VAR_VEHICLECLASS) != l_vehicle.vehicle_class:
                     traci.vehicle.setVehicleClass(
                         i_vehicle_id,
@@ -205,7 +197,9 @@ class Runtime(object):
 
                 # if i_vehicle_id == "vehicle10":
                 #     self._log.debug(
-                #         "actual TT: %s, opt TT: %s, time loss: %s (%s pct.), dsat: %s",
+                #         "pos: %s, %s, act TT: %s, opt TT: %s, time loss: %s (%s pct.), dsat: %s",
+                #         l_vehicle.position,
+                #         l_vehicle.grid_position,
                 #         l_vehicle.travel_time,
                 #         round(l_vehicle.position[0] / l_vehicle.speed_max, 2),
                 #         round(l_vehicle.travel_stats.get("step").get("time_loss")[-1], 2),

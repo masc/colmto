@@ -57,28 +57,12 @@ class BaseVehicle(object):
         """
         return self._properties.get("speed")
 
-    @speed.setter
-    def speed(self, speed):
-        """
-        Sets current speed
-        @param speed current speed
-        """
-        self._properties["speed"] = speed
-
     @property
     def position(self):
         """
         @retval current position
         """
         return self._properties.get("position")
-
-    @position.setter
-    def position(self, position):
-        """
-        Updates current position
-        @param position current position
-        """
-        self._properties["position"] = position
 
 
 class SUMOVehicle(BaseVehicle):
@@ -304,4 +288,32 @@ class SUMOVehicle(BaseVehicle):
         @retval self
         """
         self._properties["vClass"] = class_name
+        return self
+
+    def update(self, position, lane_index, speed):
+        """
+        Update current properties of vehicle providing data acquired from TraCI call.
+
+        For the grid cell the vehicle is in, take the global position in x-direction divided by grid
+        cell size and int-rounded. For the y-coordinate take the lane index.
+        NOTE: We assume a fixed grid cell size of 4 meters. This has to be set via cfg in future.
+
+        @param position: tuple TraCI provided position
+        @param lane_index: int TraCI provided lane index
+        @param speed: float TraCI provided speed
+        @retval self Vehicle reference
+        """
+
+        # set current position
+        self._properties["position"] = numpy.array(position)
+        # set current grid position
+        self._properties["grid_position"] = numpy.array(
+            (
+                int(round(position[0]/4.)-1),
+                int(lane_index)
+            )
+        )
+        # set speed
+        self._properties["speed"] = speed
+
         return self
