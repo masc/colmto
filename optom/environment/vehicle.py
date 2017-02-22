@@ -258,19 +258,56 @@ class SUMOVehicle(BaseVehicle):
         # current step number
         self._travel_stats.get("step").get("number").append(time_step)
 
-        # time losses
-        self._travel_stats.get("step").get("time_loss").append(
-            time_step - self.start_time - self.position[0] / self.speed_max
-        )
-
         # position
         self._travel_stats.get("step").get("pos_x").append(self.position[0])
         self._travel_stats.get("step").get("pos_y").append(self.position[1])
 
-        # speed
+        # grid based stats
+        # check whether vehicle stayed in this grid cell
+        if len(self._travel_stats.get("grid").get("pos_x")) > 0 \
+            and len(self._travel_stats.get("grid").get("pos_y")) > 0 \
+            and isinstance(self._travel_stats.get("grid").get("pos_x")[-1], list) \
+                and isinstance(self._travel_stats.get("grid").get("pos_y")[-1], list) \
+                and self._travel_stats.get("grid").get("pos_x")[-1][0] == self.grid_position[0] \
+                and self._travel_stats.get("grid").get("pos_y")[-1][0] == self.grid_position[1]:
+            self._travel_stats.get("grid").get("pos_x")[-1].append(self.grid_position[0])
+            self._travel_stats.get("grid").get("pos_y")[-1].append(self.grid_position[1])
+            self._travel_stats.get("grid").get("speed")[-1].append(self.speed)
+            self._travel_stats.get("grid").get("time_loss")[-1].append(
+                time_step - self.start_time - self.position[0] / self.speed_max
+            )
+            self._travel_stats.get("grid").get("dissatisfaction")[-1].append(
+                self._dissatisfaction(
+                    time_step - self.start_time - self.position[0] / self.speed_max,
+                    self.position[0] / self.speed_max,
+                    self._properties.get("dsat_threshold")
+                )
+            )
+
+        else:
+            self._travel_stats.get("grid").get("pos_x").append([self.grid_position[0]])
+            self._travel_stats.get("grid").get("pos_y").append([self.grid_position[1]])
+            self._travel_stats.get("grid").get("speed").append([self.speed])
+            self._travel_stats.get("grid").get("time_loss").append(
+                [time_step - self.start_time - self.position[0] / self.speed_max]
+            )
+            self._travel_stats.get("grid").get("dissatisfaction").append(
+                [
+                    self._dissatisfaction(
+                        time_step - self.start_time - self.position[0] / self.speed_max,
+                        self.position[0] / self.speed_max,
+                        self._properties.get("dsat_threshold")
+                    )
+                ]
+            )
+
+        # step based stats
+        self._travel_stats.get("step").get("time_loss").append(
+            time_step - self.start_time - self.position[0] / self.speed_max
+        )
+
         self._travel_stats.get("step").get("speed").append(self.speed)
 
-        # dissatisfaction
         self._travel_stats.get("step").get("dissatisfaction").append(
             self._dissatisfaction(
                 time_step - self.start_time - self.position[0] / self.speed_max,

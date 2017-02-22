@@ -223,6 +223,10 @@ class Runtime(object):
             run_config.get("scenarioname"), run_config.get("runnumber")
         )
 
+        self._log.info(
+            "vehicle0 stats %s",
+            run_config.get("vehicles").get("vehicle0").travel_stats
+        )
         return run_config.get("vehicles")
 
     # pylint: enable=too-few-public-methods
