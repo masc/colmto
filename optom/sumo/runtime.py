@@ -203,19 +203,19 @@ class Runtime(object):
                     l_results_simulation.get(traci.constants.VAR_TIME_STEP)/10.**3
                 )
 
-                if i_vehicle_id == "vehicle10":
-                    self._log.debug(
-                        "actual TT: %s, opt TT: %s, time loss: %s (%s pct.), dsat: %s",
-                        l_vehicle.travel_time,
-                        round(l_vehicle.position[0] / l_vehicle.speed_max, 2),
-                        round(l_vehicle.travel_stats.get("step").get("time_loss")[-1], 2),
-                        round(
-                            l_vehicle.travel_stats.get("step").get("time_loss")[-1] /
-                            (l_vehicle.position[0] / l_vehicle.speed_max) * 100,
-                            2
-                        ),
-                        round(l_vehicle.travel_stats.get("step").get("dissatisfaction")[-1], 32)
-                    )
+                # if i_vehicle_id == "vehicle10":
+                #     self._log.debug(
+                #         "actual TT: %s, opt TT: %s, time loss: %s (%s pct.), dsat: %s",
+                #         l_vehicle.travel_time,
+                #         round(l_vehicle.position[0] / l_vehicle.speed_max, 2),
+                #         round(l_vehicle.travel_stats.get("step").get("time_loss")[-1], 2),
+                #         round(
+                #             l_vehicle.travel_stats.get("step").get("time_loss")[-1] /
+                #             (l_vehicle.position[0] / l_vehicle.speed_max) * 100,
+                #             2
+                #         ),
+                #         round(l_vehicle.travel_stats.get("step").get("dissatisfaction")[-1], 32)
+                #     )
 
             traci.simulationStep()
 
