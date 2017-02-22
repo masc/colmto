@@ -155,13 +155,17 @@ class Runtime(object):
 
             # retrieve results, update vehicle objects, apply cse policies
             for i_vehicle_id, i_results in traci.vehicle.getSubscriptionResults().iteritems():
+
+                # vehicle object corresponding to current vehicle fetched from traci
+                l_vehicle = run_config.get("vehicles").get(i_vehicle_id)
+
                 # update vehicle position
-                run_config.get("vehicles").get(i_vehicle_id).position = numpy.array(
+                l_vehicle.position = numpy.array(
                     i_results.get(traci.constants.VAR_POSITION)
                 )
 
                 # update current "grid cell" the vehicle is in
-                run_config.get("vehicles").get(i_vehicle_id).grid_position = numpy.array(
+                l_vehicle.grid_position = numpy.array(
                     (
                         int(round(i_results.get(traci.constants.VAR_POSITION)[0]/4.)-1),
                         0 if i_results.get(traci.constants.VAR_POSITION)[1] < 0 else 1
@@ -169,23 +173,21 @@ class Runtime(object):
                 )
 
                 # update vehicle speed
-                run_config.get("vehicles").get(i_vehicle_id).speed = i_results.get(
+                l_vehicle.speed = i_results.get(
                     traci.constants.VAR_SPEED
                 )
 
                 # set vclass according to policies for each vehicle, i.e.
                 # allow vehicles access to OTL depending on policy
-                cse.apply_one(run_config.get("vehicles").get(i_vehicle_id))
+                cse.apply_one(l_vehicle)
 
                 # update vehicle class via traci if vclass changed
-                if i_results.get(traci.constants.VAR_VEHICLECLASS) \
-                        != run_config.get("vehicles").get(i_vehicle_id).vehicle_class:
+                if i_results.get(traci.constants.VAR_VEHICLECLASS) != l_vehicle.vehicle_class:
                     traci.vehicle.setVehicleClass(
                         i_vehicle_id,
-                        run_config.get("vehicles").get(i_vehicle_id).vehicle_class
+                        l_vehicle.vehicle_class
                     )
-                    if run_config.get("vehicles").get(i_vehicle_id).vehicle_class \
-                            == optom.cse.policy.SUMOPolicy.to_disallowed_class():
+                    if l_vehicle.vehicle_class == optom.cse.policy.SUMOPolicy.to_disallowed_class():
                         traci.vehicle.setColor(
                             i_vehicle_id,
                             (255, 0, 0, 255)
@@ -193,49 +195,27 @@ class Runtime(object):
                     else:
                         traci.vehicle.setColor(
                             i_vehicle_id,
-                            tuple(run_config.get("vehicles").get(i_vehicle_id).color)
+                            tuple(l_vehicle.color)
                         )
 
                 # record travel stats to vehicle
-                run_config.get("vehicles").get(i_vehicle_id).record_travel_stats(
+                l_vehicle.record_travel_stats(
                     l_results_simulation.get(traci.constants.VAR_TIME_STEP)/10.**3
                 )
 
-                # if i_vehicle_id == "vehicle10":
-                #     self._log.debug(
-                #         "actual TT: %s, opt TT: %s, time loss: %s (%s pct.), dsat: %s",
-                #         run_config.get("vehicles").get(i_vehicle_id).travel_time,
-                #         round(
-                #             run_config.get("vehicles").get(i_vehicle_id).position[0] /
-                #             run_config.get("vehicles").get(i_vehicle_id).speed_max,
-                #             2
-                #         ),
-                #         round(
-                #             run_config.get("vehicles").get(i_vehicle_id).travel_stats.get(
-                #                 "step"
-                #             ).get(
-                #                 "time_loss"
-                #             )[-1],
-                #             2
-                #         ),
-                #         round(
-                #             run_config.get("vehicles").get(i_vehicle_id).travel_stats.get(
-                #                 "step"
-                #             ).get(
-                #                 "time_loss"
-                #             )[-1] /
-                #             (run_config.get("vehicles").get(i_vehicle_id).position[0] /
-                #              run_config.get("vehicles").get(i_vehicle_id).speed_max) * 100,
-                #             2),
-                #         round(
-                #             run_config.get("vehicles").get(i_vehicle_id).travel_stats.get(
-                #                 "step"
-                #             ).get(
-                #                 "dissatisfaction"
-                #             )[-1],
-                #             32
-                #         )
-                #     )
+                if i_vehicle_id == "vehicle10":
+                    self._log.debug(
+                        "actual TT: %s, opt TT: %s, time loss: %s (%s pct.), dsat: %s",
+                        l_vehicle.travel_time,
+                        round(l_vehicle.position[0] / l_vehicle.speed_max, 2),
+                        round(l_vehicle.travel_stats.get("step").get("time_loss")[-1], 2),
+                        round(
+                            l_vehicle.travel_stats.get("step").get("time_loss")[-1] /
+                            (l_vehicle.position[0] / l_vehicle.speed_max) * 100,
+                            2
+                        ),
+                        round(l_vehicle.travel_stats.get("step").get("dissatisfaction")[-1], 32)
+                    )
 
             traci.simulationStep()
 
