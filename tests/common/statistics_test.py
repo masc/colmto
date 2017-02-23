@@ -44,10 +44,7 @@ def test_h_spread():
         704
     )
 
-    # test for data sets with less than 6 elements -> should raise ArithmeticError
-    for i_elements in xrange(5):
-        assert_raises(
-            ArithmeticError,
-            optom.common.statistics.Statistics.h_spread,
-            xrange(i_elements)
-        )
+    assert_equal(
+        optom.common.statistics.Statistics.h_spread(xrange(10**6)),
+        499999.5
+    )

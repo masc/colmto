@@ -89,16 +89,22 @@ class Statistics(object):
         return {
             "fairness": {
                             "time_loss:": Statistics.h_spread(
-                                [i_vehicle.travel_stats.get("step").get("time_loss")[-1]
-                                 for i_vehicle in vehicles.itervalues()]
+                                numpy.array(
+                                    [i_vehicle.travel_stats.get("step").get("time_loss")[-1]
+                                     for i_vehicle in vehicles.itervalues()]
+                                )
                             ),
                             "speed:": Statistics.h_spread(
-                                [i_vehicle.travel_stats.get("step").get("speed")[-1]
-                                 for i_vehicle in vehicles.itervalues()]
+                                numpy.array(
+                                    [i_vehicle.travel_stats.get("step").get("speed")[-1]
+                                     for i_vehicle in vehicles.itervalues()]
+                                )
                             ),
                             "dissatisfaction:": Statistics.h_spread(
-                                [i_vehicle.travel_stats.get("step").get("dissatisfaction")[-1]
-                                 for i_vehicle in vehicles.itervalues()]
+                                numpy.array(
+                                    [i_vehicle.travel_stats.get("step").get("dissatisfaction")[-1]
+                                     for i_vehicle in vehicles.itervalues()]
+                                )
                             ),
                         },
             "vehicles": vehicles
@@ -114,6 +120,7 @@ class Statistics(object):
             M &=& a_{2n+3} = a_{(N+1)/2} \\
             H_2 &=& a_{3n+4} = a_{(3N+1)/4}.
         \f}
+        Using numpy.percentile (speedup) with linear (=default) interpolation.
         @see Weisstein, Eric W. H-Spread. From MathWorld--A Wolfram Web Resource.
         http://mathworld.wolfram.com/H-Spread.html
         @see Weisstein, Eric W. Hinge. From MathWorld--A Wolfram Web Resource.
@@ -124,12 +131,4 @@ class Statistics(object):
             otherwise raises ArithmeticError
         """
 
-        l_data = sorted(data)
-        l_len = len(l_data)
-
-        if l_len < 5:
-            raise ArithmeticError
-
-        l_h1 = l_data[int((l_len + 3) / 4 - 1)]
-        l_h2 = l_data[int((3 * l_len + 1) / 4 - 1)]
-        return l_h2 - l_h1
+        return numpy.subtract(*numpy.percentile(data, [75, 25]))
