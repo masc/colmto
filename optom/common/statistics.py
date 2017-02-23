@@ -78,6 +78,33 @@ class Statistics(object):
         return vehicles
 
     @staticmethod
+    def vehicle_fairness_of(vehicles):
+        """
+        Calculate fairness from vehicle stats.
+
+        @param vehicles: dictionary of vehicle objects (vID -> Vehicle)
+        @retval { "fairness": { "time_loss": value, "speed": value, "dissatisfaction": value },
+             "vehicles": vehicles }
+        """
+        return {
+            "fairness": {
+                            "time_loss:": Statistics.h_spread(
+                                [i_vehicle.travel_stats.get("step").get("time_loss")[-1]
+                                 for i_vehicle in vehicles.itervalues()]
+                            ),
+                            "speed:": Statistics.h_spread(
+                                [i_vehicle.travel_stats.get("step").get("speed")[-1]
+                                 for i_vehicle in vehicles.itervalues()]
+                            ),
+                            "dissatisfaction:": Statistics.h_spread(
+                                [i_vehicle.travel_stats.get("step").get("dissatisfaction")[-1]
+                                 for i_vehicle in vehicles.itervalues()]
+                            ),
+                        },
+            "vehicles": vehicles
+        }
+
+    @staticmethod
     def h_spread(data):
         """
         Calculate H-Spread of Hinge for given data points.
