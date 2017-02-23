@@ -26,7 +26,6 @@ optom: Test module for common.statistics.
 import optom.common.statistics
 import optom.environment.vehicle
 from nose.tools import assert_equal
-from nose.tools import assert_raises
 
 
 def test_h_spread():

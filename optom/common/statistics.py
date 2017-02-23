@@ -83,30 +83,30 @@ class Statistics(object):
         Calculate fairness from vehicle stats.
 
         @param vehicles: dictionary of vehicle objects (vID -> Vehicle)
-        @retval dictionary: { "fairness": { "time_loss": value, "speed": value, "dissatisfaction": value },
-             "vehicles": vehicles }
+        @retval dictionary: { "fairness": { "time_loss": value, "speed": value,
+            "dissatisfaction": value }, "vehicles": vehicles }
         """
         return {
             "fairness": {
-                            "time_loss:": Statistics.h_spread(
-                                numpy.array(
-                                    [i_vehicle.travel_stats.get("step").get("time_loss")[-1]
-                                     for i_vehicle in vehicles.itervalues()]
-                                )
-                            ),
-                            "speed:": Statistics.h_spread(
-                                numpy.array(
-                                    [i_vehicle.travel_stats.get("step").get("speed")[-1]
-                                     for i_vehicle in vehicles.itervalues()]
-                                )
-                            ),
-                            "dissatisfaction:": Statistics.h_spread(
-                                numpy.array(
-                                    [i_vehicle.travel_stats.get("step").get("dissatisfaction")[-1]
-                                     for i_vehicle in vehicles.itervalues()]
-                                )
-                            ),
-                        },
+                "time_loss:": Statistics.h_spread(
+                    numpy.array(
+                        [i_vehicle.travel_stats.get("step").get("time_loss")[-1]
+                         for i_vehicle in vehicles.itervalues()]
+                    )
+                ),
+                "speed:": Statistics.h_spread(
+                    numpy.array(
+                        [i_vehicle.travel_stats.get("step").get("speed")[-1]
+                         for i_vehicle in vehicles.itervalues()]
+                    )
+                ),
+                "dissatisfaction:": Statistics.h_spread(
+                    numpy.array(
+                        [i_vehicle.travel_stats.get("step").get("dissatisfaction")[-1]
+                         for i_vehicle in vehicles.itervalues()]
+                    )
+                ),
+            },
             "vehicles": vehicles
         }
 
@@ -130,5 +130,6 @@ class Statistics(object):
         @retval Hinge if data contains at least 5 elements,
             otherwise raises ArithmeticError
         """
-
+        # pylint: disable=no-member
         return numpy.subtract(*numpy.percentile(data, [75, 25]))
+        # pylint: enable=no-member
