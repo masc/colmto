@@ -84,7 +84,9 @@ class SumoSim(object):
 
                 if self._sumocfg.run_config.get("cse-enabled"):
                     # cse mode: apply cse policies to vehicles and run with TraCI
-                    self._statistics.vehicle_stats(
+
+                    self._statistics.aggregate_vehicle_grid_stats(
+
                         self._runtime.run_traci(
                             self._sumocfg.generate_run(
                                 self._sumocfg.generate_scenario(scenario_name),

@@ -27,6 +27,8 @@ from __future__ import division
 import optom.common.io
 import optom.common.log
 
+import numpy
+
 
 class Statistics(object):
     """Statistics class for computing/aggregating SUMO results"""
@@ -40,36 +42,40 @@ class Statistics(object):
             self._writer = optom.common.io.Writer(None)
 
     @staticmethod
-    def _aggregate_vehicle_grid_stats(travel_stats):
+    def aggregate_vehicle_grid_stats(vehicles):
         """
         Aggregates vehicle stats related to cells.
 
         Aggregate time losses in cells by using the median time loss
 
-        @params travel_stats: travel_stats from vehicle object
-        @retval travel_stats median aggregated
+        @params vehicles: dictionary vID -> vObj from vehicle object
+        @retval vehicles with travel_stats median aggregated
 
         """
-        # for i_item in travel_stats.get("grid_cell").itervalues():
-        #     if isinstance(i_item.get("time_loss"), list):
-        #         i_item["time_loss"] = numpy.median(i_item.get("time_loss"))
-        #     if isinstance(i_item.get("speed"), list):
-        #         i_item["speed"] = numpy.median(i_item.get("speed"))
-        #     if isinstance(i_item.get("dissatisfaction"), list):
-        #         i_item["dissatisfaction"] = numpy.median(i_item.get("dissatisfaction"))
+        for i_vehicle in vehicles.itervalues():
+            l_travel_stats = i_vehicle.travel_stats.get("grid")
+            for i_idx in xrange(len(l_travel_stats.get("pos_x"))):
+                l_travel_stats.get("pos_x")[i_idx] = numpy.median(
+                    i_vehicle.travel_stats.get("grid").get("pos_x")[i_idx]
+                )
+            for i_idx in xrange(len(l_travel_stats.get("pos_y"))):
+                l_travel_stats.get("pos_y")[i_idx] = numpy.median(
+                    i_vehicle.travel_stats.get("grid").get("pos_y")[i_idx]
+                )
+            for i_idx in xrange(len(l_travel_stats.get("speed"))):
+                l_travel_stats.get("speed")[i_idx] = numpy.median(
+                    i_vehicle.travel_stats.get("grid").get("speed")[i_idx]
+                )
+            for i_idx in xrange(len(l_travel_stats.get("time_loss"))):
+                l_travel_stats.get("time_loss")[i_idx] = numpy.median(
+                    i_vehicle.travel_stats.get("grid").get("time_loss")[i_idx]
+                )
+            for i_idx in xrange(len(l_travel_stats.get("dissatisfaction"))):
+                l_travel_stats.get("dissatisfaction")[i_idx] = numpy.median(
+                    i_vehicle.travel_stats.get("grid").get("dissatisfaction")[i_idx]
+                )
 
-        return travel_stats
-
-    def vehicle_stats(self, vehicles):
-        """
-
-        @params vehicles:
-        @retval
-        """
-        return [
-            self._aggregate_vehicle_grid_stats(i_vobj.travel_stats)
-            for i_vobj in vehicles.itervalues()
-        ]
+        return vehicles
 
     @staticmethod
     def h_spread(data):
