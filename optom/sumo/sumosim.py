@@ -79,7 +79,7 @@ class SumoSim(object):
             return
 
         for i_initial_sorting in self._sumocfg.run_config.get("initialsortings"):
-            # l_scenario_runs.get("runs")[i_initial_sorting] = {}
+
             for i_run in xrange(self._sumocfg.run_config.get("runs")):
 
                 if self._sumocfg.run_config.get("cse-enabled"):
