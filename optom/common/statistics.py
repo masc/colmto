@@ -78,12 +78,12 @@ class Statistics(object):
         return vehicles
 
     @staticmethod
-    def vehicle_fairness_of(vehicles):
+    def fairness_of(vehicles):
         """
         Calculate fairness from vehicle stats.
 
         @param vehicles: dictionary of vehicle objects (vID -> Vehicle)
-        @retval { "fairness": { "time_loss": value, "speed": value, "dissatisfaction": value },
+        @retval dictionary: { "fairness": { "time_loss": value, "speed": value, "dissatisfaction": value },
              "vehicles": vehicles }
         """
         return {
