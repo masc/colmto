@@ -102,8 +102,8 @@ class Statistics(object):
         r"""
         Calculates fairness and joins vehicle stat lists to HD5 suitable matrices.
 
-        Joins fairness of \f$\text{time_loss}\f$, \f$\text{speed}\f$ and
-        \f$\text{dissatisfaction}\f$ into one row-matrix and corresponding annotations.
+        Joins fairness of time loss, speed and dissatisfaction into one row-matrix and
+        corresponding annotations.
         Join vehicle step and grid stats into one row-matrices with corresponding annotations.
         Returns \code{.py}{ "fairness": { "time_loss": value, "speed": value,
             "dissatisfaction": value }, "vehicles": vehicles }\endcode
