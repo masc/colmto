@@ -134,12 +134,11 @@ class Statistics(object):
 
     @staticmethod
     def stats_to_hd5matrices(vehicle_stats):
-        """
+        r"""
         Join vehicle stat lists to HD5 suitable matrices.
 
         Join fairness of \f$\text{time_loss}\f$, \f$\text{speed}\f$ and
         \f$\text{dissatisfaction}\f$ into one row-matrix and corresponding annotations.
-
         Join vehicle step and grid stats into one row-matrices with corresponding annotations.
 
         @param vehicle_stats: vehicle stats as provided by fairness_of method
