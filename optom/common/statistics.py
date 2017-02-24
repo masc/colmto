@@ -98,83 +98,88 @@ class Statistics(object):
         return vehicles
 
     @staticmethod
-    def fairness_of(vehicles):
+    def stats_to_hd5matrices(vehicles):
         r"""
-        Calculate fairness from vehicle stats.
+        Calculates fairness and joins vehicle stat lists to HD5 suitable matrices.
 
+        Joins fairness of \f$\text{time_loss}\f$, \f$\text{speed}\f$ and
+        \f$\text{dissatisfaction}\f$ into one row-matrix and corresponding annotations.
+        Join vehicle step and grid stats into one row-matrices with corresponding annotations.
         Returns \code{.py}{ "fairness": { "time_loss": value, "speed": value,
             "dissatisfaction": value }, "vehicles": vehicles }\endcode
-
         @param vehicles: dictionary of vehicle objects (vID -> Vehicle)
         @retval dictionary containing vehicles and fairness dicts
         """
         return {
             "fairness": {
-                "time_loss:": Statistics.h_spread(
-                    numpy.array(
-                        [i_vehicle.travel_stats.get("step").get("time_loss")[-1]
-                         for i_vehicle in vehicles.itervalues()]
-                    )
-                ),
-                "speed:": Statistics.h_spread(
-                    numpy.array(
-                        [i_vehicle.travel_stats.get("step").get("speed")[-1]
-                         for i_vehicle in vehicles.itervalues()]
-                    )
-                ),
-                "dissatisfaction:": Statistics.h_spread(
-                    numpy.array(
-                        [i_vehicle.travel_stats.get("step").get("dissatisfaction")[-1]
-                         for i_vehicle in vehicles.itervalues()]
-                    )
-                ),
-            },
-            "vehicles": vehicles
-        }
-
-    @staticmethod
-    def stats_to_hd5matrices(vehicle_stats):
-        r"""
-        Join vehicle stat lists to HD5 suitable matrices.
-
-        Join fairness of \f$\text{time_loss}\f$, \f$\text{speed}\f$ and
-        \f$\text{dissatisfaction}\f$ into one row-matrix and corresponding annotations.
-        Join vehicle step and grid stats into one row-matrices with corresponding annotations.
-
-        @param vehicle_stats: vehicle stats as provided by fairness_of method
-        @retval vehicle stats
-        """
-        return {
-            "fairness": {
                 "value": numpy.array(
                     [
-                        v for _, v in sorted(vehicle_stats.get("fairness").iteritems())
+                        Statistics.h_spread(
+                            numpy.array(
+                                [i_vehicle.travel_stats.get("step").get("dissatisfaction")[-1]
+                                 for i_vehicle in vehicles.itervalues()]
+                            )
+                        ),
+                        Statistics.h_spread(
+                            numpy.array(
+                                [i_vehicle.travel_stats.get("step").get("speed")[-1]
+                                 for i_vehicle in vehicles.itervalues()]
+                            )
+                        ),
+                        Statistics.h_spread(
+                            numpy.array(
+                                [i_vehicle.travel_stats.get("step").get("time_loss")[-1]
+                                 for i_vehicle in vehicles.itervalues()]
+                            )
+                        )
                     ]
                 ),
-                "annotation": "vehicle fairness:\n  - {}".format(
-                    "  - \n".join(sorted(vehicle_stats.get("fairness")))
-                )
+                "annotation": "fairness:\n  - dissatisfaction\n  - speed\n  - time_loss"
             },
             "vehicles": {
                 "step": {
-                    "value": numpy.array(
+                    "dissatisfaction": numpy.array(
                         [
-                            v for _, v in sorted(vehicle_stats.get("step").iteritems())
+                            i_vehicle.travel_stats.get("step").get("dissatisfaction")
+                            for _, i_vehicle in sorted(vehicles.iteritems())
                         ]
                     ),
-                    "annotation": "vehicle step:\n  - {}".format(
-                        "  - \n".join(sorted(vehicle_stats.get("step")))
-                    )
+                    "speed": numpy.array(
+                        [
+                            i_vehicle.travel_stats.get("step").get("speed")
+                            for _, i_vehicle in sorted(vehicles.iteritems())
+                            ]
+                    ),
+                    "time_loss": numpy.array(
+                        [
+                            i_vehicle.travel_stats.get("step").get("time_loss")
+                            for _, i_vehicle in sorted(vehicles.iteritems())
+                        ]
+                    ),
+                    "annotation": "vehicle step matrix:"
+                                  "\n  - dissatisfaction\n  - speed\n  - time_loss"
                 },
                 "grid": {
-                    "value": numpy.array(
+                    "dissatisfaction": numpy.array(
                         [
-                            v for _, v in sorted(vehicle_stats.get("grid").iteritems())
+                            i_vehicle.travel_stats.get("grid").get("dissatisfaction")
+                            for _, i_vehicle in sorted(vehicles.iteritems())
                         ]
                     ),
-                    "annotation": "vehicle step:\n  - {}".format(
-                        "  - \n".join(sorted(vehicle_stats.get("grid")))
-                    )
+                    "speed": numpy.array(
+                        [
+                            i_vehicle.travel_stats.get("grid").get("speed")
+                            for _, i_vehicle in sorted(vehicles.iteritems())
+                        ]
+                    ),
+                    "time_loss": numpy.array(
+                        [
+                            i_vehicle.travel_stats.get("grid").get("time_loss")
+                            for _, i_vehicle in sorted(vehicles.iteritems())
+                        ]
+                    ),
+                    "annotation": "vehicle grid matrix:"
+                                  "\n  - dissatisfaction\n  - speed\n  - time_loss"
                 }
             }
         }
