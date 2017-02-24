@@ -43,48 +43,70 @@ class Statistics(object):
 
     @staticmethod
     def aggregate_vehicle_grid_stats(vehicles):
-        """
-        Aggregates vehicle stats related to cells.
+        r"""
+        Aggregates vehicle grid stats related to cells.
 
-        Aggregate time losses in cells by using the median time loss
+        Aggregate time losses in cells by using the median time loss if more than one (1) element
+        got recorded, otherwise just replace the list with its containing element.
 
-        @params vehicles: dictionary vID -> vObj from vehicle object
+        For example
+        \code{.py}
+        { "time_loss": [ [1.0, 2.0, 3.0, 5.0, 7.0], [8.0], [9.0] ] ... }
+        \endcode
+        will result in
+        \code{.py}
+        { "time_loss": [ 3.0, 8.0, 9.0 ] ... }
+        \endcode
+
+        @param vehicles dictionary vID -> vObj from vehicle object
         @retval vehicles with travel_stats median aggregated
-
         """
         for i_vehicle in vehicles.itervalues():
+
             l_travel_stats = i_vehicle.travel_stats.get("grid")
+
             for i_idx in xrange(len(l_travel_stats.get("pos_x"))):
                 l_travel_stats.get("pos_x")[i_idx] = numpy.median(
-                    i_vehicle.travel_stats.get("grid").get("pos_x")[i_idx]
-                )
+                    l_travel_stats.get("pos_x")[i_idx]
+                ) if len(l_travel_stats.get("pos_x")[i_idx]) > 1 \
+                    else l_travel_stats.get("pos_x")[i_idx][0]
+
             for i_idx in xrange(len(l_travel_stats.get("pos_y"))):
                 l_travel_stats.get("pos_y")[i_idx] = numpy.median(
-                    i_vehicle.travel_stats.get("grid").get("pos_y")[i_idx]
-                )
+                    l_travel_stats.get("pos_y")[i_idx]
+                ) if len(l_travel_stats.get("pos_y")[i_idx]) > 1 \
+                    else l_travel_stats.get("pos_y")[i_idx][0]
+
             for i_idx in xrange(len(l_travel_stats.get("speed"))):
                 l_travel_stats.get("speed")[i_idx] = numpy.median(
-                    i_vehicle.travel_stats.get("grid").get("speed")[i_idx]
-                )
+                    l_travel_stats.get("speed")[i_idx]
+                ) if len(l_travel_stats.get("speed")[i_idx]) > 1 \
+                    else l_travel_stats.get("speed")[i_idx][0]
+
             for i_idx in xrange(len(l_travel_stats.get("time_loss"))):
                 l_travel_stats.get("time_loss")[i_idx] = numpy.median(
-                    i_vehicle.travel_stats.get("grid").get("time_loss")[i_idx]
-                )
+                    l_travel_stats.get("time_loss")[i_idx]
+                ) if len(l_travel_stats.get("time_loss")[i_idx]) > 1 \
+                    else l_travel_stats.get("time_loss")[i_idx][0]
+
             for i_idx in xrange(len(l_travel_stats.get("dissatisfaction"))):
                 l_travel_stats.get("dissatisfaction")[i_idx] = numpy.median(
-                    i_vehicle.travel_stats.get("grid").get("dissatisfaction")[i_idx]
-                )
+                    l_travel_stats.get("dissatisfaction")[i_idx]
+                ) if len(l_travel_stats.get("dissatisfaction")[i_idx]) > 1 \
+                    else l_travel_stats.get("dissatisfaction")[i_idx][0]
 
         return vehicles
 
     @staticmethod
     def fairness_of(vehicles):
-        """
+        r"""
         Calculate fairness from vehicle stats.
 
+        Returns \code{.py}{ "fairness": { "time_loss": value, "speed": value,
+            "dissatisfaction": value }, "vehicles": vehicles }\endcode
+
         @param vehicles: dictionary of vehicle objects (vID -> Vehicle)
-        @retval dictionary: { "fairness": { "time_loss": value, "speed": value,
-            "dissatisfaction": value }, "vehicles": vehicles }
+        @retval dictionary containing vehicles and fairness dicts
         """
         return {
             "fairness": {
@@ -108,6 +130,54 @@ class Statistics(object):
                 ),
             },
             "vehicles": vehicles
+        }
+
+    @staticmethod
+    def stats_to_hd5matrices(vehicle_stats):
+        """
+        Join vehicle stat lists to HD5 suitable matrices.
+
+        Join fairness of \f$\text{time_loss}\f$, \f$\text{speed}\f$ and
+        \f$\text{dissatisfaction}\f$ into one row-matrix and corresponding annotations.
+
+        Join vehicle step and grid stats into one row-matrices with corresponding annotations.
+
+        @param vehicle_stats: vehicle stats as provided by fairness_of method
+        @retval vehicle stats
+        """
+        return {
+            "fairness": {
+                "value": numpy.array(
+                    [
+                        v for _, v in sorted(vehicle_stats.get("fairness").iteritems())
+                    ]
+                ),
+                "annotation": "vehicle fairness:\n  - {}".format(
+                    "  - \n".join(sorted(vehicle_stats.get("fairness")))
+                )
+            },
+            "vehicles": {
+                "step": {
+                    "value": numpy.array(
+                        [
+                            v for _, v in sorted(vehicle_stats.get("step").iteritems())
+                        ]
+                    ),
+                    "annotation": "vehicle step:\n  - {}".format(
+                        "  - \n".join(sorted(vehicle_stats.get("step")))
+                    )
+                },
+                "grid": {
+                    "value": numpy.array(
+                        [
+                            v for _, v in sorted(vehicle_stats.get("grid").iteritems())
+                        ]
+                    ),
+                    "annotation": "vehicle step:\n  - {}".format(
+                        "  - \n".join(sorted(vehicle_stats.get("grid")))
+                    )
+                }
+            }
         }
 
     @staticmethod
