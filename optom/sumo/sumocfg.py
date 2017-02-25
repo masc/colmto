@@ -218,11 +218,6 @@ class SumoConfig(optom.common.configuration.Configuration):
         if not os.path.exists(l_output_measurements_dir):
             os.makedirs(l_output_measurements_dir)
 
-        l_fcdfile = os.path.join(
-            l_output_measurements_dir,
-            "{}.fcd-output.xml".format(scenario_run_config.get("scenarioname"))
-        )
-
         l_runcfgfiles = [l_tripfile, l_routefile, l_configfile]
 
         if len([fname for fname in l_runcfgfiles if not os.path.isfile(fname)]) > 0:
@@ -261,7 +256,10 @@ class SumoConfig(optom.common.configuration.Configuration):
             "tripfile": l_tripfile,
             "routefile": l_routefile,
             "configfile": l_configfile,
-            "fcdfile": l_fcdfile,
+            "fcdfile": os.path.join(
+                l_output_measurements_dir,
+                "{}.fcd-output.xml".format(scenario_run_config.get("scenarioname"))
+            ),
             "scenario_config": self.scenario_config.get(scenario_run_config.get("scenarioname"))
         }
 
@@ -568,7 +566,7 @@ class SumoConfig(optom.common.configuration.Configuration):
         Create a distribution of vehicles based on
 
         @param nbvehicles: number of vehicles
-        @param aadt: anual average daily traffic (vehicles/day/lane)
+        @param aadt: annual average daily traffic (vehicles/day/lane)
         @param initialsorting: initial sorting of vehicles (by max speed)
                                 ["best", "random", "worst"]
         @param scenario_name: name of scenario
@@ -635,6 +633,22 @@ class SumoConfig(optom.common.configuration.Configuration):
 
         return l_vehicles
 
+    def aadt(self, scenario_runs):
+        """
+        returns currently configured AADT (annual average daily traffic (vehicles/day/lane))
+
+        :param scenario_runs: scenario runs
+        :return: aadt
+        """
+        return self.scenario_config.get(
+            scenario_runs.get("scenarioname")
+        ).get(
+            "parameters"
+        ).get(
+            "aadt"
+        ) if not self.run_config.get("aadt").get("enabled") \
+            else self.run_config.get("aadt").get("value")
+
     def _generate_trip_xml(self, scenario_runs, initialsorting, tripfile,
                            forcerebuildscenarios=False):
         """
@@ -651,32 +665,24 @@ class SumoConfig(optom.common.configuration.Configuration):
             return
         self._log.debug("Generating trip xml for %s", scenario_runs.get("scenarioname"))
         # generate simple traffic demand by considering AADT, Vmax, roadtype etc
-        l_aadt = self.scenario_config.get(
-            scenario_runs.get("scenarioname")
-        ).get(
-            "parameters"
-        ).get(
-            "aadt"
-        ) if not self.run_config.get("aadt").get("enabled") \
-            else self.run_config.get("aadt").get("value")
 
         l_timebegin, l_timeend = self.run_config.get("simtimeinterval")
 
         # number of vehicles = AADT / [seconds of day] * [scenario time in seconds]
 
-        l_numberofvehicles = int(round(l_aadt / (24 * 60 * 60) * (l_timeend - l_timebegin))) \
+        l_numberofvehicles = int(round(self.aadt(scenario_runs) / (24 * 60 * 60) * (l_timeend - l_timebegin))) \
             if not self.run_config.get("nbvehicles").get("enabled") \
             else self.run_config.get("nbvehicles").get("value")
 
         self._log.debug(
             "Scenario's AADT of %d vehicles/average annual day"
             "=> %d vehicles for %d simulation seconds",
-            l_aadt, l_numberofvehicles, (l_timeend - l_timebegin)
+            self.aadt(scenario_runs), l_numberofvehicles, (l_timeend - l_timebegin)
         )
 
         l_vehicles = self._create_vehicle_distribution(
             l_numberofvehicles,
-            l_aadt,
+            self.aadt(scenario_runs),
             initialsorting,
             scenario_runs.get("scenarioname")
         )

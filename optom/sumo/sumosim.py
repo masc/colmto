@@ -84,7 +84,7 @@ class SumoSim(object):
 
                 if self._sumocfg.run_config.get("cse-enabled"):
                     # cse mode: apply cse policies to vehicles and run with TraCI
-                    self._statistics.stats_to_hd5matrices(
+                    self._statistics.stats_to_hdf5(
 
                         self._statistics.aggregate_vehicle_grid_stats(
 
@@ -100,7 +100,14 @@ class SumoSim(object):
                                     self._sumocfg.run_config.get("policies")
                                 )
                             )
-                        )
+                        ),
+                        hdf5_path=os.path.join(
+                            scenario_name,
+                            str(self._sumocfg.aadt(self._sumocfg.generate_scenario(scenario_name))),
+                            i_initial_sorting,
+                            str(i_run)
+                        ),
+                        hdf5_file=os.path.join(self._sumocfg.resultsdir, "{}.hdf5".format(self._sumocfg.run_prefix))
                     )
                 else:
                     self._runtime.run_once(

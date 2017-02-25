@@ -104,7 +104,7 @@ class Reader(object):
 
         self._log.debug("Reading %s", filename)
 
-        with gzip.GzipFile(filename, 'r') \
+        with gzip.GzipFile(filename, "r") \
                 if filename.endswith(".gz") \
                 else open(filename, mode="r") as f_json:
             l_file = f_json.read()
@@ -118,7 +118,7 @@ class Reader(object):
         self._log.debug("Reading %s", filename)
 
         if filename.endswith(".gz"):
-            return yaml.load(gzip.GzipFile(filename, 'r'), Loader=SafeLoader)
+            return yaml.load(gzip.GzipFile(filename, "r"), Loader=SafeLoader)
         else:
             return yaml.load(open(filename), Loader=SafeLoader)
 
@@ -136,17 +136,17 @@ class Writer(object):
         """Write json in human readable form (slow!). If filename ends with .gz, compress file."""
 
         self._log.debug("Writing %s", filename)
-        f_json = gzip.GzipFile(filename, 'w') \
+        f_json = gzip.GzipFile(filename, "w") \
             if filename.endswith(".gz") \
             else open(filename, mode="w")
-        json.dump(obj, f_json, sort_keys=True, indent=4, separators=(', ', ' : '))
+        json.dump(obj, f_json, sort_keys=True, indent=4, separators=(", ", " : "))
         f_json.close()
 
     def write_json(self, obj, filename):
         """Write json in compact form, compress file with gzip if filename ends with .gz."""
 
         self._log.debug("Writing %s", filename)
-        with gzip.GzipFile(filename, 'w') \
+        with gzip.GzipFile(filename, "w") \
                 if filename.endswith(".gz") \
                 else open(filename, mode="w") as f_json:
             f_json.write(jsondumps(obj))
@@ -155,7 +155,7 @@ class Writer(object):
         """Write yaml, compress file with gzip if filename ends with .gz."""
 
         self._log.debug("Writing %s", filename)
-        f_yaml = gzip.GzipFile(filename, 'w') \
+        f_yaml = gzip.GzipFile(filename, "w") \
             if filename.endswith(".gz") \
             else open(filename, mode="w")
         yaml.dump(obj, f_yaml, Dumper=SafeDumper, default_flow_style=default_flow_style)
@@ -165,7 +165,7 @@ class Writer(object):
         """Write row dictionary with provided fieldnames as csv with headers."""
 
         self._log.debug("Writing %s", filename)
-        with open(filename, 'w') as f_csv:
+        with open(filename, "w") as f_csv:
             csv_writer = csv.DictWriter(f_csv, fieldnames=fieldnames)
             csv_writer.writeheader()
             csv_writer.writerows(rowdict)
@@ -185,7 +185,7 @@ class Writer(object):
         if not isinstance(objectdict, dict):
             raise TypeError(u"objectdict is not parameters")
 
-        f_hdf5 = h5py.File(filename, 'a')
+        f_hdf5 = h5py.File(filename, "a")
 
         if not f_hdf5 and not isinstance(f_hdf5, h5py.File):
             raise Exception
@@ -195,10 +195,9 @@ class Writer(object):
 
         # add datasets for each element of objectdict,
         # if they already exist by name, overwrite them
-        for i_objname, i_objvalue in objectdict.items():
-
+        for i_objname, i_objvalue in objectdict.iteritems():
             # remove compression if we have a scalar object, i.e. string, int, float
-            if isinstance(i_objvalue, (str, int, float)):
+            if isinstance(i_objvalue.get("value"), (str, int, float)):
                 kwargs.pop("compression", None)
                 kwargs.pop("compression_opts", None)
 
@@ -206,6 +205,8 @@ class Writer(object):
                 # remove previous object by i_objname id and add the new one
                 del l_group[i_objname]
 
-            l_group.create_dataset(name=i_objname, data=i_objvalue, **kwargs)
+            l_group.create_dataset(
+                name=i_objname, data=i_objvalue.get("value"), **kwargs
+            ).attrs.update(i_objvalue.get("attr") if isinstance(i_objvalue.get("attr"), dict) else {})
 
         f_hdf5.close()
