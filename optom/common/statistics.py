@@ -43,6 +43,15 @@ class Statistics(object):
             self._log = optom.common.log.logger(__name__)
             self._writer = optom.common.io.Writer(None)
 
+    def aggregate_run_stats_to_hdf5(self, run_stats, hdf5_path="",  hdf5_file=None):
+        """
+        Aggregates statistics of runs into boxplot compatible data: 0.25 quartile, median, 0.75 quartile
+        @param run_stats: run stats in dictionary { runID -> run stats provided by aggregate_vehicle_grid_stats }
+        @param hdf5_path: path to put stats of this run
+        @param hdf5_file: hdf5 file to write
+        @retval dictionary containing aggregated stats
+        """
+
     @staticmethod
     def aggregate_vehicle_grid_stats(vehicles):
         r"""
@@ -99,7 +108,7 @@ class Statistics(object):
 
         return vehicles
 
-    def stats_to_hdf5(self, vehicles, hdf5_path="",  hdf5_file=None, *kwargs):
+    def stats_to_hdf5(self, vehicles, hdf5_path="",  hdf5_file=None):
         r"""
         Calculates fairness, join vehicle stat lists to HD5 suitable matrices and write to provided hdf5 file.
 

@@ -80,11 +80,13 @@ class SumoSim(object):
 
         for i_initial_sorting in self._sumocfg.run_config.get("initialsortings"):
 
+            l_run_stats = {}
+
             for i_run in xrange(self._sumocfg.run_config.get("runs")):
 
                 if self._sumocfg.run_config.get("cse-enabled"):
                     # cse mode: apply cse policies to vehicles and run with TraCI
-                    self._statistics.stats_to_hdf5(
+                    l_run_stats[i_run] = self._statistics.stats_to_hdf5(
 
                         self._statistics.aggregate_vehicle_grid_stats(
 
@@ -128,6 +130,8 @@ class SumoSim(object):
                     i_run + 1,
                     self._sumocfg.run_config.get("runs")
                 )
+
+            self._statistics.aggregate_runs(l_run_stats)
 
         # dump configuration to run dir
         self._writer.write_json_pretty(
