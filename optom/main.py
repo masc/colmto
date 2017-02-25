@@ -72,6 +72,11 @@ class Optom(object):
             default=l_config_dir, help="target directory results will be written to"
         )
         l_parser.add_argument(
+            "--output-hdf5-file", dest="results_hdf5_file", type=str,
+            default=None, help="target HDF5 file results will be written to"
+        )
+
+        l_parser.add_argument(
             "--scenarios", dest="scenarios", type=str, nargs="*",
             default=None
         )

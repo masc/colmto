@@ -107,7 +107,8 @@ class SumoSim(object):
                             i_initial_sorting,
                             str(i_run)
                         ),
-                        hdf5_file=os.path.join(self._sumocfg.resultsdir, "{}.hdf5".format(self._sumocfg.run_prefix))
+                        hdf5_file=self._args.results_hdf5_file if self._args.results_hdf5_file
+                        else os.path.join(self._sumocfg.resultsdir, "{}.hdf5".format(self._sumocfg.run_prefix))
                     )
                 else:
                     self._runtime.run_once(
