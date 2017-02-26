@@ -27,7 +27,6 @@ from __future__ import print_function
 import csv
 import gzip
 import os
-import pprint
 
 try:
     from cjson import encode as jsondumps, decode as jsonloads
@@ -193,7 +192,8 @@ class Writer(object):
             raise Exception
 
         # create group if it doesn't exist
-        l_group = f_hdf5[hdf5_base_path] if hdf5_base_path in f_hdf5 else f_hdf5.create_group(hdf5_base_path)
+        l_group = f_hdf5[hdf5_base_path] \
+            if hdf5_base_path in f_hdf5 else f_hdf5.create_group(hdf5_base_path)
 
         # add datasets for each element of objectdict,
         # if they already exist by name, overwrite them
@@ -211,17 +211,31 @@ class Writer(object):
             if i_object_value.get("value") is not None and i_object_value.get("attr") is not None:
                 l_group.create_dataset(
                     name=i_path, data=i_object_value.get("value"), **kwargs
-                ).attrs.update(i_object_value.get("attr") if isinstance(i_object_value.get("attr"), dict) else {})
+                ).attrs.update(
+                    i_object_value.get("attr")
+                    if isinstance(i_object_value.get("attr"), dict) else {}
+                )
 
         f_hdf5.close()
 
     @staticmethod
     def _flatten_object_dict(dictionary):
+        """
+        Flatten dictionary and apply a "/"-separated key (path) structure for HDF5 writing.
+        @param dictionary: dictionary
+        @retval: dictionary with flattened structure
+        """
         def items():
-            for k, v in dictionary.items():
-                if isinstance(v, dict) and "value" not in v.keys():
-                    for sk, sv in Writer._flatten_object_dict(v).items():
-                        yield os.path.join(str(k), str(sk)), sv
+            """
+            Expand dictionary.
+
+            yields (key, value) pairs of sub-dictionaries
+            @retval: (key, value) pairs
+            """
+            for i_k, i_v in dictionary.items():
+                if isinstance(i_v, dict) and "value" not in i_v.keys():
+                    for i_sk, i_sv in Writer._flatten_object_dict(i_v).items():
+                        yield os.path.join(str(i_k), str(i_sk)), i_sv
                 else:
-                    yield k, v
+                    yield i_k, i_v
         return dict(items())

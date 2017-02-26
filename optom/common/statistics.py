@@ -27,9 +27,7 @@ from __future__ import division
 import optom.common.io
 import optom.common.log
 
-import os
 import numpy
-import pprint
 
 
 class Statistics(object):
@@ -47,7 +45,8 @@ class Statistics(object):
     def aggregate_run_stats_to_hdf5(run_stats):
         """
         Aggregates statistics of runs by applying the median.
-        @param run_stats: run stats in dictionary { runID -> run stats provided by aggregate_vehicle_grid_stats }
+        @param run_stats: run stats in dictionary
+            { runID -> run stats provided by aggregate_vehicle_grid_stats }
         @retval updated run_stats dictionary with aggregated stats (key: "aggregated")
         """
         l_aggregated = {
@@ -57,20 +56,21 @@ class Statistics(object):
                         "value": [
                             numpy.median(
                                 [
-                                    run_stats[i_run].get("global").get(i_view).get(i_vtype).get("value")[0]
-                                    for i_run in run_stats
+                                    run_stats[i_run].get("global").get(i_view).get(i_vtype)
+                                    .get("value")[0] for i_run in run_stats
                                 ]
                             ),
                             numpy.median(
                                 [
-                                    run_stats[i_run].get("global").get(i_view).get(i_vtype).get("value")[1]
-                                    for i_run in run_stats
+                                    run_stats[i_run].get("global").get(i_view).get(i_vtype)
+                                    .get("value")[1] for i_run in run_stats
                                 ],
                             ),
                         ],
                         "attr": {
-                            "description": "median of {} stats of all runs for {} vehicles\n{}\n{}\n{}".format(
+                            "description": "median of {} {} {} vehicles\n{}\n{}\n{}".format(
                                 i_view,
+                                "stats of all runs for",
                                 i_vtype,
                                 "rows:",
                                 "  - 0: dissatisfaction",
@@ -150,12 +150,14 @@ class Statistics(object):
     @staticmethod
     def stats_to_hdf5_structure(vehicles):
         r"""
-        Calculates fairness, join vehicle stat lists to HD5 suitable matrices and write to provided hdf5 file.
+        Calculates fairness, join vehicle stat lists to HD5 suitable matrices and write to provided
+        hdf5 file.
 
         Joins fairness of time loss and dissatisfaction into one row-matrix and
         corresponding annotations.
         Join vehicle step and grid stats into one row-matrices with corresponding annotations.
-        Returns \code{.py}{ "fairness": { "time_loss": value, "dissatisfaction": value }, "vehicles": vehicles }\endcode
+        Returns \code{.py}{ "fairness": { "time_loss": value, "dissatisfaction": value },
+        "vehicles": vehicles }\endcode
         @param vehicles: dictionary of vehicle objects (vID -> Vehicle)
         @retval dictionary containing vehicles and fairness dicts
         """
@@ -169,11 +171,14 @@ class Statistics(object):
                                 Statistics.h_spread(
                                     numpy.array(
                                         [
+                                            # pylint: disable=no-member
                                             numpy.subtract(
                                                 *numpy.array(
-                                                    i_vehicle.travel_stats.get("step").get("dissatisfaction")
+                                                    i_vehicle.travel_stats.get("step")
+                                                    .get("dissatisfaction")
                                                 )[[-1, 0]]
                                             )
+                                            # pylint: enable=no-member
                                             for i_vehicle in [
                                                 v for v in vehicles.itervalues()
                                                 if i_vtype in ["alltypes", v.vehicle_type]
@@ -184,11 +189,14 @@ class Statistics(object):
                                 Statistics.h_spread(
                                     numpy.array(
                                         [
+                                            # pylint: disable=no-member
                                             numpy.subtract(
                                                 *numpy.array(
-                                                    i_vehicle.travel_stats.get("step").get("time_loss")
+                                                    i_vehicle.travel_stats.get("step")
+                                                    .get("time_loss")
                                                 )[[-1, 0]]
                                             )
+                                            # pylint: enable=no-member
                                             for i_vehicle in [
                                                 v for v in vehicles.itervalues()
                                                 if i_vtype in ["alltypes", v.vehicle_type]
@@ -199,7 +207,8 @@ class Statistics(object):
                             ]
                         ),
                         "attr": {
-                            "description": "total fairness of run for {} vehicles\n{}\n{}\n{}\n{}".format(
+                            "description": "{} {} vehicles\n{}\n{}\n{}\n{}".format(
+                                "total fairness of run for",
                                 i_vtype,
                                 "calculated by using the H-Spread, i.e. interquartile distance.",
                                 "rows:",
@@ -217,11 +226,14 @@ class Statistics(object):
                             [
                                 numpy.array(
                                     [
+                                        # pylint: disable=no-member
                                         numpy.subtract(
                                             *numpy.array(
-                                                i_vehicle.travel_stats.get("step").get("dissatisfaction")
+                                                i_vehicle.travel_stats.get("step")
+                                                .get("dissatisfaction")
                                             )[[-1, 0]]
                                         )
+                                        # pylint: enable=no-member
                                         for i_vehicle in [
                                             v for v in vehicles.itervalues()
                                             if i_vtype in ["alltypes", v.vehicle_type]
@@ -230,11 +242,13 @@ class Statistics(object):
                                 ),
                                 numpy.array(
                                     [
+                                        # pylint: disable=no-member
                                         numpy.subtract(
                                             *numpy.array(
                                                 i_vehicle.travel_stats.get("step").get("time_loss")
                                             )[[-1, 0]]
                                         )
+                                        # pylint: enable=no-member
                                         for i_vehicle in [
                                             v for v in vehicles.itervalues()
                                             if i_vtype in ["alltypes", v.vehicle_type]
@@ -244,7 +258,8 @@ class Statistics(object):
                             ]
                         ),
                         "attr": {
-                            "description": "total driver stats of run for {} vehicles\n{}\n{}\n{}".format(
+                            "description": "{} {} vehicles\n{}\n{}\n{}".format(
+                                "total driver stats of run for",
                                 i_vtype,
                                 "rows:",
                                 "  - 0: dissatisfaction",
@@ -289,7 +304,8 @@ class Statistics(object):
                         ]
                     ),
                     "attr": {
-                        "description": "vehicle travel stats for each grid cell (see 'pos x' and 'pos y')",
+                        "description": "vehicle travel stats for each grid cell "
+                                       "(see 'pos x' and 'pos y')",
                         "rows": "- 0: pos x\n- 1: pos y\n- 2: dissatisfaction\n"
                                 "- 3: speed\n- 4: time loss",
                         "columns": "travelled cells during route in step increments",

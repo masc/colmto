@@ -670,8 +670,11 @@ class SumoConfig(optom.common.configuration.Configuration):
 
         # number of vehicles = AADT / [seconds of day] * [scenario time in seconds]
 
-        l_numberofvehicles = int(round(self.aadt(scenario_runs) / (24 * 60 * 60) * (l_timeend - l_timebegin))) \
-            if not self.run_config.get("nbvehicles").get("enabled") \
+        l_numberofvehicles = int(
+            round(
+                self.aadt(scenario_runs) / (24 * 60 * 60) * (l_timeend - l_timebegin)
+            )
+        ) if not self.run_config.get("nbvehicles").get("enabled") \
             else self.run_config.get("nbvehicles").get("value")
 
         self._log.debug(
