@@ -27,6 +27,7 @@ from __future__ import division
 import optom.common.io
 import optom.common.log
 
+import bisect
 import numpy
 
 
@@ -148,7 +149,7 @@ class Statistics(object):
         return vehicles
 
     @staticmethod
-    def stats_to_hdf5_structure(vehicles):
+    def stats_to_hdf5_structure(vehicles, detector_positions):
         r"""
         Calculates fairness, join vehicle stat lists to HD5 suitable matrices and write to provided
         hdf5 file.
@@ -159,9 +160,9 @@ class Statistics(object):
         Returns \code{.py}{ "fairness": { "time_loss": value, "dissatisfaction": value },
         "vehicles": vehicles }\endcode
         @param vehicles: dictionary of vehicle objects (vID -> Vehicle)
+        @param detector_positions: list of detector positions
         @retval dictionary containing vehicles and fairness dicts
         """
-
         return {
             "global": {
                 "fairness": {
@@ -263,7 +264,7 @@ class Statistics(object):
                                 i_vtype,
                                 "rows:",
                                 "  - 0: dissatisfaction",
-                                "  - 2: time loss",
+                                "  - 1: time loss",
                             ),
                             "0": "dissatisfaction",
                             "1": "time loss"
@@ -327,6 +328,168 @@ class Statistics(object):
                         "attr": "{}'s vehicle type".format(i_vehicle_id)
                     }
                 } for i_vehicle_id, i_vehicle in sorted(vehicles.iteritems())
+            },
+            "intervals": {
+                "{}-{}".format(*i_interval): {
+                    "fairness": {
+                        i_vtype: {
+                            "value": numpy.array(
+                                [
+                                    Statistics.h_spread(
+                                        numpy.array(
+                                            [
+                                                # pylint: disable=no-member
+                                                numpy.subtract(
+                                                    *numpy.array(
+                                                        i_vehicle.travel_stats.get("step")
+                                                        .get("dissatisfaction")
+                                                    )[[
+                                                        Statistics._closest_position_to_detector(
+                                                            i_vehicle.travel_stats.get("step")
+                                                            .get("pos_x"),
+                                                            i_interval[1]
+                                                        ),
+                                                        Statistics._closest_position_to_detector(
+                                                            i_vehicle.travel_stats.get("step")
+                                                            .get("pos_x"),
+                                                            i_interval[0]
+                                                        )
+                                                    ]]
+                                                )
+                                                # pylint: enable=no-member
+                                                for i_vehicle in [
+                                                    v for v in vehicles.itervalues()
+                                                    if i_vtype in ["alltypes", v.vehicle_type]
+                                                ]
+                                            ]
+                                        )
+                                    ),
+                                    Statistics.h_spread(
+                                        numpy.array(
+                                            [
+                                                # pylint: disable=no-member
+                                                numpy.subtract(
+                                                    *numpy.array(
+                                                        i_vehicle.travel_stats.get("step")
+                                                        .get("time_loss")
+                                                    )[[
+                                                        Statistics._closest_position_to_detector(
+                                                            i_vehicle.travel_stats.get("step")
+                                                            .get("pos_x"),
+                                                            i_interval[1]
+                                                        ),
+                                                        Statistics._closest_position_to_detector(
+                                                            i_vehicle.travel_stats.get("step")
+                                                            .get("pos_x"),
+                                                            i_interval[0]
+                                                        )
+                                                    ]]
+                                                )
+                                                # pylint: enable=no-member
+                                                for i_vehicle in [
+                                                    v for v in vehicles.itervalues()
+                                                    if i_vtype in ["alltypes", v.vehicle_type]
+                                                ]
+                                            ]
+                                        )
+                                    )
+                                ]
+                            ),
+                            "attr": {
+                                "description": "{} [{}, {}] {} {} vehicles\n{}\n{}\n{}\n{}".format(
+                                    "Fairness on interval",
+                                    i_interval[0],
+                                    i_interval[1],
+                                    "of run for",
+                                    i_vtype,
+                                    "calculated by using the H-Spread, "
+                                    "i.e. interquartile distance.",
+                                    "rows:",
+                                    "  - 0: dissatisfaction",
+                                    "  - 1: time loss",
+                                ),
+                                "0": "dissatisfaction",
+                                "1": "time loss"
+                            }
+                        } for i_vtype in ["alltypes", "passenger", "truck", "tractor"]
+                    },
+                    "driver": {
+                        i_vtype: {
+                            "value": numpy.array(
+                                [
+                                    numpy.array(
+                                        [
+                                            # pylint: disable=no-member
+                                            numpy.subtract(
+                                                *numpy.array(
+                                                    i_vehicle.travel_stats.get("step")
+                                                    .get("dissatisfaction")
+                                                )[[
+                                                    Statistics._closest_position_to_detector(
+                                                        i_vehicle.travel_stats.get("step")
+                                                        .get("pos_x"),
+                                                        i_interval[1]
+                                                    ),
+                                                    Statistics._closest_position_to_detector(
+                                                        i_vehicle.travel_stats.get("step")
+                                                        .get("pos_x"),
+                                                        i_interval[0]
+                                                    )
+                                                ]]
+                                            )
+                                            # pylint: enable=no-member
+                                            for i_vehicle in [
+                                                v for v in vehicles.itervalues()
+                                                if i_vtype in ["alltypes", v.vehicle_type]
+                                            ]
+                                        ]
+                                    ),
+                                    numpy.array(
+                                        [
+                                            # pylint: disable=no-member
+                                            numpy.subtract(
+                                                *numpy.array(
+                                                    i_vehicle.travel_stats.get("step")
+                                                    .get("time_loss")
+                                                )[[
+                                                    Statistics._closest_position_to_detector(
+                                                        i_vehicle.travel_stats.get("step")
+                                                        .get("pos_x"),
+                                                        i_interval[1]
+                                                    ),
+                                                    Statistics._closest_position_to_detector(
+                                                        i_vehicle.travel_stats.get("step")
+                                                        .get("pos_x"),
+                                                        i_interval[0]
+                                                    )
+                                                ]]
+                                            )
+                                            # pylint: enable=no-member
+                                            for i_vehicle in [
+                                                v for v in vehicles.itervalues()
+                                                if i_vtype in ["alltypes", v.vehicle_type]
+                                            ]
+                                        ]
+                                    )
+                                ]
+                            ),
+                            "attr": {
+                                "description": "{} [{}, {}] {} vehicles\n{}\n{}\n{}".format(
+                                    "Driver stats on interval",
+                                    i_interval[0],
+                                    i_interval[1],
+                                    "of run for",
+                                    i_vtype,
+                                    "rows:",
+                                    "  - 0: dissatisfaction",
+                                    "  - 1: time loss",
+                                ),
+                                "0": "dissatisfaction",
+                                "1": "time loss"
+                            }
+                        } for i_vtype in ["alltypes", "passenger", "truck", "tractor"]
+                    }
+                } for i_interval in zip(detector_positions[:-1], detector_positions[1:])
             }
         }
 
@@ -353,3 +516,33 @@ class Statistics(object):
         # pylint: disable=no-member
         return numpy.subtract(*numpy.percentile(data, [75, 25]))
         # pylint: enable=no-member
+
+    @staticmethod
+    def _closest_position_to_detector(vehicle_positions, detector_position):
+        """
+        Find the index of the closest vehicle position measurement
+        to the given detector position (x-axis).
+
+        By using bisect.bisect_left we can get this in O(log n) time due to the sorted nature of
+        vehicle position measurements in x direction.
+        @see http://stackoverflow.com/questions/12141150/
+        from-list-of-integers-get-number-closest-to-a-given-value#12141511
+        @param vehicle_positions: sorted list of vehicle positions in x direction
+        @param detector_position: detector position
+        @retval index of vehicle_positions
+        """
+
+        l_index = bisect.bisect_left(vehicle_positions, detector_position)
+
+        if l_index == 0:
+            return 0
+
+        if l_index == len(vehicle_positions):
+            # return index -1 (refs last element)
+            return -1
+
+        if vehicle_positions[l_index] - detector_position \
+                < detector_position - vehicle_positions[l_index-1]:
+            return l_index
+        else:
+            return l_index-1

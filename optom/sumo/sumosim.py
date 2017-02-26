@@ -102,7 +102,10 @@ class SumoSim(object):
                                     self._sumocfg.run_config.get("policies")
                                 )
                             )
-                        )
+                        ),
+
+                        detector_positions=self._sumocfg.scenario_config.get(scenario_name)
+                        .get("parameters").get("detectorpositions")
                     )
                 else:
                     self._runtime.run_once(
