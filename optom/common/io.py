@@ -26,6 +26,8 @@ from __future__ import print_function
 
 import csv
 import gzip
+import os
+import pprint
 
 try:
     from cjson import encode as jsondumps, decode as jsonloads
@@ -170,43 +172,56 @@ class Writer(object):
             csv_writer.writeheader()
             csv_writer.writerows(rowdict)
 
-    def write_hdf5(self, filename, path, objectdict, **kwargs):
+    def write_hdf5(self, object_dict, hdf5_file, hdf5_base_path, **kwargs):
         """Write an object to a specific path into an open file, identified by fileid
 
-        @param filename The file name
-        @param path Destination path in HDF5 structure, will be created if not existent.
-        @param objectdict Object(s) to be stored in a named dictionary structure
+        @param hdf5_file The file name
+        @param hdf5_base_path Destination path in HDF5 structure, will be created if not existent.
+        @param object_dict Object(s) to be stored in a named dictionary structure
                           ([name] -> str|int|float|list|numpy)
         @param **kwargs Optional arguments passed to create_dataset
         """
-        self._log.debug("Writing %s", filename)
+        self._log.debug("Writing %s", hdf5_file)
 
         # verify whether arguments are sane
-        if not isinstance(objectdict, dict):
-            raise TypeError(u"objectdict is not parameters")
+        if not isinstance(object_dict, dict):
+            raise TypeError(u"objectdict is not a dictionary")
 
-        f_hdf5 = h5py.File(filename, "a")
+        f_hdf5 = h5py.File(hdf5_file, "a")
 
         if not f_hdf5 and not isinstance(f_hdf5, h5py.File):
             raise Exception
 
         # create group if it doesn't exist
-        l_group = f_hdf5[path] if path in f_hdf5 else f_hdf5.create_group(path)
+        l_group = f_hdf5[hdf5_base_path] if hdf5_base_path in f_hdf5 else f_hdf5.create_group(hdf5_base_path)
 
         # add datasets for each element of objectdict,
         # if they already exist by name, overwrite them
-        for i_objname, i_objvalue in objectdict.iteritems():
+        for i_path, i_object_value in Writer._flatten_object_dict(object_dict).iteritems():
+
             # remove compression if we have a scalar object, i.e. string, int, float
-            if isinstance(i_objvalue.get("value"), (str, int, float)):
+            if isinstance(i_object_value.get("value"), (str, int, float)):
                 kwargs.pop("compression", None)
                 kwargs.pop("compression_opts", None)
 
-            if i_objname in l_group:
-                # remove previous object by i_objname id and add the new one
-                del l_group[i_objname]
+            if i_path in l_group:
+                # remove previous object by i_path id and add the new one
+                del l_group[i_path]
 
-            l_group.create_dataset(
-                name=i_objname, data=i_objvalue.get("value"), **kwargs
-            ).attrs.update(i_objvalue.get("attr") if isinstance(i_objvalue.get("attr"), dict) else {})
+            if i_object_value.get("value") is not None and i_object_value.get("attr") is not None:
+                l_group.create_dataset(
+                    name=i_path, data=i_object_value.get("value"), **kwargs
+                ).attrs.update(i_object_value.get("attr") if isinstance(i_object_value.get("attr"), dict) else {})
 
         f_hdf5.close()
+
+    @staticmethod
+    def _flatten_object_dict(dictionary):
+        def items():
+            for k, v in dictionary.items():
+                if isinstance(v, dict) and "value" not in v.keys():
+                    for sk, sv in Writer._flatten_object_dict(v).items():
+                        yield os.path.join(str(k), str(sk)), sv
+                else:
+                    yield k, v
+        return dict(items())

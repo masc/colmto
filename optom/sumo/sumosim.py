@@ -86,7 +86,7 @@ class SumoSim(object):
 
                 if self._sumocfg.run_config.get("cse-enabled"):
                     # cse mode: apply cse policies to vehicles and run with TraCI
-                    l_run_stats[i_run] = self._statistics.stats_to_hdf5(
+                    l_run_stats[i_run] = self._statistics.stats_to_hdf5_structure(
 
                         self._statistics.aggregate_vehicle_grid_stats(
 
@@ -102,15 +102,7 @@ class SumoSim(object):
                                     self._sumocfg.run_config.get("policies")
                                 )
                             )
-                        ),
-                        hdf5_path=os.path.join(
-                            scenario_name,
-                            str(self._sumocfg.aadt(self._sumocfg.generate_scenario(scenario_name))),
-                            i_initial_sorting,
-                            str(i_run)
-                        ),
-                        hdf5_file=self._args.results_hdf5_file if self._args.results_hdf5_file
-                        else os.path.join(self._sumocfg.resultsdir, "{}.hdf5".format(self._sumocfg.run_prefix))
+                        )
                     )
                 else:
                     self._runtime.run_once(
@@ -131,7 +123,19 @@ class SumoSim(object):
                     self._sumocfg.run_config.get("runs")
                 )
 
-            self._statistics.aggregate_runs(l_run_stats)
+            self._writer.write_hdf5(
+                self._statistics.aggregate_run_stats_to_hdf5(
+                    l_run_stats
+                ),
+                hdf5_file=self._args.results_hdf5_file if self._args.results_hdf5_file
+                else os.path.join(self._sumocfg.resultsdir,
+                                  "{}.hdf5".format(self._sumocfg.run_prefix)),
+                hdf5_base_path=os.path.join(
+                    scenario_name,
+                    str(self._sumocfg.aadt(self._sumocfg.generate_scenario(scenario_name))),
+                    i_initial_sorting,
+                )
+            )
 
         # dump configuration to run dir
         self._writer.write_json_pretty(

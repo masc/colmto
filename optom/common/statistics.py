@@ -43,14 +43,53 @@ class Statistics(object):
             self._log = optom.common.log.logger(__name__)
             self._writer = optom.common.io.Writer(None)
 
-    def aggregate_run_stats_to_hdf5(self, run_stats, hdf5_path="",  hdf5_file=None):
+    @staticmethod
+    def aggregate_run_stats_to_hdf5(run_stats):
         """
-        Aggregates statistics of runs into boxplot compatible data: 0.25 quartile, median, 0.75 quartile
+        Aggregates statistics of runs by applying the median.
         @param run_stats: run stats in dictionary { runID -> run stats provided by aggregate_vehicle_grid_stats }
-        @param hdf5_path: path to put stats of this run
-        @param hdf5_file: hdf5 file to write
-        @retval dictionary containing aggregated stats
+        @retval updated run_stats dictionary with aggregated stats (key: "aggregated")
         """
+        l_aggregated = {
+            "global": {
+                i_view: {
+                    i_vtype: {
+                        "value": [
+                            numpy.median(
+                                [
+                                    run_stats[i_run].get("global").get(i_view).get(i_vtype).get("value")[0]
+                                    for i_run in run_stats
+                                ]
+                            ),
+                            numpy.median(
+                                [
+                                    run_stats[i_run].get("global").get(i_view).get(i_vtype).get("value")[1]
+                                    for i_run in run_stats
+                                ],
+                            ),
+                        ],
+                        "attr": {
+                            "description": "median of {} stats of all runs for {} vehicles\n{}\n{}\n{}".format(
+                                i_view,
+                                i_vtype,
+                                "rows:",
+                                "  - 0: dissatisfaction",
+                                "  - 1: time loss",
+                            ),
+                            "0": "dissatisfaction",
+                            "1": "time loss"
+                        }
+                    } for i_vtype in ["alltypes", "passenger", "truck", "tractor"]
+                } for i_view in ["fairness", "driver"]
+            }
+        }
+        run_stats.update(
+            {
+                "aggregated": l_aggregated
+            }
+        )
+
+        return run_stats
 
     @staticmethod
     def aggregate_vehicle_grid_stats(vehicles):
@@ -108,120 +147,171 @@ class Statistics(object):
 
         return vehicles
 
-    def stats_to_hdf5(self, vehicles, hdf5_path="",  hdf5_file=None):
+    @staticmethod
+    def stats_to_hdf5_structure(vehicles):
         r"""
         Calculates fairness, join vehicle stat lists to HD5 suitable matrices and write to provided hdf5 file.
 
-        Joins fairness of time loss, speed and dissatisfaction into one row-matrix and
+        Joins fairness of time loss and dissatisfaction into one row-matrix and
         corresponding annotations.
         Join vehicle step and grid stats into one row-matrices with corresponding annotations.
-        Returns \code{.py}{ "fairness": { "time_loss": value, "speed": value,
-            "dissatisfaction": value }, "vehicles": vehicles }\endcode
+        Returns \code{.py}{ "fairness": { "time_loss": value, "dissatisfaction": value }, "vehicles": vehicles }\endcode
         @param vehicles: dictionary of vehicle objects (vID -> Vehicle)
-        @param hdf5_path: path to put stats of this run
-        @param hdf5_file: hdf5 file to write
         @retval dictionary containing vehicles and fairness dicts
         """
 
-        l_fairness = {
-            "fairness": {
-                "value": numpy.array(
-                    [
-                        Statistics.h_spread(
-                            numpy.array(
-                                [i_vehicle.travel_stats.get("step").get("dissatisfaction")[-1]
-                                 for i_vehicle in vehicles.itervalues()]
-                            )
-                        ),
-                        Statistics.h_spread(
-                            numpy.array(
-                                [i_vehicle.travel_stats.get("step").get("speed")[-1]
-                                 for i_vehicle in vehicles.itervalues()]
-                            )
-                        ),
-                        Statistics.h_spread(
-                            numpy.array(
-                                [i_vehicle.travel_stats.get("step").get("time_loss")[-1]
-                                 for i_vehicle in vehicles.itervalues()]
-                            )
-                        )
-                    ]
-                ),
-                "attr": {
-                    "description": "global fairness of run\n"
-                                   "rows:\n  - 0: dissatisfaction\n  - 1: speed\n  - 2: time loss",
-                    "0": "dissatisfaction",
-                    "1": "speed",
-                    "2": "time loss"
-                }
-            }
-        }
-
-        l_steps = {
-            i_vehicle_id: {
-                "value": numpy.array(
-                    [
-                        i_vehicle.travel_stats.get("step").get("pos_x"),
-                        i_vehicle.travel_stats.get("step").get("pos_y"),
-                        i_vehicle.travel_stats.get("step").get("dissatisfaction"),
-                        i_vehicle.travel_stats.get("step").get("speed"),
-                        i_vehicle.travel_stats.get("step").get("time_loss")
-                    ]
-                ),
-                "attr": {
-                    "description": "vehicle travel stats for this vehicle's time step counting "
-                                   "[0 ... travel time in time steps]",
-                    "rows": "- 0: pos x\n- 1: pos y\n- 2: dissatisfaction\n"
-                            "- 3: speed\n- 4: time loss",
-                    "columns": "time step of vehicle",
-                }
-            } for i_vehicle_id, i_vehicle in sorted(vehicles.iteritems())
-        }
-
-        l_grid = {
-            i_vehicle_id: {
-                "value": numpy.array(
-                    [
-                        i_vehicle.travel_stats.get("grid").get("pos_x"),
-                        i_vehicle.travel_stats.get("grid").get("pos_y"),
-                        i_vehicle.travel_stats.get("grid").get("dissatisfaction"),
-                        i_vehicle.travel_stats.get("grid").get("speed"),
-                        i_vehicle.travel_stats.get("grid").get("time_loss"),
-                    ]
-                ),
-                "attr": {
-                    "description": "vehicle travel stats for each grid cell (see 'pos x' and 'pos y')",
-                    "rows": "- 0: pos x\n- 1: pos y\n- 2: dissatisfaction\n"
-                            "- 3: speed\n- 4: time loss",
-                    "columns": "travelled cells during route in step increments",
-                }
-            } for i_vehicle_id, i_vehicle in sorted(vehicles.iteritems())
-        }
-
-        self._writer.write_hdf5(
-            hdf5_file,
-            os.path.join(hdf5_path, "global"),
-            l_fairness,
-            compression="gzip", compression_opts=9, track_times=True, fletcher32=True
-        )
-
-        self._writer.write_hdf5(
-            hdf5_file,
-            os.path.join(hdf5_path, "step-based"),
-            l_steps,
-            compression="gzip", compression_opts=9, track_times=True, fletcher32=True
-        )
-        self._writer.write_hdf5(
-            hdf5_file,
-            os.path.join(hdf5_path, "grid-based"),
-            l_grid,
-            compression="gzip", compression_opts=9, track_times=True, fletcher32=True
-        )
-
         return {
-            "global": l_fairness,
-            "step-based": l_steps,
-            "grid-based": l_grid
+            "global": {
+                "fairness": {
+                    i_vtype: {
+                        "value": numpy.array(
+                            [
+                                Statistics.h_spread(
+                                    numpy.array(
+                                        [
+                                            numpy.subtract(
+                                                *numpy.array(
+                                                    i_vehicle.travel_stats.get("step").get("dissatisfaction")
+                                                )[[-1, 0]]
+                                            )
+                                            for i_vehicle in [
+                                                v for v in vehicles.itervalues()
+                                                if i_vtype in ["alltypes", v.vehicle_type]
+                                            ]
+                                        ]
+                                    )
+                                ),
+                                Statistics.h_spread(
+                                    numpy.array(
+                                        [
+                                            numpy.subtract(
+                                                *numpy.array(
+                                                    i_vehicle.travel_stats.get("step").get("time_loss")
+                                                )[[-1, 0]]
+                                            )
+                                            for i_vehicle in [
+                                                v for v in vehicles.itervalues()
+                                                if i_vtype in ["alltypes", v.vehicle_type]
+                                            ]
+                                        ]
+                                    )
+                                )
+                            ]
+                        ),
+                        "attr": {
+                            "description": "total fairness of run for {} vehicles\n{}\n{}\n{}\n{}".format(
+                                i_vtype,
+                                "calculated by using the H-Spread, i.e. interquartile distance.",
+                                "rows:",
+                                "  - 0: dissatisfaction",
+                                "  - 1: time loss",
+                            ),
+                            "0": "dissatisfaction",
+                            "1": "time loss"
+                        }
+                    } for i_vtype in ["alltypes", "passenger", "truck", "tractor"]
+                },
+                "driver": {
+                    i_vtype: {
+                        "value": numpy.array(
+                            [
+                                numpy.array(
+                                    [
+                                        numpy.subtract(
+                                            *numpy.array(
+                                                i_vehicle.travel_stats.get("step").get("dissatisfaction")
+                                            )[[-1, 0]]
+                                        )
+                                        for i_vehicle in [
+                                            v for v in vehicles.itervalues()
+                                            if i_vtype in ["alltypes", v.vehicle_type]
+                                            ]
+                                    ]
+                                ),
+                                numpy.array(
+                                    [
+                                        numpy.subtract(
+                                            *numpy.array(
+                                                i_vehicle.travel_stats.get("step").get("time_loss")
+                                            )[[-1, 0]]
+                                        )
+                                        for i_vehicle in [
+                                            v for v in vehicles.itervalues()
+                                            if i_vtype in ["alltypes", v.vehicle_type]
+                                            ]
+                                    ]
+                                )
+                            ]
+                        ),
+                        "attr": {
+                            "description": "total driver stats of run for {} vehicles\n{}\n{}\n{}".format(
+                                i_vtype,
+                                "rows:",
+                                "  - 0: dissatisfaction",
+                                "  - 2: time loss",
+                            ),
+                            "0": "dissatisfaction",
+                            "1": "time loss"
+                        }
+                    } for i_vtype in ["alltypes", "passenger", "truck", "tractor"]
+                }
+            },
+            "step-based": {
+                i_vehicle_id: {
+                    "value": numpy.array(
+                        [
+                            i_vehicle.travel_stats.get("step").get("pos_x"),
+                            i_vehicle.travel_stats.get("step").get("pos_y"),
+                            i_vehicle.travel_stats.get("step").get("dissatisfaction"),
+                            i_vehicle.travel_stats.get("step").get("speed"),
+                            i_vehicle.travel_stats.get("step").get("time_loss")
+                        ]
+                    ),
+                    "attr": {
+                        "description": "vehicle travel stats for this vehicle's time step counting "
+                                       "[0 ... travel time in time steps]",
+                        "rows": "- 0: pos x\n- 1: pos y\n- 2: dissatisfaction\n"
+                                "- 3: speed\n- 4: time loss",
+                        "columns": "time step of vehicle",
+
+                    }
+                } for i_vehicle_id, i_vehicle in sorted(vehicles.iteritems())
+            },
+            "grid-based": {
+                i_vehicle_id: {
+                    "value": numpy.array(
+                        [
+                            i_vehicle.travel_stats.get("grid").get("pos_x"),
+                            i_vehicle.travel_stats.get("grid").get("pos_y"),
+                            i_vehicle.travel_stats.get("grid").get("dissatisfaction"),
+                            i_vehicle.travel_stats.get("grid").get("speed"),
+                            i_vehicle.travel_stats.get("grid").get("time_loss"),
+                        ]
+                    ),
+                    "attr": {
+                        "description": "vehicle travel stats for each grid cell (see 'pos x' and 'pos y')",
+                        "rows": "- 0: pos x\n- 1: pos y\n- 2: dissatisfaction\n"
+                                "- 3: speed\n- 4: time loss",
+                        "columns": "travelled cells during route in step increments",
+                    }
+                } for i_vehicle_id, i_vehicle in sorted(vehicles.iteritems())
+            },
+            "vehicle-stats": {
+                i_vehicle_id: {
+                    "start_time": {
+                        "value": i_vehicle.travel_stats.get("start_time"),
+                        "attr": "{}'s start time".format(i_vehicle_id)
+                    },
+                    "travel_time": {
+                        "value": i_vehicle.travel_stats.get("travel_time"),
+                        "attr": "{}'s travel time".format(i_vehicle_id)
+                    },
+                    "vehicle_type": {
+                        "value": i_vehicle.travel_stats.get("vehicle_type"),
+                        "attr": "{}'s vehicle type".format(i_vehicle_id)
+                    }
+                } for i_vehicle_id, i_vehicle in sorted(vehicles.iteritems())
+            }
         }
 
     @staticmethod
