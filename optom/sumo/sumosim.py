@@ -128,7 +128,9 @@ class SumoSim(object):
 
             self._writer.write_hdf5(
                 self._statistics.aggregate_run_stats_to_hdf5(
-                    l_run_stats
+                    l_run_stats,
+                    detector_positions=self._sumocfg.scenario_config.get(scenario_name)
+                    .get("parameters").get("detectorpositions")
                 ),
                 hdf5_file=self._args.results_hdf5_file if self._args.results_hdf5_file
                 else os.path.join(self._sumocfg.resultsdir,

@@ -23,11 +23,11 @@
 """Statistics module"""
 from __future__ import division
 
+import bisect
 
 import optom.common.io
 import optom.common.log
 
-import bisect
 import numpy
 
 
@@ -43,11 +43,12 @@ class Statistics(object):
             self._writer = optom.common.io.Writer(None)
 
     @staticmethod
-    def aggregate_run_stats_to_hdf5(run_stats):
+    def aggregate_run_stats_to_hdf5(run_stats, detector_positions):
         """
         Aggregates statistics of runs by applying the median.
         @param run_stats: run stats in dictionary
             { runID -> run stats provided by aggregate_vehicle_grid_stats }
+        @param detector_positions:
         @retval updated run_stats dictionary with aggregated stats (key: "aggregated")
         """
         l_aggregated = {
@@ -55,18 +56,18 @@ class Statistics(object):
                 i_view: {
                     i_vtype: {
                         "value": [
-                            numpy.median(
-                                [
-                                    run_stats[i_run].get("global").get(i_view).get(i_vtype)
-                                    .get("value")[0] for i_run in run_stats
-                                ]
-                            ),
-                            numpy.median(
-                                [
-                                    run_stats[i_run].get("global").get(i_view).get(i_vtype)
-                                    .get("value")[1] for i_run in run_stats
-                                ],
-                            ),
+                            # numpy.median(
+                            [
+                                run_stats[i_run].get("global").get(i_view).get(i_vtype)
+                                .get("value")[0] for i_run in run_stats
+                            ],
+                            # ),
+                            # numpy.median(
+                            [
+                                run_stats[i_run].get("global").get(i_view).get(i_vtype)
+                                .get("value")[1] for i_run in run_stats
+                            ],
+                            # ),
                         ],
                         "attr": {
                             "description": "median of {} {} {} vehicles\n{}\n{}\n{}".format(
@@ -82,6 +83,45 @@ class Statistics(object):
                         }
                     } for i_vtype in ["alltypes", "passenger", "truck", "tractor"]
                 } for i_view in ["fairness", "driver"]
+            },
+            "intervals": {
+                "{}-{}".format(*i_interval): {
+                    i_view: {
+                        i_vtype: {
+                            "value": [
+                                # numpy.median(
+                                [
+                                    run_stats[i_run].get("intervals")
+                                    .get("{}-{}".format(*i_interval)).get(i_view).get(i_vtype)
+                                    .get("value")[0] for i_run in run_stats
+                                ],
+                                # ),
+                                # numpy.median(
+                                [
+                                    run_stats[i_run].get("intervals")
+                                    .get("{}-{}".format(*i_interval)).get(i_view).get(i_vtype)
+                                    .get("value")[1] for i_run in run_stats
+                                ],
+                                # ),
+                            ],
+                            "attr": {
+                                "description": "median of {} {} {} vehicles\n{}\n{}\n{}".format(
+                                    i_view,
+                                    "stats of all runs on interval [{}, {}] for".format(
+                                        i_interval[0],
+                                        i_interval[1]
+                                    ),
+                                    i_vtype,
+                                    "rows:",
+                                    "  - 0: dissatisfaction",
+                                    "  - 1: time loss",
+                                ),
+                                "0": "dissatisfaction",
+                                "1": "time loss"
+                            }
+                        } for i_vtype in ["alltypes", "passenger", "truck", "tractor"]
+                    } for i_view in ["fairness", "driver"]
+                } for i_interval in zip(detector_positions[:-1], detector_positions[1:])
             }
         }
         run_stats.update(
@@ -474,16 +514,15 @@ class Statistics(object):
                                 ]
                             ),
                             "attr": {
-                                "description": "{} [{}, {}] {} vehicles\n{}\n{}\n{}".format(
-                                    "Driver stats on interval",
-                                    i_interval[0],
-                                    i_interval[1],
-                                    "of run for",
-                                    i_vtype,
-                                    "rows:",
-                                    "  - 0: dissatisfaction",
-                                    "  - 1: time loss",
-                                ),
+                                "description":
+                                    "Driver stats on interval "
+                                    "[{}, {}] of run for {} vehicles\nrows:\n{}\n{}".format(
+                                        i_interval[0],
+                                        i_interval[1],
+                                        i_vtype,
+                                        "  - 0: dissatisfaction",
+                                        "  - 1: time loss",
+                                    ),
                                 "0": "dissatisfaction",
                                 "1": "time loss"
                             }
