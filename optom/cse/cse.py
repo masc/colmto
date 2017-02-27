@@ -132,6 +132,10 @@ class SumoCSE(BaseCSE):
         @param policies_config: run config's "policies" section
         @retval self
         """
+
+        if policies_config is None:
+            return self
+
         for i_policy in policies_config:
             self.add_policy(
                 self._valid_policies.get(i_policy.get("type"))(
