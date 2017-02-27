@@ -103,13 +103,8 @@ class Statistics(object):
                 } for i_interval in zip(detector_positions[:-1], detector_positions[1:])
             }
         }
-        run_stats.update(
-            {
-                "aggregated": l_aggregated
-            }
-        )
 
-        return run_stats
+        return l_aggregated
 
     @staticmethod
     def aggregate_vehicle_grid_stats(vehicles):
