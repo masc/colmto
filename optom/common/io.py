@@ -34,7 +34,7 @@ except ImportError:
     from json import loads as jsonloads, dumps as jsondumps
 
 import json
-
+import numpy
 
 try:
     from yaml import CSafeLoader as SafeLoader, CSafeDumper as SafeDumper
@@ -210,7 +210,7 @@ class Writer(object):
 
             if i_object_value.get("value") is not None and i_object_value.get("attr") is not None:
                 l_group.create_dataset(
-                    name=i_path, data=i_object_value.get("value"), **kwargs
+                    name=i_path, data=numpy.asarray(i_object_value.get("value")), **kwargs
                 ).attrs.update(
                     i_object_value.get("attr")
                     if isinstance(i_object_value.get("attr"), dict) else {}

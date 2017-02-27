@@ -25,6 +25,8 @@ from __future__ import division
 
 import os
 import sys
+import itertools
+import random
 
 try:
     sys.path.append(os.path.join("sumo", "sumo", "tools"))
@@ -78,6 +80,25 @@ class SumoSim(object):
             self._log.error(r"/!\ scenario %s not found in configuration", scenario_name)
             return
 
+        l_scenario = self._sumocfg.generate_scenario(scenario_name)
+        l_vtypedistribution = list(
+            itertools.chain.from_iterable(
+                [
+                    [k] * int(round(100 * v.get("fraction")))
+                    for (k, v) in self._sumocfg.run_config.get("vtypedistribution").iteritems()
+                    ]
+            )
+        )
+        l_timebegin, l_timeend = self._sumocfg.run_config.get("simtimeinterval")
+        l_numberofvehicles = int(
+            round(
+                self._sumocfg.aadt(l_scenario) / (24 * 60 * 60) * (l_timeend - l_timebegin)
+            )
+        ) if not self._sumocfg.run_config.get("nbvehicles").get("enabled") \
+            else self._sumocfg.run_config.get("nbvehicles").get("value")
+
+        l_vtype_list = [random.choice(l_vtypedistribution) for _ in xrange(l_numberofvehicles)]
+
         for i_initial_sorting in self._sumocfg.run_config.get("initialsortings"):
 
             l_run_stats = {}
@@ -92,9 +113,10 @@ class SumoSim(object):
 
                             self._runtime.run_traci(
                                 self._sumocfg.generate_run(
-                                    self._sumocfg.generate_scenario(scenario_name),
+                                    l_scenario,
                                     i_initial_sorting,
-                                    i_run
+                                    i_run,
+                                    l_vtype_list
                                 ),
                                 optom.cse.cse.SumoCSE(
                                     self._args
@@ -104,15 +126,18 @@ class SumoSim(object):
                             )
                         ),
 
+                        run_number=i_run,
+
                         detector_positions=self._sumocfg.scenario_config.get(scenario_name)
                         .get("parameters").get("detectorpositions")
                     )
                 else:
                     self._runtime.run_once(
                         self._sumocfg.generate_run(
-                            self._sumocfg.generate_scenario(scenario_name),
+                            l_scenario,
                             i_initial_sorting,
-                            i_run
+                            i_run,
+                            l_vtype_list
                         )
                     )
 

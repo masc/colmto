@@ -22,6 +22,7 @@
 # @endcond
 """Statistics module"""
 from __future__ import division
+from __future__ import print_function
 
 import bisect
 
@@ -55,32 +56,21 @@ class Statistics(object):
             "global": {
                 i_view: {
                     i_vtype: {
-                        "value": [
-                            # numpy.median(
-                            [
-                                run_stats[i_run].get("global").get(i_view).get(i_vtype)
-                                .get("value")[0] for i_run in run_stats
-                            ],
-                            # ),
-                            # numpy.median(
-                            [
-                                run_stats[i_run].get("global").get(i_view).get(i_vtype)
-                                .get("value")[1] for i_run in run_stats
-                            ],
-                            # ),
-                        ],
-                        "attr": {
-                            "description": "median of {} {} {} vehicles\n{}\n{}\n{}".format(
-                                i_view,
-                                "stats of all runs for",
-                                i_vtype,
-                                "rows:",
-                                "  - 0: dissatisfaction",
-                                "  - 1: time loss",
+                        i_stat: {
+                            "value": numpy.array(
+                                [
+                                    run_stats[i_run].get("global").get(i_view).get(i_vtype)
+                                    .get(i_stat).get("value") for i_run in run_stats
+                                ]
                             ),
-                            "0": "dissatisfaction",
-                            "1": "time loss"
-                        }
+                            "attr": {
+                                "description": "global stats of {} of {} {} for each run".format(
+                                    i_view, i_vtype, i_stat
+                                ),
+                                "rows": "runs",
+                                "columns": "{} of {} {}".format(i_view, i_vtype, i_stat)
+                            }
+                        } for i_stat in ["dissatisfaction", "time_loss"]
                     } for i_vtype in ["alltypes", "passenger", "truck", "tractor"]
                 } for i_view in ["fairness", "driver"]
             },
@@ -88,37 +78,26 @@ class Statistics(object):
                 "{}-{}".format(*i_interval): {
                     i_view: {
                         i_vtype: {
-                            "value": [
-                                # numpy.median(
-                                [
-                                    run_stats[i_run].get("intervals")
-                                    .get("{}-{}".format(*i_interval)).get(i_view).get(i_vtype)
-                                    .get("value")[0] for i_run in run_stats
-                                ],
-                                # ),
-                                # numpy.median(
-                                [
-                                    run_stats[i_run].get("intervals")
-                                    .get("{}-{}".format(*i_interval)).get(i_view).get(i_vtype)
-                                    .get("value")[1] for i_run in run_stats
-                                ],
-                                # ),
-                            ],
-                            "attr": {
-                                "description": "median of {} {} {} vehicles\n{}\n{}\n{}".format(
-                                    i_view,
-                                    "stats of all runs on interval [{}, {}] for".format(
-                                        i_interval[0],
-                                        i_interval[1]
-                                    ),
-                                    i_vtype,
-                                    "rows:",
-                                    "  - 0: dissatisfaction",
-                                    "  - 1: time loss",
+                            i_stat: {
+                                "value": numpy.array(
+                                    [
+                                        run_stats[i_run].get("intervals")
+                                        .get("{}-{}".format(*i_interval)).get(i_view).get(i_vtype)
+                                        .get(i_stat).get("value") for i_run in run_stats
+                                    ]
                                 ),
-                                "0": "dissatisfaction",
-                                "1": "time loss"
-                            }
+                                "attr": {
+                                    "description": "interval [{}, {}] {}".format(
+                                        i_interval[0],
+                                        i_interval[1],
+                                        "stats of {} of {} {} for each run".format(
+                                            i_view, i_vtype, i_stat
+                                        ),
+                                    ),
+                                    "rows": "runs",
+                                    "columns": "{} of {} {}".format(i_view, i_vtype, i_stat)
+                                }
+                            } for i_stat in ["dissatisfaction", "time_loss"]
                         } for i_vtype in ["alltypes", "passenger", "truck", "tractor"]
                     } for i_view in ["fairness", "driver"]
                 } for i_interval in zip(detector_positions[:-1], detector_positions[1:])
@@ -189,7 +168,7 @@ class Statistics(object):
         return vehicles
 
     @staticmethod
-    def stats_to_hdf5_structure(vehicles, detector_positions):
+    def stats_to_hdf5_structure(vehicles, run_number, detector_positions):
         r"""
         Calculates fairness, join vehicle stat lists to HD5 suitable matrices and write to provided
         hdf5 file.
@@ -200,6 +179,7 @@ class Statistics(object):
         Returns \code{.py}{ "fairness": { "time_loss": value, "dissatisfaction": value },
         "vehicles": vehicles }\endcode
         @param vehicles: dictionary of vehicle objects (vID -> Vehicle)
+        @param run_number: number of current run
         @param detector_positions: list of detector positions
         @retval dictionary containing vehicles and fairness dicts
         """
@@ -207,108 +187,76 @@ class Statistics(object):
             "global": {
                 "fairness": {
                     i_vtype: {
-                        "value": numpy.array(
-                            [
-                                Statistics.h_spread(
-                                    numpy.array(
-                                        [
-                                            # pylint: disable=no-member
-                                            numpy.subtract(
-                                                *numpy.array(
-                                                    i_vehicle.travel_stats.get("step")
-                                                    .get("dissatisfaction")
-                                                )[[-1, 0]]
-                                            )
-                                            # pylint: enable=no-member
-                                            for i_vehicle in [
-                                                v for v in vehicles.itervalues()
-                                                if i_vtype in ["alltypes", v.vehicle_type]
+                        i_stat: {
+                            "value": numpy.array(
+                                [
+                                    Statistics.h_spread(
+                                        numpy.array(
+                                            [
+                                                # pylint: disable=no-member
+                                                numpy.subtract(
+                                                    *numpy.array(
+                                                        i_vehicle.travel_stats.get("grid")
+                                                        .get(i_stat)
+                                                    )[[-1, 0]]
+                                                )
+                                                # pylint: enable=no-member
+                                                for i_vehicle in [
+                                                    v for v in vehicles.itervalues()
+                                                    if i_vtype in ["alltypes", v.vehicle_type]
+                                                ]
                                             ]
-                                        ]
+                                        )
                                     )
-                                ),
-                                Statistics.h_spread(
-                                    numpy.array(
-                                        [
-                                            # pylint: disable=no-member
-                                            numpy.subtract(
-                                                *numpy.array(
-                                                    i_vehicle.travel_stats.get("step")
-                                                    .get("time_loss")
-                                                )[[-1, 0]]
-                                            )
-                                            # pylint: enable=no-member
-                                            for i_vehicle in [
-                                                v for v in vehicles.itervalues()
-                                                if i_vtype in ["alltypes", v.vehicle_type]
-                                            ]
-                                        ]
-                                    )
-                                )
-                            ]
-                        ),
-                        "attr": {
-                            "description": "{} {} vehicles\n{}\n{}\n{}\n{}".format(
-                                "total fairness of run for",
-                                i_vtype,
-                                "calculated by using the H-Spread, i.e. interquartile distance.",
-                                "rows:",
-                                "  - 0: dissatisfaction",
-                                "  - 1: time loss",
+                                ]
                             ),
-                            "0": "dissatisfaction",
-                            "1": "time loss"
-                        }
+                            "attr": {
+                                "description": "{} {} vehicles\n{}\n{}\n{}".format(
+                                    "total fairness of run {} for".format(run_number),
+                                    i_vtype,
+                                    "calculated by using the H-Spread, i.e. interquartile distance",
+                                    "rows:",
+                                    "  - 0: {}".format(i_stat),
+                                ),
+                                "0": i_stat,
+                            }
+                        } for i_stat in ["dissatisfaction", "time_loss"]
                     } for i_vtype in ["alltypes", "passenger", "truck", "tractor"]
                 },
                 "driver": {
                     i_vtype: {
-                        "value": numpy.array(
-                            [
-                                numpy.array(
-                                    [
-                                        # pylint: disable=no-member
-                                        numpy.subtract(
-                                            *numpy.array(
-                                                i_vehicle.travel_stats.get("step")
-                                                .get("dissatisfaction")
-                                            )[[-1, 0]]
-                                        )
-                                        # pylint: enable=no-member
-                                        for i_vehicle in [
-                                            v for v in vehicles.itervalues()
-                                            if i_vtype in ["alltypes", v.vehicle_type]
-                                            ]
+                        i_stat: {
+                            "value": numpy.array(
+                                [
+                                    # pylint: disable=no-member
+                                    numpy.subtract(
+                                        *numpy.array(
+                                            i_vehicle.travel_stats.get("grid")
+                                            .get(i_stat)
+                                        )[[-1, 0]]
+                                    )
+                                    # pylint: enable=no-member
+                                    for i_vehicle in [
+                                        v for v in vehicles.itervalues()
+                                        if i_vtype in ["alltypes", v.vehicle_type]
                                     ]
-                                ),
-                                numpy.array(
-                                    [
-                                        # pylint: disable=no-member
-                                        numpy.subtract(
-                                            *numpy.array(
-                                                i_vehicle.travel_stats.get("step").get("time_loss")
-                                            )[[-1, 0]]
-                                        )
-                                        # pylint: enable=no-member
-                                        for i_vehicle in [
-                                            v for v in vehicles.itervalues()
-                                            if i_vtype in ["alltypes", v.vehicle_type]
-                                            ]
-                                    ]
-                                )
-                            ]
-                        ),
-                        "attr": {
-                            "description": "{} {} vehicles\n{}\n{}\n{}".format(
-                                "total driver stats of run for",
-                                i_vtype,
-                                "rows:",
-                                "  - 0: dissatisfaction",
-                                "  - 1: time loss",
+                                ]
                             ),
-                            "0": "dissatisfaction",
-                            "1": "time loss"
-                        }
+                            "attr": {
+                                "description":
+                                    "total driver {} stats of run {} for {} {}".format(
+                                        i_stat,
+                                        run_number,
+                                        i_vtype,
+                                        "vehicles\n{}\n{} {}".format(
+                                            "rows:",
+                                            "  - 0:",
+                                            i_stat
+                                        )
+                                    ),
+                                "0": i_stat
+                            }
+                        } for i_stat in ["dissatisfaction", "time_loss"]
                     } for i_vtype in ["alltypes", "passenger", "truck", "tractor"]
                 }
             },
@@ -324,8 +272,12 @@ class Statistics(object):
                         ]
                     ),
                     "attr": {
-                        "description": "vehicle travel stats for this vehicle's time step counting "
-                                       "[0 ... travel time in time steps]",
+                        "description": "vehicle travel stats for run {}".format(
+                            "{} of this vehicle's time step {}".format(
+                                run_number,
+                                "[0 ... travel time in time steps]"
+                            )
+                        ),
                         "rows": "- 0: pos x\n- 1: pos y\n- 2: dissatisfaction\n"
                                 "- 3: speed\n- 4: time loss",
                         "columns": "time step of vehicle",
@@ -345,8 +297,10 @@ class Statistics(object):
                         ]
                     ),
                     "attr": {
-                        "description": "vehicle travel stats for each grid cell "
-                                       "(see 'pos x' and 'pos y')",
+                        "description": "vehicle stats of run {} for each grid cell {} ".format(
+                            run_number,
+                            "(see 'pos x' and 'pos y')"
+                        ),
                         "rows": "- 0: pos x\n- 1: pos y\n- 2: dissatisfaction\n"
                                 "- 3: speed\n- 4: time loss",
                         "columns": "travelled cells during route in step increments",
@@ -373,159 +327,106 @@ class Statistics(object):
                 "{}-{}".format(*i_interval): {
                     "fairness": {
                         i_vtype: {
-                            "value": numpy.array(
-                                [
-                                    Statistics.h_spread(
-                                        numpy.array(
-                                            [
-                                                # pylint: disable=no-member
-                                                numpy.subtract(
-                                                    *numpy.array(
-                                                        i_vehicle.travel_stats.get("step")
-                                                        .get("dissatisfaction")
-                                                    )[[
-                                                        Statistics._closest_position_to_detector(
-                                                            i_vehicle.travel_stats.get("step")
-                                                            .get("pos_x"),
-                                                            i_interval[1]
-                                                        ),
-                                                        Statistics._closest_position_to_detector(
-                                                            i_vehicle.travel_stats.get("step")
-                                                            .get("pos_x"),
-                                                            i_interval[0]
-                                                        )
-                                                    ]]
-                                                )
-                                                # pylint: enable=no-member
-                                                for i_vehicle in [
-                                                    v for v in vehicles.itervalues()
-                                                    if i_vtype in ["alltypes", v.vehicle_type]
+                            i_stat: {
+                                "value": numpy.array(
+                                    [
+                                        Statistics.h_spread(
+                                            numpy.array(
+                                                [
+                                                    # pylint: disable=no-member
+                                                    numpy.subtract(
+                                                        *numpy.array(
+                                                            i_vehicle.travel_stats.get("grid")
+                                                            .get(i_stat)
+                                                        )[[
+                                                            Statistics
+                                                            ._closest_position_to_detector(
+                                                                i_vehicle.travel_stats.get("grid")
+                                                                .get("pos_x"),
+                                                                i_interval[1]
+                                                            ),
+                                                            Statistics
+                                                            ._closest_position_to_detector(
+                                                                i_vehicle.travel_stats.get("grid")
+                                                                .get("pos_x"),
+                                                                i_interval[0]
+                                                            )
+                                                        ]]
+                                                    )
+                                                    # pylint: enable=no-member
+                                                    for i_vehicle in [
+                                                        v for v in vehicles.itervalues()
+                                                        if i_vtype in ["alltypes", v.vehicle_type]
+                                                    ]
                                                 ]
-                                            ]
+                                            )
                                         )
-                                    ),
-                                    Statistics.h_spread(
-                                        numpy.array(
-                                            [
-                                                # pylint: disable=no-member
-                                                numpy.subtract(
-                                                    *numpy.array(
-                                                        i_vehicle.travel_stats.get("step")
-                                                        .get("time_loss")
-                                                    )[[
-                                                        Statistics._closest_position_to_detector(
-                                                            i_vehicle.travel_stats.get("step")
-                                                            .get("pos_x"),
-                                                            i_interval[1]
-                                                        ),
-                                                        Statistics._closest_position_to_detector(
-                                                            i_vehicle.travel_stats.get("step")
-                                                            .get("pos_x"),
-                                                            i_interval[0]
-                                                        )
-                                                    ]]
-                                                )
-                                                # pylint: enable=no-member
-                                                for i_vehicle in [
-                                                    v for v in vehicles.itervalues()
-                                                    if i_vtype in ["alltypes", v.vehicle_type]
-                                                ]
-                                            ]
-                                        )
-                                    )
-                                ]
-                            ),
-                            "attr": {
-                                "description": "{} [{}, {}] {} {} vehicles\n{}\n{}\n{}\n{}".format(
-                                    "Fairness on interval",
-                                    i_interval[0],
-                                    i_interval[1],
-                                    "of run for",
-                                    i_vtype,
-                                    "calculated by using the H-Spread, "
-                                    "i.e. interquartile distance.",
-                                    "rows:",
-                                    "  - 0: dissatisfaction",
-                                    "  - 1: time loss",
+                                    ]
                                 ),
-                                "0": "dissatisfaction",
-                                "1": "time loss"
-                            }
+                                "attr": {
+                                    "description": "{} [{}, {}] {} {} vehicles\n{}\n{}\n{}".format(
+                                        "Fairness on interval",
+                                        i_interval[0],
+                                        i_interval[1],
+                                        "of run {} for".format(run_number),
+                                        i_vtype,
+                                        "calculated by using the H-Spread, "
+                                        "i.e. interquartile distance.",
+                                        "rows:",
+                                        "  - 0: {}".format(i_stat),
+                                    ),
+                                    "0": i_stat,
+                                }
+                            } for i_stat in ["dissatisfaction", "time_loss"]
                         } for i_vtype in ["alltypes", "passenger", "truck", "tractor"]
                     },
                     "driver": {
                         i_vtype: {
-                            "value": numpy.array(
-                                [
-                                    numpy.array(
-                                        [
-                                            # pylint: disable=no-member
-                                            numpy.subtract(
-                                                *numpy.array(
-                                                    i_vehicle.travel_stats.get("step")
-                                                    .get("dissatisfaction")
-                                                )[[
-                                                    Statistics._closest_position_to_detector(
-                                                        i_vehicle.travel_stats.get("step")
-                                                        .get("pos_x"),
-                                                        i_interval[1]
-                                                    ),
-                                                    Statistics._closest_position_to_detector(
-                                                        i_vehicle.travel_stats.get("step")
-                                                        .get("pos_x"),
-                                                        i_interval[0]
-                                                    )
-                                                ]]
-                                            )
-                                            # pylint: enable=no-member
-                                            for i_vehicle in [
-                                                v for v in vehicles.itervalues()
-                                                if i_vtype in ["alltypes", v.vehicle_type]
+                            i_stat: {
+                                "value": numpy.array(
+                                    [
+                                        numpy.array(
+                                            [
+                                                # pylint: disable=no-member
+                                                numpy.subtract(
+                                                    *numpy.array(
+                                                        i_vehicle.travel_stats.get("grid")
+                                                        .get(i_stat)
+                                                    )[[
+                                                        Statistics._closest_position_to_detector(
+                                                            i_vehicle.travel_stats.get("grid")
+                                                            .get("pos_x"),
+                                                            i_interval[1]
+                                                        ),
+                                                        Statistics._closest_position_to_detector(
+                                                            i_vehicle.travel_stats.get("grid")
+                                                            .get("pos_x"),
+                                                            i_interval[0]
+                                                        )
+                                                    ]]
+                                                )
+                                                # pylint: enable=no-member
+                                                for i_vehicle in [
+                                                    v for v in vehicles.itervalues()
+                                                    if i_vtype in ["alltypes", v.vehicle_type]
+                                                ]
                                             ]
-                                        ]
-                                    ),
-                                    numpy.array(
-                                        [
-                                            # pylint: disable=no-member
-                                            numpy.subtract(
-                                                *numpy.array(
-                                                    i_vehicle.travel_stats.get("step")
-                                                    .get("time_loss")
-                                                )[[
-                                                    Statistics._closest_position_to_detector(
-                                                        i_vehicle.travel_stats.get("step")
-                                                        .get("pos_x"),
-                                                        i_interval[1]
-                                                    ),
-                                                    Statistics._closest_position_to_detector(
-                                                        i_vehicle.travel_stats.get("step")
-                                                        .get("pos_x"),
-                                                        i_interval[0]
-                                                    )
-                                                ]]
-                                            )
-                                            # pylint: enable=no-member
-                                            for i_vehicle in [
-                                                v for v in vehicles.itervalues()
-                                                if i_vtype in ["alltypes", v.vehicle_type]
-                                            ]
-                                        ]
-                                    )
-                                ]
-                            ),
-                            "attr": {
-                                "description":
-                                    "Driver stats on interval "
-                                    "[{}, {}] of run for {} vehicles\nrows:\n{}\n{}".format(
-                                        i_interval[0],
-                                        i_interval[1],
-                                        i_vtype,
-                                        "  - 0: dissatisfaction",
-                                        "  - 1: time loss",
-                                    ),
-                                "0": "dissatisfaction",
-                                "1": "time loss"
-                            }
+                                        )
+                                    ]
+                                ),
+                                "attr": {
+                                    "description":
+                                        "Driver stats on interval "
+                                        "[{}, {}] of run {} for {} vehicles\nrows:\n{}".format(
+                                            i_interval[0],
+                                            i_interval[1],
+                                            run_number,
+                                            i_vtype,
+                                            "  - 0: {}".format(i_stat),
+                                        ),
+                                    "0": i_stat,
+                                }
+                            } for i_stat in ["dissatisfaction", "time_loss"]
                         } for i_vtype in ["alltypes", "passenger", "truck", "tractor"]
                     }
                 } for i_interval in zip(detector_positions[:-1], detector_positions[1:])

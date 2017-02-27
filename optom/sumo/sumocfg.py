@@ -25,7 +25,6 @@ from __future__ import division
 from __future__ import print_function
 
 import copy
-import itertools
 import os
 import random
 import subprocess
@@ -160,7 +159,7 @@ class SumoConfig(optom.common.configuration.Configuration):
 
         return l_scenarioruns
 
-    def generate_run(self, scenario_run_config, initial_sorting, run_number):
+    def generate_run(self, scenario_run_config, initial_sorting, run_number, vtype_list):
         """generate run configurations
 
         @param scenario_run_config: run configuration of scenario
@@ -238,7 +237,7 @@ class SumoConfig(optom.common.configuration.Configuration):
         )
 
         l_vehicles = self._generate_trip_xml(
-            scenario_run_config, initial_sorting, l_tripfile,
+            scenario_run_config, initial_sorting, vtype_list, l_tripfile,
             self._args.forcerebuildscenarios
         )
 
@@ -561,7 +560,7 @@ class SumoConfig(optom.common.configuration.Configuration):
         else:
             return prev_start_time
 
-    def _create_vehicle_distribution(self, nbvehicles, aadt, initialsorting, scenario_name):
+    def _create_vehicle_distribution(self, vtype_list, aadt, initialsorting, scenario_name):
         """
         Create a distribution of vehicles based on
 
@@ -577,15 +576,6 @@ class SumoConfig(optom.common.configuration.Configuration):
 
         self._log.debug(
             "Create vehicle distribution with %s", self._run_config.get("vtypedistribution")
-        )
-
-        l_vtypedistribution = list(
-            itertools.chain.from_iterable(
-                [
-                    [k] * int(round(100 * v.get("fraction")))
-                    for (k, v) in self._run_config.get("vtypedistribution").iteritems()
-                ]
-            )
         )
 
         l_vehps = aadt / (24 * 60 * 60) if not self._run_config.get(
@@ -607,7 +597,7 @@ class SumoConfig(optom.common.configuration.Configuration):
                     ),
                     self.scenario_config.get(scenario_name).get("parameters").get("speedlimit")
                 )
-            ) for vtype in [random.choice(l_vtypedistribution) for _ in xrange(nbvehicles)]
+            ) for vtype in vtype_list
         ]
 
         # sort speeds according to initial sorting flag
@@ -649,7 +639,7 @@ class SumoConfig(optom.common.configuration.Configuration):
         ) if not self.run_config.get("aadt").get("enabled") \
             else self.run_config.get("aadt").get("value")
 
-    def _generate_trip_xml(self, scenario_runs, initialsorting, tripfile,
+    def _generate_trip_xml(self, scenario_runs, initialsorting, vtype_list, tripfile,
                            forcerebuildscenarios=False):
         """
         Generate SUMO's trip file.
@@ -664,27 +654,14 @@ class SumoConfig(optom.common.configuration.Configuration):
         if os.path.isfile(tripfile) and not forcerebuildscenarios:
             return
         self._log.debug("Generating trip xml for %s", scenario_runs.get("scenarioname"))
-        # generate simple traffic demand by considering AADT, Vmax, roadtype etc
-
-        l_timebegin, l_timeend = self.run_config.get("simtimeinterval")
-
-        # number of vehicles = AADT / [seconds of day] * [scenario time in seconds]
-
-        l_numberofvehicles = int(
-            round(
-                self.aadt(scenario_runs) / (24 * 60 * 60) * (l_timeend - l_timebegin)
-            )
-        ) if not self.run_config.get("nbvehicles").get("enabled") \
-            else self.run_config.get("nbvehicles").get("value")
 
         self._log.debug(
-            "Scenario's AADT of %d vehicles/average annual day"
-            "=> %d vehicles for %d simulation seconds",
-            self.aadt(scenario_runs), l_numberofvehicles, (l_timeend - l_timebegin)
+            "Scenario's AADT %d of %d vehicles/average annual day",
+            self.aadt(scenario_runs), len(vtype_list)
         )
 
         l_vehicles = self._create_vehicle_distribution(
-            l_numberofvehicles,
+            vtype_list,
             self.aadt(scenario_runs),
             initialsorting,
             scenario_runs.get("scenarioname")

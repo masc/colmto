@@ -35,7 +35,7 @@ import optom.common.log
 
 _DEFAULT_CONFIG_RUN = {
     "aadt": {
-        "enabled": True,
+        "enabled": False,
         "value": 13000
     },
     "cse-enabled": False,
