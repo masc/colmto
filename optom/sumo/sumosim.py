@@ -164,7 +164,10 @@ class SumoSim(object):
                     scenario_name,
                     str(self._sumocfg.aadt(self._sumocfg.generate_scenario(scenario_name))),
                     i_initial_sorting,
-                )
+                ),
+                compression="gzip",
+                compression_opts=9,
+                fletcher32=True
             )
 
         # dump configuration to run dir
