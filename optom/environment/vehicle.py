@@ -241,7 +241,8 @@ class SUMOVehicle(BaseVehicle):
             TL &:=& \text{time loss}, \\
             TLT &:=& \text{time loss threshold}, \\
             \text{dissatisfaction} &:=& dsat(TL, TT^{*}, TLT) \\
-            &=&\frac{1}{1+e^{-TL + TLT \cdot TT^{*}}}.
+            &=&\frac{1}{1+e^{(-TL + TLT \cdot TT^{*}) \cdot 0{.}5}}.\\
+            &&\text{note: using a smoothening factor of 0.5 to make the transition not that sharp}
         \f}
         @param time_loss time loss
         @param time_loss_threshold cut-off point of acceptable time loss
@@ -249,7 +250,7 @@ class SUMOVehicle(BaseVehicle):
         @param optimal_travel_time optimal travel time
         @retval dissatisfaction ([0,1] normalised)
         """
-        return 1/(1+math.exp(-time_loss + time_loss_threshold * optimal_travel_time))
+        return 1/(1+math.exp((-time_loss + time_loss_threshold * optimal_travel_time)) * .5)
 
     def record_travel_stats(self, time_step):
         r"""Record travel statistics to vehicle.
