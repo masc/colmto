@@ -48,34 +48,34 @@ _DEFAULT_CONFIG_RUN = {
     "scenarios": ["Irzik1"],
     "simtimeinterval": [0, 600],
     "starttimedistribution": "poisson",
-    "policies": [
-        {
-            "type": "SUMOSpeedPolicy",
-            "behaviour": "deny",
-            "args": {
-                "speed_range": (0., 30/3.6)
-            }
-        },
-        {
-            "type": "SUMOPositionPolicy",
-            "behaviour": "deny",
-            "args": {
-                "position_bbox": ((1350., -2.), (2500., 2.))
-            },
-            "vehicle_policies": {
-                "rule": "any",
-                "policies": [
-                    {
-                        "type": "SUMOSpeedPolicy",
-                        "behaviour": "deny",
-                        "args": {
-                            "speed_range": (0., 85/3.6)
-                        },
-                    }
-                ]
-            }
-        }
-    ],
+    # "policies": [
+    #     {
+    #         "type": "SUMOSpeedPolicy",
+    #         "behaviour": "deny",
+    #         "args": {
+    #             "speed_range": (0., 30/3.6)
+    #         }
+    #     },
+    #     {
+    #         "type": "SUMOPositionPolicy",
+    #         "behaviour": "deny",
+    #         "args": {
+    #             "position_bbox": ((1350., -2.), (2500., 2.))
+    #         },
+    #         "vehicle_policies": {
+    #             "rule": "any",
+    #             "policies": [
+    #                 {
+    #                     "type": "SUMOSpeedPolicy",
+    #                     "behaviour": "deny",
+    #                     "args": {
+    #                         "speed_range": (0., 85/3.6)
+    #                     },
+    #                 }
+    #             ]
+    #         }
+    #     }
+    # ],
     "sumo": {
         "enabled": True,
         "gui-delay": 200,
@@ -259,7 +259,7 @@ _DEFAULT_CONFIG_VTYPES = {
         "vClass": "custom2",
         "vType": "tractor",
         "width": 2.4,
-        "dsat_threshold": 0.2
+        "dsat_threshold": 1.0
     },
     "truck": {
         "accel": 1.3,
@@ -273,7 +273,7 @@ _DEFAULT_CONFIG_VTYPES = {
         "vClass": "custom2",
         "vType": "truck",
         "width": 2.4,
-        "dsat_threshold": 0.2
+        "dsat_threshold": 0.1
     },
     "van": {
         "accel": 2.9,
