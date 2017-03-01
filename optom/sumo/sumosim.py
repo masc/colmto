@@ -142,7 +142,7 @@ class SumoSim(object):
                     )
 
                 self._log.info(
-                    "Scenario %s, AADT %d (%d vps), sorting %s: Finished run %d/%d",
+                    "Scenario %s, AADT %d (%d vph), sorting %s: Finished run %d/%d",
                     scenario_name,
                     self._sumocfg.run_config.get("aadt").get("value"),
                     int(self._sumocfg.run_config.get("aadt").get("value") / 24),
