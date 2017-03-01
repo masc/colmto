@@ -253,7 +253,10 @@ class SUMOVehicle(BaseVehicle):
         @param optimal_travel_time optimal travel time
         @retval dissatisfaction ([0,1] normalised)
         """
-        return 1/(1+math.exp((-time_loss + time_loss_threshold * optimal_travel_time)) * .5)
+        return numpy.divide(
+            1.,
+            1 + numpy.exp((-time_loss + time_loss_threshold * optimal_travel_time)) * .5
+        )
 
     def record_travel_stats(self, time_step):
         r"""Record travel statistics to vehicle.
