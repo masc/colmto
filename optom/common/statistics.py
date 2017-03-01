@@ -70,7 +70,7 @@ class Statistics(object):
                                 "rows": "runs",
                                 "columns": "{} of {} {}".format(i_view, i_vtype, i_stat)
                             }
-                        } for i_stat in ["dissatisfaction", "time_loss"]
+                        } for i_stat in ["dissatisfaction", "time_loss", "time_loss_relative"]
                     } for i_vtype in ["alltypes", "passenger", "truck", "tractor"]
                 } for i_view in ["fairness", "driver"]
             },
@@ -97,7 +97,7 @@ class Statistics(object):
                                     "rows": "runs",
                                     "columns": "{} of {} {}".format(i_view, i_vtype, i_stat)
                                 }
-                            } for i_stat in ["dissatisfaction", "time_loss"]
+                            } for i_stat in ["dissatisfaction", "time_loss", "time_loss_relative"]
                         } for i_vtype in ["alltypes", "passenger", "truck", "tractor"]
                     } for i_view in ["fairness", "driver"]
                 } for i_interval in zip(detector_positions[:-1], detector_positions[1:])
@@ -153,6 +153,12 @@ class Statistics(object):
                     l_travel_stats.get("time_loss")[i_idx]
                 ) if len(l_travel_stats.get("time_loss")[i_idx]) > 1 \
                     else l_travel_stats.get("time_loss")[i_idx][0]
+
+            for i_idx in xrange(len(l_travel_stats.get("time_loss_relative"))):
+                l_travel_stats.get("time_loss_relative")[i_idx] = numpy.median(
+                    l_travel_stats.get("time_loss_relative")[i_idx]
+                ) if len(l_travel_stats.get("time_loss_relative")[i_idx]) > 1 \
+                    else l_travel_stats.get("time_loss_relative")[i_idx][0]
 
             for i_idx in xrange(len(l_travel_stats.get("dissatisfaction"))):
                 l_travel_stats.get("dissatisfaction")[i_idx] = numpy.median(
@@ -215,7 +221,7 @@ class Statistics(object):
                                 ),
                                 "0": i_stat,
                             }
-                        } for i_stat in ["dissatisfaction", "time_loss"]
+                        } for i_stat in ["dissatisfaction", "time_loss", "time_loss_relative"]
                     } for i_vtype in ["alltypes", "passenger", "truck", "tractor"]
                 },
                 "driver": {
@@ -251,7 +257,7 @@ class Statistics(object):
                                     ),
                                 "0": i_stat
                             }
-                        } for i_stat in ["dissatisfaction", "time_loss"]
+                        } for i_stat in ["dissatisfaction", "time_loss", "time_loss_relative"]
                     } for i_vtype in ["alltypes", "passenger", "truck", "tractor"]
                 }
             },
@@ -263,7 +269,9 @@ class Statistics(object):
                             i_vehicle.travel_stats.get("step").get("pos_y"),
                             i_vehicle.travel_stats.get("step").get("dissatisfaction"),
                             i_vehicle.travel_stats.get("step").get("speed"),
-                            i_vehicle.travel_stats.get("step").get("time_loss")
+                            i_vehicle.travel_stats.get("step").get("time_loss"),
+                            i_vehicle.travel_stats.get("step").get("time_loss_relative")
+
                         ]
                     ),
                     "attr": {
@@ -289,6 +297,7 @@ class Statistics(object):
                             i_vehicle.travel_stats.get("grid").get("dissatisfaction"),
                             i_vehicle.travel_stats.get("grid").get("speed"),
                             i_vehicle.travel_stats.get("grid").get("time_loss"),
+                            i_vehicle.travel_stats.get("grid").get("time_loss_relative")
                         ]
                     ),
                     "attr": {
@@ -372,7 +381,7 @@ class Statistics(object):
                                     ),
                                     "0": i_stat,
                                 }
-                            } for i_stat in ["dissatisfaction", "time_loss"]
+                            } for i_stat in ["dissatisfaction", "time_loss", "time_loss_relative"]
                         } for i_vtype in ["alltypes", "passenger", "truck", "tractor"]
                     },
                     "driver": {
@@ -421,7 +430,7 @@ class Statistics(object):
                                         ),
                                     "0": i_stat,
                                 }
-                            } for i_stat in ["dissatisfaction", "time_loss"]
+                            } for i_stat in ["dissatisfaction", "time_loss", "time_loss_relative"]
                         } for i_vtype in ["alltypes", "passenger", "truck", "tractor"]
                     }
                 } for i_interval in zip(detector_positions[:-1], detector_positions[1:])

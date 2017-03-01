@@ -21,6 +21,7 @@
 # #############################################################################
 # @endcond
 """Vehicle classes for storing vehicle data/attributes/states."""
+from __future__ import division
 import math
 import numpy
 
@@ -123,6 +124,7 @@ class SUMOVehicle(BaseVehicle):
                 "pos_x": [],
                 "pos_y": [],
                 "time_loss": [],
+                "time_loss_relative": [],
                 "speed": [],
                 "dissatisfaction": []
             },
@@ -131,6 +133,7 @@ class SUMOVehicle(BaseVehicle):
                 "pos_x": [],
                 "pos_y": [],
                 "time_loss": [],
+                "time_loss_relative": [],
                 "speed": [],
                 "dissatisfaction": []
             }
@@ -293,6 +296,11 @@ class SUMOVehicle(BaseVehicle):
             self._travel_stats.get("grid").get("time_loss")[-1].append(
                 time_step - self.start_time - self.position[0] / self.speed_max
             )
+            self._travel_stats.get("grid").get("time_loss_relative")[-1].append(
+                (time_step - self.start_time - self.position[0] / self.speed_max) /
+                (self.position[0] / self.speed_max)
+            )
+
             self._travel_stats.get("grid").get("dissatisfaction")[-1].append(
                 self._dissatisfaction(
                     time_step - self.start_time - self.position[0] / self.speed_max,
@@ -308,6 +316,12 @@ class SUMOVehicle(BaseVehicle):
             self._travel_stats.get("grid").get("time_loss").append(
                 [time_step - self.start_time - self.position[0] / self.speed_max]
             )
+            self._travel_stats.get("grid").get("time_loss_relative").append(
+                [
+                    (time_step - self.start_time - self.position[0] / self.speed_max) /
+                    (self.position[0] / self.speed_max)
+                ]
+            )
             self._travel_stats.get("grid").get("dissatisfaction").append(
                 [
                     self._dissatisfaction(
@@ -321,6 +335,10 @@ class SUMOVehicle(BaseVehicle):
         # step based stats
         self._travel_stats.get("step").get("time_loss").append(
             time_step - self.start_time - self.position[0] / self.speed_max
+        )
+        self._travel_stats.get("step").get("time_loss_relative").append(
+            (time_step - self.start_time - self.position[0] / self.speed_max) /
+            (self.position[0] / self.speed_max)
         )
 
         self._travel_stats.get("step").get("speed").append(self.speed)
