@@ -45,7 +45,7 @@ _DEFAULT_CONFIG_RUN = {
         "value": 30
     },
     "runs": 1,
-    "scenarios": ["Irzik1"],
+    "scenarios": ["NI-B210"],
     "simtimeinterval": [0, 1800],
     "starttimedistribution": "poisson",
     # "policies": [
@@ -106,7 +106,7 @@ _DEFAULT_CONFIG_RUN = {
 }
 
 _DEFAULT_CONFIG_SCENARIO = {
-    "Irzik1": {
+    "NI-B210": {
         "description": {
             "from": "OUJever",
             "road": "B210",
@@ -127,7 +127,7 @@ _DEFAULT_CONFIG_SCENARIO = {
             "tractor": 0.0,
         }
     },
-    "Irzik2": {
+    "HE-B62": {
         "description": {
             "from": "Coelbe",
             "road": "B62",
@@ -143,7 +143,7 @@ _DEFAULT_CONFIG_SCENARIO = {
             "switchpositions": [0, 1171, 2342, 3513, 4684, 5855, 7026, 8197]
         }
     },
-    "Irzik3": {
+    "NW-B1": {
         "description": {
             "from": "Paderborn",
             "road": "B1",
@@ -159,7 +159,7 @@ _DEFAULT_CONFIG_SCENARIO = {
             "switchpositions": [0, 977, 1954, 2931, 3908, 4885, 5862, 6839, 7816, 8793]
         }
     },
-    "Irzik4": {
+    "HE-B49": {
         "description": {
             "from": "Leun",
             "road": "B49",
@@ -175,7 +175,7 @@ _DEFAULT_CONFIG_SCENARIO = {
             "switchpositions": [0, 900, 1800, 2700, 3600]
         }
     },
-    "Irzik5": {
+    "BY-B20": {
         "description": {
             "from": "Cham",
             "road": "B20",
@@ -191,7 +191,7 @@ _DEFAULT_CONFIG_SCENARIO = {
             "switchpositions": [0, 1375, 2750, 4125, 5500, 6875, 8250, 9625]
         }
     },
-    "Irzik6": {
+    "BY-B471": {
         "description": {
             "from": "OUDachau",
             "road": "B471",
