@@ -199,10 +199,12 @@ class Writer(object):
         # if they already exist by name, overwrite them
         for i_path, i_object_value in Writer._flatten_object_dict(object_dict).iteritems():
 
-            # remove compression if we have a scalar object, i.e. string, int, float
+            # remove filters if we have a scalar object, i.e. string, int, float
             if isinstance(i_object_value.get("value"), (str, int, float)):
                 kwargs.pop("compression", None)
                 kwargs.pop("compression_opts", None)
+                kwargs.pop("fletcher32", None)
+                kwargs.pop("chunks", None)
 
             if i_path in l_group:
                 # remove previous object by i_path id and add the new one
