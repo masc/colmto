@@ -46,7 +46,7 @@ _DEFAULT_CONFIG_RUN = {
     },
     "runs": 1,
     "scenarios": ["Irzik1"],
-    "simtimeinterval": [0, 600],
+    "simtimeinterval": [0, 1800],
     "starttimedistribution": "poisson",
     # "policies": [
     #     {
@@ -120,6 +120,11 @@ _DEFAULT_CONFIG_SCENARIO = {
             "speedlimit": 27.77777777777778,
             "switches": 4,
             "switchpositions": [0, 1360, 2720, 4080, 5440]
+        },
+        "baseline_relative_time_loss": {
+            "passenger": 0.0,
+            "truck": 0.0,
+            "tractor": 0.0,
         }
     },
     "Irzik2": {

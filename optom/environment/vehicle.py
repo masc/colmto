@@ -22,7 +22,6 @@
 # @endcond
 """Vehicle classes for storing vehicle data/attributes/states."""
 from __future__ import division
-import math
 import numpy
 
 import optom.cse.policy
@@ -112,7 +111,8 @@ class SUMOVehicle(BaseVehicle):
                 "maxSpeed": speed_max,
                 "vType": vehicle_type,
                 "vClass": optom.cse.policy.SUMOPolicy.to_allowed_class(),
-                "grid_position": numpy.array((0, 0))
+                "grid_position": numpy.array((0, 0)),
+                "baseline_relative_time_loss": 0.0
             }
         )
 
@@ -124,7 +124,7 @@ class SUMOVehicle(BaseVehicle):
                 "pos_x": [],
                 "pos_y": [],
                 "time_loss": [],
-                "time_loss_relative": [],
+                "relative_time_loss": [],
                 "speed": [],
                 "dissatisfaction": []
             },
@@ -133,7 +133,7 @@ class SUMOVehicle(BaseVehicle):
                 "pos_x": [],
                 "pos_y": [],
                 "time_loss": [],
-                "time_loss_relative": [],
+                "relative_time_loss": [],
                 "speed": [],
                 "dissatisfaction": []
             }
@@ -253,10 +253,15 @@ class SUMOVehicle(BaseVehicle):
         @param optimal_travel_time optimal travel time
         @retval dissatisfaction ([0,1] normalised)
         """
-        return numpy.divide(
+        l_dsat = numpy.divide(
             1.,
             1 + numpy.exp((-time_loss + time_loss_threshold * optimal_travel_time)) * .5
         )
+
+        if l_dsat < 0:
+            print "dsat:", l_dsat, "args:", time_loss, optimal_travel_time, time_loss_threshold
+
+        return l_dsat
 
     def record_travel_stats(self, time_step):
         r"""Record travel statistics to vehicle.
@@ -299,7 +304,7 @@ class SUMOVehicle(BaseVehicle):
             self._travel_stats.get("grid").get("time_loss")[-1].append(
                 time_step - self.start_time - self.position[0] / self.speed_max
             )
-            self._travel_stats.get("grid").get("time_loss_relative")[-1].append(
+            self._travel_stats.get("grid").get("relative_time_loss")[-1].append(
                 (time_step - self.start_time - self.position[0] / self.speed_max) /
                 (self.position[0] / self.speed_max)
             )
@@ -309,6 +314,7 @@ class SUMOVehicle(BaseVehicle):
                     time_step - self.start_time - self.position[0] / self.speed_max,
                     self.position[0] / self.speed_max,
                     self._properties.get("dsat_threshold")
+                    + self._properties.get("baseline_relative_time_loss")
                 )
             )
 
@@ -319,7 +325,7 @@ class SUMOVehicle(BaseVehicle):
             self._travel_stats.get("grid").get("time_loss").append(
                 [time_step - self.start_time - self.position[0] / self.speed_max]
             )
-            self._travel_stats.get("grid").get("time_loss_relative").append(
+            self._travel_stats.get("grid").get("relative_time_loss").append(
                 [
                     (time_step - self.start_time - self.position[0] / self.speed_max) /
                     (self.position[0] / self.speed_max)
@@ -331,6 +337,7 @@ class SUMOVehicle(BaseVehicle):
                         time_step - self.start_time - self.position[0] / self.speed_max,
                         self.position[0] / self.speed_max,
                         self._properties.get("dsat_threshold")
+                        + self._properties.get("baseline_relative_time_loss")
                     )
                 ]
             )
@@ -339,7 +346,7 @@ class SUMOVehicle(BaseVehicle):
         self._travel_stats.get("step").get("time_loss").append(
             time_step - self.start_time - self.position[0] / self.speed_max
         )
-        self._travel_stats.get("step").get("time_loss_relative").append(
+        self._travel_stats.get("step").get("relative_time_loss").append(
             (time_step - self.start_time - self.position[0] / self.speed_max) /
             (self.position[0] / self.speed_max)
         )
@@ -351,8 +358,27 @@ class SUMOVehicle(BaseVehicle):
                 time_step - self.start_time - self.position[0] / self.speed_max,
                 self.position[0] / self.speed_max,
                 self._properties.get("dsat_threshold")
+                + self._properties.get("baseline_relative_time_loss")
             )
         )
+
+        # force dissatisfaction of first entry to 0.0 to avoid start-time quirks introduced by SUMO
+        if self._travel_stats.get("grid").get("dissatisfaction")[0] != [0.]:
+            self._travel_stats.get("grid").get("dissatisfaction")[0] = [0.]
+        if self._travel_stats.get("step").get("dissatisfaction")[0] != 0.:
+            self._travel_stats.get("step").get("dissatisfaction")[0] = 0.
+
+        # force time_loss of first entry to 0.0 to avoid start-time quirks
+        if self._travel_stats.get("grid").get("time_loss")[0] != [0.]:
+            self._travel_stats.get("grid").get("time_loss")[0] = [0.]
+        if self._travel_stats.get("step").get("time_loss")[0] != 0.:
+            self._travel_stats.get("step").get("time_loss")[0] = 0.
+
+        # force relative_time_loss of first entry to 0.0 to avoid start-time quirks
+        if self._travel_stats.get("grid").get("relative_time_loss")[0] != [0.]:
+            self._travel_stats.get("grid").get("relative_time_loss")[0] = [0.]
+        if self._travel_stats.get("step").get("relative_time_loss")[0] != 0.:
+            self._travel_stats.get("step").get("relative_time_loss")[0] = 0.
 
         return self
 
