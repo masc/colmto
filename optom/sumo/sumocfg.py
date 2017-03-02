@@ -242,7 +242,7 @@ class SumoConfig(optom.common.configuration.Configuration):
         )
 
         # update baseline_relative_time_loss for each vehicle according to scenario
-        for i_vid, i_vehicle in l_vehicles.iteritems():
+        for i_vehicle in l_vehicles.itervalues():
             i_vehicle.properties["baseline_relative_time_loss"] = self.scenario_config.get(
                 scenario_run_config.get("scenarioname")
             ).get("baseline_relative_time_loss").get(i_vehicle.properties.get("vType"))

@@ -253,10 +253,13 @@ class SUMOVehicle(BaseVehicle):
         @param optimal_travel_time optimal travel time
         @retval dissatisfaction ([0,1] normalised)
         """
+
+        # pylint: disable=no-member
         l_dsat = numpy.divide(
             1.,
             1 + numpy.exp((-time_loss + time_loss_threshold * optimal_travel_time)) * .5
         )
+        # pylint: enable=no-member
 
         if l_dsat < 0:
             print "dsat:", l_dsat, "args:", time_loss, optimal_travel_time, time_loss_threshold

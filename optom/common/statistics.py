@@ -222,7 +222,8 @@ class Statistics(object):
             for i_stat in ["dissatisfaction", "time_loss", "relative_time_loss"]:
 
                 l_hdf5structure.get("global").get("fairness").get(i_vtype)[
-                    "{}_delta".format(i_stat)] = {
+                    "{}_delta".format(i_stat)
+                ] = {
                     "value": numpy.array(
                         [
                             Statistics.h_spread(
@@ -259,7 +260,8 @@ class Statistics(object):
                 }
 
                 l_hdf5structure.get("global").get("fairness").get(i_vtype)[
-                    "{}_start".format(i_stat)] = {
+                    "{}_start".format(i_stat)
+                ] = {
                     "value": numpy.array(
                         [
                             Statistics.h_spread(
@@ -292,7 +294,8 @@ class Statistics(object):
                 }
 
                 l_hdf5structure.get("global").get("fairness").get(i_vtype)[
-                    "{}_end".format(i_stat)] = {
+                    "{}_end".format(i_stat)
+                ] = {
                     "value": numpy.array(
                         [
                             Statistics.h_spread(
@@ -325,7 +328,8 @@ class Statistics(object):
                 }
 
                 l_hdf5structure.get("global").get("driver").get(i_vtype)[
-                    "{}_delta".format(i_stat)] = {
+                    "{}_delta".format(i_stat)
+                ] = {
                     "value": numpy.array(
                         [
                             # pylint: disable=no-member
@@ -360,7 +364,8 @@ class Statistics(object):
                 }
 
                 l_hdf5structure.get("global").get("driver").get(i_vtype)[
-                    "{}_start".format(i_stat)] = {
+                    "{}_start".format(i_stat)
+                ] = {
                     "value": numpy.array(
                         [
                             i_vehicle.travel_stats.get("grid").get(i_stat)[0]
@@ -388,7 +393,8 @@ class Statistics(object):
                 }
 
                 l_hdf5structure.get("global").get("driver").get(i_vtype)[
-                    "{}_end".format(i_stat)] = {
+                    "{}_end".format(i_stat)
+                ] = {
                     "value": numpy.array(
                         [
                             i_vehicle.travel_stats.get("grid").get(i_stat)[-1]
@@ -431,8 +437,9 @@ class Statistics(object):
 
                 for i_stat in ["dissatisfaction", "time_loss", "relative_time_loss"]:
 
-                    l_hdf5structure.get("intervals").get("{}-{}".format(*i_interval))\
-                        .get("fairness").get(i_vtype)["{}_delta".format(i_stat)] = {
+                    l_hdf5structure.get("intervals").get("{}-{}".format(*i_interval)).get(
+                        "fairness"
+                    ).get(i_vtype)["{}_delta".format(i_stat)] = {
                         "value": numpy.array(
                             [
                                 Statistics.h_spread(
@@ -481,8 +488,9 @@ class Statistics(object):
                         }
                     }
 
-                    l_hdf5structure.get("intervals").get("{}-{}".format(*i_interval)) \
-                        .get("fairness").get(i_vtype)["{}_start".format(i_stat)] = {
+                    l_hdf5structure.get("intervals").get("{}-{}".format(*i_interval)).get(
+                        "fairness"
+                    ).get(i_vtype)["{}_start".format(i_stat)] = {
                         "value": numpy.array(
                             [
                                 Statistics.h_spread(
@@ -518,8 +526,9 @@ class Statistics(object):
                         }
                     }
 
-                    l_hdf5structure.get("intervals").get("{}-{}".format(*i_interval)) \
-                        .get("fairness").get(i_vtype)["{}_end".format(i_stat)] = {
+                    l_hdf5structure.get("intervals").get("{}-{}".format(*i_interval)).get(
+                        "fairness"
+                    ).get(i_vtype)["{}_end".format(i_stat)] = {
                         "value": numpy.array(
                             [
                                 Statistics.h_spread(
@@ -555,8 +564,9 @@ class Statistics(object):
                         }
                     }
 
-                    l_hdf5structure.get("intervals").get("{}-{}".format(*i_interval)) \
-                        .get("driver").get(i_vtype)["{}_delta".format(i_stat)] = {
+                    l_hdf5structure.get("intervals").get("{}-{}".format(*i_interval)).get(
+                        "driver"
+                    ).get(i_vtype)["{}_delta".format(i_stat)] = {
                         "value": numpy.array(
                             [
                                 # pylint: disable=no-member
@@ -598,8 +608,9 @@ class Statistics(object):
                         }
                     }
 
-                    l_hdf5structure.get("intervals").get("{}-{}".format(*i_interval)) \
-                        .get("driver").get(i_vtype)["{}_start".format(i_stat)] = {
+                    l_hdf5structure.get("intervals").get("{}-{}".format(*i_interval)).get(
+                        "driver"
+                    ).get(i_vtype)["{}_start".format(i_stat)] = {
                         "value": numpy.array(
                             [
                                 i_vehicle.travel_stats.get("grid").get(i_stat)[
@@ -629,8 +640,9 @@ class Statistics(object):
                         }
                     }
 
-                    l_hdf5structure.get("intervals").get("{}-{}".format(*i_interval)).get("driver") \
-                        .get(i_vtype)["{}_end".format(i_stat)] = {
+                    l_hdf5structure.get("intervals").get("{}-{}".format(*i_interval)).get(
+                        "driver"
+                    ).get(i_vtype)["{}_end".format(i_stat)] = {
                         "value": numpy.array(
                             [
                                 i_vehicle.travel_stats.get("grid").get(i_stat)[
@@ -661,31 +673,30 @@ class Statistics(object):
                     }
 
         l_hdf5structure["step-based"] = {
-              i_vehicle_id: {
-                  "value": numpy.array(
-                      [
-                          i_vehicle.travel_stats.get("step").get("pos_x"),
-                          i_vehicle.travel_stats.get("step").get("pos_y"),
-                          i_vehicle.travel_stats.get("step").get("dissatisfaction"),
-                          i_vehicle.travel_stats.get("step").get("speed"),
-                          i_vehicle.travel_stats.get("step").get("time_loss"),
-                          i_vehicle.travel_stats.get("step").get("relative_time_loss")
+            i_vehicle_id: {
+                "value": numpy.array(
+                    [
+                        i_vehicle.travel_stats.get("step").get("pos_x"),
+                        i_vehicle.travel_stats.get("step").get("pos_y"),
+                        i_vehicle.travel_stats.get("step").get("dissatisfaction"),
+                        i_vehicle.travel_stats.get("step").get("speed"),
+                        i_vehicle.travel_stats.get("step").get("time_loss"),
+                        i_vehicle.travel_stats.get("step").get("relative_time_loss")
 
-                      ]
-                  ),
-                  "attr": {
-                      "description": "vehicle travel stats for run {}".format(
-                          "{} of this vehicle's time step {}".format(
-                              run_number,
-                              "[0 ... travel time in time steps]"
-                          )
-                      ),
-                      "rows": "- 0: pos x\n- 1: pos y\n- 2: dissatisfaction\n"
-                              "- 3: speed\n- 4: time loss",
-                      "columns": "time step of vehicle",
-
-                  }
-              } for i_vehicle_id, i_vehicle in sorted(vehicles.iteritems())
+                    ]
+                ),
+                "attr": {
+                    "description": "vehicle travel stats for run {}".format(
+                        "{} of this vehicle's time step {}".format(
+                            run_number,
+                            "[0 ... travel time in time steps]"
+                        )
+                    ),
+                    "rows": "- 0: pos x\n- 1: pos y\n- 2: dissatisfaction\n"
+                            "- 3: speed\n- 4: time loss",
+                    "columns": "time step of vehicle",
+                }
+            } for i_vehicle_id, i_vehicle in sorted(vehicles.iteritems())
         }
 
         l_hdf5structure["grid-based"] = {
