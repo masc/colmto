@@ -141,11 +141,15 @@ class SumoSim(object):
                         )
                     )
 
+                l_aadt = self._sumocfg.scenario_config.get(scenario_name).get(
+                    "parameters"
+                ).get("aadt") if not self._sumocfg.run_config.get("aadt").get("enabled") \
+                    else self._sumocfg.run_config.get("aadt").get("value")
                 self._log.info(
                     "Scenario %s, AADT %d (%d vph), sorting %s: Finished run %d/%d",
                     scenario_name,
-                    self._sumocfg.run_config.get("aadt").get("value"),
-                    int(self._sumocfg.run_config.get("aadt").get("value") / 24),
+                    l_aadt,
+                    int(l_aadt / 24),
                     i_initial_sorting,
                     i_run + 1,
                     self._sumocfg.run_config.get("runs")
