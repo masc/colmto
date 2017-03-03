@@ -99,6 +99,7 @@ class Runtime(object):
                 "--no-step-log"
             ]
         )
+
         self._log.debug("connecting to TraCI instance on port %d", run_config.get("sumoport"))
 
         # subscribe to global simulation vars
