@@ -751,7 +751,9 @@ class SumoConfig(optom.common.configuration.Configuration):
                 "--edge-files={}".format(edgefile),
                 "--output-file={}".format(netfile)
             ],
-            stderr=subprocess.STDOUT
+            stderr=subprocess.STDOUT,
+            bufsize=-1,
+            close_fds=True
         )
         self._log.debug(
             "%s: %s", self._binaries.get("netconvert"), l_netconvertprocess.replace("\n", "")
@@ -778,7 +780,9 @@ class SumoConfig(optom.common.configuration.Configuration):
                 "-t", tripfile,
                 "-o", routefile
             ],
-            stderr=subprocess.STDOUT
+            stderr=subprocess.STDOUT,
+            bufsize=-1,
+            close_fds=True
         )
         self._log.debug(
             "%s: %s", self._binaries.get("duarouter"), l_duarouterprocess.replace("\n", "")
