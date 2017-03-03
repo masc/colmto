@@ -275,7 +275,7 @@ _DEFAULT_CONFIG_VTYPES = {
         "vClass": "custom2",
         "vType": "passenger",
         "width": 1.8,
-        "dsat_threshold": 0.2
+        "dsat_threshold": 0.25
     },
     "tractor": {
         "accel": 1.3,
