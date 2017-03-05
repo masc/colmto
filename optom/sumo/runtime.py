@@ -48,7 +48,7 @@ class Runtime(object):
         self._sumo_binary = sumo_binary
         self._log = optom.common.log.logger(__name__, args.loglevel, args.quiet, args.logfile)
 
-    def run_once(self, run_config):
+    def run_standalone(self, run_config):
         """
         @brief Run provided scenario in one shot.
 

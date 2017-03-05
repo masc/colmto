@@ -132,7 +132,7 @@ class SumoSim(object):
                         .get("parameters").get("detectorpositions")
                     )
                 else:
-                    self._runtime.run_once(
+                    self._runtime.run_standalone(
                         self._sumocfg.generate_run(
                             l_scenario,
                             i_initial_sorting,
