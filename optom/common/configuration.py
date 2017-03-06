@@ -122,9 +122,9 @@ _DEFAULT_CONFIG_SCENARIO = {
             "switchpositions": [0, 1360, 2720, 4080, 5440]
         },
         "baseline_relative_time_loss": {
-            "passenger": 0.0,
-            "truck": 0.0,
-            "tractor": 0.0,
+            "passenger": 0.026,
+            "truck": 0.014,
+            "tractor": 0.042,
         }
     },
     "HE-B62": {
@@ -143,9 +143,9 @@ _DEFAULT_CONFIG_SCENARIO = {
             "switchpositions": [0, 1171, 2342, 3513, 4684, 5855, 7026, 8197]
         },
         "baseline_relative_time_loss": {
-            "passenger": 0.0,
-            "truck": 0.0,
-            "tractor": 0.0,
+            "passenger": 0.026,
+            "truck": 0.014,
+            "tractor": 0.042,
         }
     },
     "NW-B1": {
@@ -164,9 +164,9 @@ _DEFAULT_CONFIG_SCENARIO = {
             "switchpositions": [0, 977, 1954, 2931, 3908, 4885, 5862, 6839, 7816, 8793]
         },
         "baseline_relative_time_loss": {
-            "passenger": 0.0,
-            "truck": 0.0,
-            "tractor": 0.0,
+            "passenger": 0.027,
+            "truck": 0.014,
+            "tractor": 0.043,
         }
     },
     "HE-B49": {
@@ -185,9 +185,9 @@ _DEFAULT_CONFIG_SCENARIO = {
             "switchpositions": [0, 900, 1800, 2700, 3600]
         },
         "baseline_relative_time_loss": {
-            "passenger": 0.0,
-            "truck": 0.0,
-            "tractor": 0.0,
+            "passenger": 0.026,
+            "truck": 0.014,
+            "tractor": 0.042,
         }
     },
     "BY-B20": {
@@ -206,9 +206,9 @@ _DEFAULT_CONFIG_SCENARIO = {
             "switchpositions": [0, 1375, 2750, 4125, 5500, 6875, 8250, 9625]
         },
         "baseline_relative_time_loss": {
-            "passenger": 0.0,
-            "truck": 0.0,
-            "tractor": 0.0,
+            "passenger": 0.027,
+            "truck": 0.014,
+            "tractor": 0.042,
         }
     },
     "BY-B471": {
@@ -227,9 +227,9 @@ _DEFAULT_CONFIG_SCENARIO = {
             "switchpositions": [0, 1280, 2560, 3840, 5120]
         },
         "baseline_relative_time_loss": {
-            "passenger": 0.0,
-            "truck": 0.0,
-            "tractor": 0.0,
+            "passenger": 0.026,
+            "truck": 0.014,
+            "tractor": 0.042,
         }
     }
 }
