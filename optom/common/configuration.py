@@ -44,8 +44,8 @@ _DEFAULT_CONFIG_RUN = {
         "enabled": False,
         "value": 30
     },
-    "runs": 1,
-    "scenarios": ["NI-B210"],
+    "runs": 1000,
+    "scenarios": ["NI-B210", "HE-B62", "NW-B1"],
     "simtimeinterval": [0, 1800],
     "starttimedistribution": "poisson",
     # "policies": [
@@ -89,12 +89,12 @@ _DEFAULT_CONFIG_RUN = {
     "vtypedistribution": {
         "passenger": {
             "desiredSpeeds": [34.0],
-            "fraction": 0.5,
+            "fraction": 0.6,
             "speedDev": 0.0
         },
         "tractor": {
             "desiredSpeeds": [8.0],
-            "fraction": 0.2,
+            "fraction": 0.1,
             "speedDev": 0.0
         },
         "truck": {
@@ -275,7 +275,7 @@ _DEFAULT_CONFIG_VTYPES = {
         "vClass": "custom2",
         "vType": "passenger",
         "width": 1.8,
-        "dsat_threshold": 0.25
+        "dsat_threshold": 0.2
     },
     "tractor": {
         "accel": 1.3,
