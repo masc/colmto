@@ -69,7 +69,7 @@ test:
         - cp pylint.md pylint_doc.md
         - echo -e "\n![ImportGraph](https://github.com/masc/optom/blob/gh-pages/docs/sources/optom-imports.png)" >> pylint.md
         - echo -e "\n# Code Statistics\n\n" > REPORT.md
-        - echo -e "\n- Repository: https://github.com/masc/optom\n\n## Copyright & License\n\n- Copyright 2017, Malte Aschermann\n- License LGPL\n\n" > README_doc.md
+        - echo -e "## Copyright & License\n\n- Copyright 2017, Malte Aschermann\n- License LGPL\n\n" > README_doc.md
         - sh site/radon.sh > radon.md
         - cat radon.md >> REPORT.md
         - echo -e "\n# Pylint\n\n" >> REPORT.md
