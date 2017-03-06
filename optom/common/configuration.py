@@ -39,7 +39,7 @@ _DEFAULT_CONFIG_RUN = {
         "value": 13000
     },
     "cse-enabled": False,
-    "initialsortings": ["random"],
+    "initialsortings": ["best", "random", "worst"],
     "nbvehicles": {
         "enabled": False,
         "value": 30
