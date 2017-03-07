@@ -101,35 +101,52 @@ class SumoSim(object):
 
         for i_initial_sorting in self._sumocfg.run_config.get("initialsortings"):
 
-            l_run_stats = {}
+            # l_run_stats = {}
 
             for i_run in xrange(self._sumocfg.run_config.get("runs")):
 
                 if self._sumocfg.run_config.get("cse-enabled"):
                     # cse mode: apply cse policies to vehicles and run with TraCI
-                    l_run_stats[i_run] = self._statistics.stats_to_hdf5_structure(
+                    # l_run_stats[i_run] =
+                    self._writer.write_hdf5(
 
-                        self._statistics.aggregate_vehicle_grid_stats(
+                        self._statistics.stats_to_hdf5_structure(
 
-                            self._runtime.run_traci(
-                                self._sumocfg.generate_run(
-                                    l_scenario,
-                                    i_initial_sorting,
-                                    i_run,
-                                    l_vtype_list
-                                ),
-                                optom.cse.cse.SumoCSE(
-                                    self._args
-                                ).add_policies_from_cfg(
-                                    self._sumocfg.run_config.get("policies")
+                            self._statistics.aggregate_vehicle_grid_stats(
+
+                                self._runtime.run_traci(
+                                    self._sumocfg.generate_run(
+                                        l_scenario,
+                                        i_initial_sorting,
+                                        i_run,
+                                        l_vtype_list
+                                    ),
+                                    optom.cse.cse.SumoCSE(
+                                        self._args
+                                    ).add_policies_from_cfg(
+                                        self._sumocfg.run_config.get("policies")
+                                    )
                                 )
-                            )
+                            ),
+
+                            run_number=i_run,
+
+                            detector_positions=self._sumocfg.scenario_config.get(scenario_name)
+                            .get("parameters").get("detectorpositions")
                         ),
 
-                        run_number=i_run,
-
-                        detector_positions=self._sumocfg.scenario_config.get(scenario_name)
-                        .get("parameters").get("detectorpositions")
+                        hdf5_file=self._args.results_hdf5_file if self._args.results_hdf5_file
+                        else os.path.join(self._sumocfg.resultsdir,
+                                          "{}.hdf5".format(self._sumocfg.run_prefix)),
+                        hdf5_base_path=os.path.join(
+                            scenario_name,
+                            str(self._sumocfg.aadt(self._sumocfg.generate_scenario(scenario_name))),
+                            i_initial_sorting,
+                            str(i_run)
+                        ),
+                        compression="gzip",
+                        compression_opts=9,
+                        fletcher32=True
                     )
                 else:
                     self._runtime.run_standalone(
@@ -155,24 +172,26 @@ class SumoSim(object):
                     self._sumocfg.run_config.get("runs")
                 )
 
-            self._writer.write_hdf5(
-                self._statistics.aggregate_run_stats_to_hdf5(
-                    l_run_stats,
-                    detector_positions=self._sumocfg.scenario_config.get(scenario_name)
-                    .get("parameters").get("detectorpositions")
-                ),
-                hdf5_file=self._args.results_hdf5_file if self._args.results_hdf5_file
-                else os.path.join(self._sumocfg.resultsdir,
-                                  "{}.hdf5".format(self._sumocfg.run_prefix)),
-                hdf5_base_path=os.path.join(
-                    scenario_name,
-                    str(self._sumocfg.aadt(self._sumocfg.generate_scenario(scenario_name))),
-                    i_initial_sorting,
-                ),
-                compression="gzip",
-                compression_opts=9,
-                fletcher32=True
-            )
+            # self._writer.write_hdf5(
+            #     self._statistics.aggregate_run_stats_to_hdf5(
+            #         l_run_stats,
+            #         detector_positions=self._sumocfg.scenario_config.get(scenario_name)
+            #         .get("parameters").get("detectorpositions")
+            #     ),
+            #     hdf5_file=self._args.results_hdf5_file if self._args.results_hdf5_file
+            #     else os.path.join(self._sumocfg.resultsdir,
+            #                       "{}.hdf5".format(self._sumocfg.run_prefix)),
+            #     hdf5_base_path=os.path.join(
+            #         scenario_name,
+            #         str(self._sumocfg.aadt(self._sumocfg.generate_scenario(scenario_name))),
+            #         i_initial_sorting,
+            #     ),
+            #     compression="gzip",
+            #     compression_opts=9,
+            #     fletcher32=True
+            # )
+            #
+            # del l_run_stats
 
         # dump configuration to run dir
         self._writer.write_json_pretty(

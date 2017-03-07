@@ -740,6 +740,8 @@ class Statistics(object):
             } for i_vehicle_id, i_vehicle in sorted(vehicles.iteritems())
         }
 
+        del vehicles
+
         return l_hdf5structure
 
     @staticmethod
