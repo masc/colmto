@@ -48,8 +48,8 @@ test:
         - git checkout master
         - python setup.py install
         - python setup.py test
-        - SUMO_HOME=/usr/share/sumo python -m run --fresh-configs
-        - SUMO_HOME=/usr/share/sumo python -m run --fresh-configs --cse
+        - SUMO_HOME=/usr/share/sumo python -m run --fresh-configs --scenarios NI-B210 --runs 1
+        - SUMO_HOME=/usr/share/sumo python -m run --fresh-configs --cse --scenarios NI-B210 --runs 1
         # codecov
         - nosetests -w tests --with-coverage
         - bash <(curl -s https://codecov.io/bash) -t 910321f1-7584-4bc8-b264-bce881241d83
