@@ -23,11 +23,12 @@
 """Configuration super class."""
 from __future__ import division
 from __future__ import print_function
-import numpy
 import os
 import sys
 import h5py
+import numpy
 import optom.common.io
+
 
 def aggregate_run_stats_to_hdf5(hdf5_stats, detector_positions):
     """
@@ -119,7 +120,11 @@ def aggregate_run_stats_to_hdf5(hdf5_stats, detector_positions):
 
 
 def main(argv):
-    writer = optom.common.io.Writer()
+    """
+    Main function
+    @param argv cmdline arguments
+    """
+    l_writer = optom.common.io.Writer()
 
     if len(argv) < 3:
         print("Usage: aggregate_runs_in_hdf5.py hdf5-input-file hdf5-output-file")
@@ -127,7 +132,6 @@ def main(argv):
 
     print("reading input HDF5 ({})".format(argv[1]))
     f_hdf5_input = h5py.File(argv[1], "r")
-    f_hdf5_output = h5py.File(argv[2], "a", libver="latest")
 
     print("figuring out detector positions ...")
 
@@ -136,41 +140,55 @@ def main(argv):
         print("No scenario dirs found!")
         return
 
-    l_aadts = f_hdf5_input[l_scenarios[0]].keys()
-    if len(l_aadts) == 0:
-        print("No aadt dirs found!")
-        return
-
-    l_orderings = f_hdf5_input[os.path.join(l_scenarios[0], l_aadts[0])].keys()
-    if len(l_orderings) == 0:
-        print("No ordering dirs found!")
-        return
-
-    l_runs = f_hdf5_input[os.path.join(l_scenarios[0], l_aadts[0], l_orderings[0])].keys()
-
-    l_intervals = f_hdf5_input[os.path.join(
-        l_scenarios[0], l_aadts[0], l_orderings[0], l_runs[0], "intervals"
-    )].keys()
-    l_detector_positions = sorted(
-        set(
-            [
-                e for tupl in [
-                    (int(i.split("-")[0]), int(i.split("-")[1])) for i in l_intervals
-                ] for e in tupl
-            ]
-        )
-    )
-    print("... {}".format(l_detector_positions))
     print("aggregating data...")
 
     for i_scenario in l_scenarios:
+        print("|-- {}".format(i_scenario))
+
+        l_aadts = f_hdf5_input[i_scenario].keys()
+        if len(l_aadts) == 0:
+            print("No aadt dirs found!")
+            return
+
         for i_aadt in l_aadts:
+            print("|   |-- {}".format(i_aadt))
+
+            l_orderings = f_hdf5_input[os.path.join(i_scenario, i_aadt)].keys()
+            if len(l_orderings) == 0:
+                print("No ordering dirs found!")
+                return
+
             for i_ordering in l_orderings:
-                # aggregate_run_stats_to_hdf5(
-                #     f_hdf5_input[os.path.join(i_scenario, i_aadt, i_ordering)],
-                #     l_detector_positions
-                # )
-                pass
+                l_runs = f_hdf5_input[os.path.join(i_scenario, i_aadt, i_ordering)].keys()
+                l_intervals = f_hdf5_input[os.path.join(
+                    i_scenario,
+                    i_aadt,
+                    i_ordering,
+                    l_runs[0],
+                    "intervals"
+                )].keys()
+                l_detector_positions = sorted(
+                    set(
+                        [
+                            e for tupl in [
+                                (int(i.split("-")[0]), int(i.split("-")[1])) for i in l_intervals
+                            ] for e in tupl
+                        ]
+                    )
+                )
+                print("|   |   |-- {} {}".format(i_ordering, l_detector_positions))
+
+                l_writer.write_hdf5(
+                    aggregate_run_stats_to_hdf5(
+                        f_hdf5_input[os.path.join(i_scenario, i_aadt, i_ordering)],
+                        l_detector_positions
+                    ),
+                    hdf5_file=argv[2],
+                    hdf5_base_path=os.path.join(i_scenario, str(i_aadt), i_ordering),
+                    compression="gzip",
+                    compression_opts=9,
+                    fletcher32=True
+                )
 
     f_hdf5_input.close()
 
