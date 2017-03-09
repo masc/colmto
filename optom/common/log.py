@@ -40,7 +40,7 @@ def logger(name, loglevel=logging.NOTSET, quiet=False,
            logfile=os.path.expanduser(u"~/.optom/optom.log")):
     """Create a logger instance."""
 
-    if not os.path.exists(os.path.dirname(logfile)):
+    if os.path.dirname(logfile) != "" and not os.path.exists(os.path.dirname(logfile)):
         os.makedirs(os.path.dirname(logfile))
 
     l_log = logging.getLogger(name)
