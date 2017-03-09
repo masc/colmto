@@ -261,9 +261,6 @@ class SUMOVehicle(BaseVehicle):
         )
         # pylint: enable=no-member
 
-        if l_dsat < 0:
-            print "dsat:", l_dsat, "args:", time_loss, optimal_travel_time, time_loss_threshold
-
         return l_dsat
 
     def record_travel_stats(self, time_step):
