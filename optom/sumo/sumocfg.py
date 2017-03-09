@@ -4,7 +4,7 @@
 # #############################################################################
 # # LGPL License                                                              #
 # #                                                                           #
-# # This file is part of the Optimisation of Overtaking Manoeuvres project.   #
+# # This file is part of the Optimisation of 2+1 Manoeuvres project.          #
 # # Copyright (c) 2017, Malte Aschermann (malte.aschermann@tu-clausthal.de)   #
 # # This program is free software: you can redistribute it and/or modify      #
 # # it under the terms of the GNU Lesser General Public License as            #
@@ -204,8 +204,6 @@ class SumoConfig(optom.common.configuration.Configuration):
             l_destinationdir, str(initial_sorting), str(run_number),
             "{}.sumo.cfg".format(scenario_run_config.get("scenarioname"))
         )
-        # l_tripinfofile = os.path.join(l_destinationdir, str(initial_sorting), str(run_number),
-        # "{}.tripinfo-output.xml".format(l_scenarioname))
 
         l_output_measurements_dir = os.path.join(
             self.resultsdir,
@@ -419,7 +417,7 @@ class SumoConfig(optom.common.configuration.Configuration):
         @param edge: edge
         @param scenario_config: scenario config dictionary
         """
-        self._log.info("########### generating switches ###########")
+        self._log.debug("generating switches")
 
         l_length = scenario_config.get("parameters").get("length")
         l_nbswitches = scenario_config.get("parameters").get("switches")
