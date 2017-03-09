@@ -68,52 +68,52 @@ def aggregate_run_stats_to_hdf5(hdf5_stats, detector_positions):
                         "relative_time_loss_end",
                         "relative_time_loss_delta"
                     ]
+                } for i_vtype in ["alltypes", "passenger", "truck", "tractor"]
+            } for i_view in ["fairness", "driver"]
+        },
+        "intervals": {
+            "{}-{}".format(*i_interval): {
+                i_view: {
+                    i_vtype: {
+                        i_stat: {
+                            "value": numpy.array(
+                                [
+                                    i_hdf5_stat[os.path.join(
+                                        i_run,
+                                        "intervals",
+                                        "{}-{}".format(*i_interval),
+                                        i_view,
+                                        i_vtype,
+                                        i_stat
+                                    )] for i_hdf5_stat in hdf5_stats for i_run in i_hdf5_stat
+                                ]
+                            ),
+                            "attr": {
+                                "description": "interval [{}, {}] {}".format(
+                                    i_interval[0],
+                                    i_interval[1],
+                                    "stats of {} of {} {} for each run".format(
+                                        i_view, i_vtype, i_stat
+                                    ),
+                                ),
+                                "rows": "runs",
+                                "columns": "{} of {} {}".format(i_view, i_vtype, i_stat)
+                            }
+                        } for i_stat in [
+                            "dissatisfaction_start",
+                            "dissatisfaction_end",
+                            "dissatisfaction_delta",
+                            "time_loss_start",
+                            "time_loss_end",
+                            "time_loss_delta",
+                            "relative_time_loss_start",
+                            "relative_time_loss_end",
+                            "relative_time_loss_delta"
+                        ]
                     } for i_vtype in ["alltypes", "passenger", "truck", "tractor"]
                 } for i_view in ["fairness", "driver"]
-            },
-        # "intervals": {
-        #     "{}-{}".format(*i_interval): {
-        #         i_view: {
-        #             i_vtype: {
-        #                 i_stat: {
-        #                     "value": numpy.array(
-        #                         [
-        #                             hdf5_stats[os.path.join(
-        #                                 i_run,
-        #                                 "intervals",
-        #                                 "{}-{}".format(*i_interval),
-        #                                 i_view,
-        #                                 i_vtype,
-        #                                 i_stat
-        #                             )] for i_stat in hdf5_stats for i_run in i_stat
-        #                         ]
-        #                     ),
-        #                     "attr": {
-        #                         "description": "interval [{}, {}] {}".format(
-        #                             i_interval[0],
-        #                             i_interval[1],
-        #                             "stats of {} of {} {} for each run".format(
-        #                                 i_view, i_vtype, i_stat
-        #                             ),
-        #                         ),
-        #                         "rows": "runs",
-        #                         "columns": "{} of {} {}".format(i_view, i_vtype, i_stat)
-        #                     }
-        #                 } for i_stat in [
-        #                     "dissatisfaction_start",
-        #                     "dissatisfaction_end",
-        #                     "dissatisfaction_delta",
-        #                     "time_loss_start",
-        #                     "time_loss_end",
-        #                     "time_loss_delta",
-        #                     "relative_time_loss_start",
-        #                     "relative_time_loss_end",
-        #                     "relative_time_loss_delta"
-        #                 ]
-        #                 } for i_vtype in ["alltypes", "passenger", "truck", "tractor"]
-        #             } for i_view in ["fairness", "driver"]
-        #         } for i_interval in zip(detector_positions[:-1], detector_positions[1:])
-        #     }
+            } for i_interval in zip(detector_positions[:-1], detector_positions[1:])
+        }
     }
 
     return l_aggregated
@@ -135,14 +135,13 @@ def main(argv):
         i_filename: h5py.File(i_filename, "r") for i_filename in argv[1:-1]
     }
 
-    l_scenarios = f_hdf5_input.values()[0].keys()
-    if len(l_scenarios) == 0:
+    if len(f_hdf5_input.values()[0].keys()) == 0:
         print("No scenario dirs found!")
         return
 
     print("aggregating data...")
 
-    for i_scenario in l_scenarios:
+    for i_scenario in f_hdf5_input.values()[0].keys():
         print("|-- {}".format(i_scenario))
 
         l_aadts = f_hdf5_input.values()[0][i_scenario].keys()
@@ -159,7 +158,9 @@ def main(argv):
                 return
 
             for i_ordering in l_orderings:
-                l_runs = f_hdf5_input.values()[0][os.path.join(i_scenario, i_aadt, i_ordering)].keys()
+                l_runs = f_hdf5_input.values()[0][
+                    os.path.join(i_scenario, i_aadt, i_ordering)
+                ].keys()
                 l_intervals = f_hdf5_input.values()[0][os.path.join(
                     i_scenario,
                     i_aadt,
