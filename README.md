@@ -5,7 +5,7 @@ Optimisation of 2+1 Manoeuvres (OpTOM)
 [![codecov.io](https://codecov.io/github/masc/optom/coverage.svg?token=WKRFU2mDRO&branch=master)](https://codecov.io/github/masc/optom)
 
   * [Source Code Documentation (HTML)](http://masc.github.io/optom/docs/sources/index.html)
-  * [Source Code Documentation (PDF)](http://masc.github.io/optom/docs/OPTOM-doc.pdf)
+  * [Source Code Documentation (PDF)](http://masc.github.io/optom/docs/OpTOM-doc.pdf)
 
 Copyright & License
 -------------------
