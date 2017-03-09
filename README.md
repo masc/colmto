@@ -1,5 +1,4 @@
 Optimisation of 2+1 Manoeuvres (OpTOM)
-
 ==========================
 
 [![CircleCI](https://circleci.com/gh/masc/optom/tree/master.svg?style=shield&circle-token=ff9f6072df84edef937bff818eb00102157245b4)](https://circleci.com/gh/masc/optom/tree/master)
