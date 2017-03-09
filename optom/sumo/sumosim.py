@@ -81,9 +81,9 @@ class SumoSim(object):
             return
 
         l_scenario = self._sumocfg.generate_scenario(scenario_name)
-
         l_vtype_list = self._sumocfg.run_config.get("vtype_list")
         if scenario_name not in l_vtype_list:
+            self._log.info("Generating new vtype_list")
             l_vtypedistribution = list(
                 itertools.chain.from_iterable(
                     [
@@ -103,6 +103,8 @@ class SumoSim(object):
             l_vtype_list[scenario_name] = [
                 random.choice(l_vtypedistribution) for _ in xrange(l_numberofvehicles)
             ]
+        else:
+            self._log.info("Using pre-configured vtype_list")
 
         for i_initial_sorting in self._sumocfg.run_config.get("initialsortings"):
 
