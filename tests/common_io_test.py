@@ -4,7 +4,7 @@
 # #############################################################################
 # # LGPL License                                                              #
 # #                                                                           #
-# # This file is part of the Optimisation of 2+1 Manoeuvres project.          #
+# # This file is part of the Optimisation of Overtaking Manoeuvres project.   #
 # # Copyright (c) 2017, Malte Aschermann (malte.aschermann@tu-clausthal.de)   #
 # # This program is free software: you can redistribute it and/or modify      #
 # # it under the terms of the GNU Lesser General Public License as            #
@@ -27,8 +27,29 @@ import json
 import tempfile
 
 import optom.common.io
+from lxml import etree
+from lxml.etree import XSLT
 import yaml
 from nose.tools import assert_equals
+from nose.tools import assert_true
+
+
+def test_xslt():
+    """Test xslt from io module"""
+    l_xslt_template = """<xsl:stylesheet version="1.0"
+        xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+        </xsl:stylesheet>"""
+
+    assert_true(
+        isinstance(
+            optom.common.io.xslt(
+                etree.XML(
+                    l_xslt_template
+                )
+            ),
+            XSLT
+        )
+    )
 
 
 def test_reader_read_etree():
