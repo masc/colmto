@@ -19,7 +19,7 @@ machine:
         GIT_COMMITTER_EMAIL: masc@tu-clausthal.de
         SUMO_HOME: /usr/share/sumo
         TEXINSTALL: small
-        DOCUMENT: OPTOM-doc
+        DOCUMENT: OpTOM-doc
 
     python:
         version: 2.7.12
@@ -28,7 +28,7 @@ dependencies:
     cache_directories:
         - "~/texmf"
         - "/usr/local/texlive/"
-        
+
     pre:
         - sudo add-apt-repository -y ppa:sumo/stable
         - sudo apt-get update

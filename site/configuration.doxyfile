@@ -4,7 +4,7 @@
 # Project related configuration options
 #---------------------------------------------------------------------------
 DOXYFILE_ENCODING      = UTF-8
-PROJECT_NAME           = "Optimisation of Overtaking Manoeuvres (OPTOM)"
+PROJECT_NAME           = "Optimisation of 2+1 Manoeuvres (OpTOM)"
 PROJECT_NUMBER         =
 PROJECT_BRIEF          =
 PROJECT_LOGO           =

@@ -1,8 +1,5 @@
 """
-OPTOM: Optimisation of Overtaking Manoeuvres
-
-Note that "python setup.py test" invokes pytest on the package. With appropriately
-configured setup.cfg, this will check both xxx_test modules and docstrings.
+Optimisation of 2+1 Manoeuvres
 
 Copyright 2017, Malte Aschermann.
 Licensed under LGPL.
@@ -14,8 +11,6 @@ from setuptools import setup
 from setuptools.command.test import test as TestCommand
 
 
-# This is a plug-in for setuptools that will invoke py.test
-# when you run python setup.py test
 class PyTest(TestCommand):
     def finalize_options(self):
         TestCommand.finalize_options(self)
@@ -23,7 +18,7 @@ class PyTest(TestCommand):
         self.test_suite = True
 
     def run_tests(self):
-        import pytest  # import here, because outside the required eggs aren"t loaded yet
+        import pytest
         sys.exit(pytest.main(self.test_args))
 
 
@@ -31,7 +26,7 @@ version = "0.1"
 
 setup(name="optom",
       version=version,
-      description="Optimisation of Overtaking Manoeuvres",
+      description="Optimisation of 2+1 Manoeuvres",
       long_description=open("README.md").read(),
       classifiers=[  # Get strings from http://pypi.python.org/pypi?%3Aaction=list_classifiers
         "Programming Language :: Python"
@@ -50,14 +45,12 @@ setup(name="optom",
       # TODO: List of packages that this one depends upon:
       install_requires=[
           "nose",
-          # "gurobipy",
           "matplotlib",
           "sh",
           "lxml",
           "h5py",
           "PyYAML",
           "python-cjson",
-          # "networkx",
           "progressbar",
           "doxypy"
       ],
