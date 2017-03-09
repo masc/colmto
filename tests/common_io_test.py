@@ -30,6 +30,7 @@ import optom.common.io
 import optom.common.helper
 
 import logging
+import gzip
 from lxml import etree
 from lxml.etree import XSLT
 import yaml
@@ -172,6 +173,19 @@ def test_reader_read_json():
 
     f_temp_test.close()
 
+    # gzip
+    f_temp_test = tempfile.NamedTemporaryFile(suffix=".gz")
+    f_gz = gzip.GzipFile(f_temp_test.name, "a")
+    f_gz.write(yaml.dump(l_json_gold))
+    f_gz.close()
+    f_temp_test.seek(0)
+
+    assert_equals(
+        l_reader.read_yaml(f_temp_test.name),
+        l_json_gold
+    )
+    f_temp_test.close()
+
 
 def test_reader_read_yaml():
     """Test read_yaml method from Reader class."""
@@ -242,4 +256,15 @@ def test_reader_read_yaml():
         l_yaml_gold
     )
 
+    # gzip
+    f_temp_test = tempfile.NamedTemporaryFile(suffix=".gz")
+    f_gz = gzip.GzipFile(f_temp_test.name, "a")
+    f_gz.write(yaml.dump(l_yaml_gold))
+    f_gz.close()
+    f_temp_test.seek(0)
+
+    assert_equals(
+        l_reader.read_yaml(f_temp_test.name),
+        l_yaml_gold
+    )
     f_temp_test.close()
