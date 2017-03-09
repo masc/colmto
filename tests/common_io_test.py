@@ -27,6 +27,9 @@ import json
 import tempfile
 
 import optom.common.io
+import optom.common.helper
+
+import logging
 from lxml import etree
 from lxml.etree import XSLT
 import yaml
@@ -157,7 +160,10 @@ def test_reader_read_json():
     f_temp_test.write(json.dumps(l_json_gold))
     f_temp_test.seek(0)
 
-    l_reader = optom.common.io.Reader(None)
+    args = optom.common.helper.Namespace(
+        loglevel=logging.DEBUG, quiet=False, logfile="foo.log"
+    )
+    l_reader = optom.common.io.Reader(args)
 
     assert_equals(
         l_reader.read_json(f_temp_test.name),
