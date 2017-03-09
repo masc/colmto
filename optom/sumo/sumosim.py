@@ -81,33 +81,35 @@ class SumoSim(object):
             return
 
         l_scenario = self._sumocfg.generate_scenario(scenario_name)
-        l_vtypedistribution = list(
-            itertools.chain.from_iterable(
-                [
-                    [k] * int(round(100 * v.get("fraction")))
-                    for (k, v) in self._sumocfg.run_config.get("vtypedistribution").iteritems()
-                    ]
-            )
-        )
-        l_timebegin, l_timeend = self._sumocfg.run_config.get("simtimeinterval")
-        l_numberofvehicles = int(
-            round(
-                self._sumocfg.aadt(l_scenario) / (24 * 60 * 60) * (l_timeend - l_timebegin)
-            )
-        ) if not self._sumocfg.run_config.get("nbvehicles").get("enabled") \
-            else self._sumocfg.run_config.get("nbvehicles").get("value")
 
-        l_vtype_list = [random.choice(l_vtypedistribution) for _ in xrange(l_numberofvehicles)]
+        l_vtype_list = self._sumocfg.run_config.get("vtype_list")
+        if scenario_name not in l_vtype_list:
+            l_vtypedistribution = list(
+                itertools.chain.from_iterable(
+                    [
+                        [k] * int(round(100 * v.get("fraction")))
+                        for (k, v) in self._sumocfg.run_config.get("vtypedistribution").iteritems()
+                    ]
+                )
+            )
+            l_timebegin, l_timeend = self._sumocfg.run_config.get("simtimeinterval")
+            l_numberofvehicles = int(
+                round(
+                    self._sumocfg.aadt(l_scenario) / (24 * 60 * 60) * (l_timeend - l_timebegin)
+                )
+            ) if not self._sumocfg.run_config.get("nbvehicles").get("enabled") \
+                else self._sumocfg.run_config.get("nbvehicles").get("value")
+
+            l_vtype_list[scenario_name] = [
+                random.choice(l_vtypedistribution) for _ in xrange(l_numberofvehicles)
+            ]
 
         for i_initial_sorting in self._sumocfg.run_config.get("initialsortings"):
-
-            # l_run_stats = {}
 
             for i_run in xrange(self._sumocfg.run_config.get("runs")):
 
                 if self._sumocfg.run_config.get("cse-enabled"):
                     # cse mode: apply cse policies to vehicles and run with TraCI
-                    # l_run_stats[i_run] =
                     self._writer.write_hdf5(
 
                         self._statistics.stats_to_hdf5_structure(
@@ -119,7 +121,7 @@ class SumoSim(object):
                                         l_scenario,
                                         i_initial_sorting,
                                         i_run,
-                                        l_vtype_list
+                                        l_vtype_list.get(scenario_name)
                                     ),
                                     optom.cse.cse.SumoCSE(
                                         self._args
@@ -154,7 +156,7 @@ class SumoSim(object):
                             l_scenario,
                             i_initial_sorting,
                             i_run,
-                            l_vtype_list
+                            l_vtype_list.get(scenario_name)
                         )
                     )
 
@@ -193,17 +195,6 @@ class SumoSim(object):
             #
             # del l_run_stats
 
-        # dump configuration to run dir
-        self._writer.write_json_pretty(
-            {
-                "run_config": self._sumocfg.run_config,
-                "scenario_config": self._sumocfg.scenario_config,
-                "vtypes_config": self._sumocfg.vtypes_config
-            },
-            os.path.join(self._sumocfg.sumo_config_dir, self._sumocfg.run_prefix,
-                         "configuration.json")
-        )
-
     def run_scenarios(self):
         """
         Run all scenarios defined by cfgs/commandline.
@@ -211,3 +202,14 @@ class SumoSim(object):
 
         for i_scenarioname in self._sumocfg.run_config.get("scenarios"):
             self.run_scenario(i_scenarioname)
+
+        # dump configuration to run dir
+        self._writer.write_yaml(
+            {
+                "run_config": self._sumocfg.run_config,
+                "scenario_config": self._sumocfg.scenario_config,
+                "vtypes_config": self._sumocfg.vtypes_config
+            },
+            os.path.join(self._sumocfg.sumo_config_dir, self._sumocfg.run_prefix,
+                         "configuration.yaml")
+        )

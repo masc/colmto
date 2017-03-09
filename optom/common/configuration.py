@@ -102,7 +102,8 @@ _DEFAULT_CONFIG_RUN = {
             "fraction": 0.3,
             "speedDev": 0.0
         }
-    }
+    },
+    "vtype_list": {}
 }
 
 _DEFAULT_CONFIG_SCENARIO = {
@@ -383,6 +384,11 @@ class Configuration(object):
         except sh.CommandNotFound:
             self._log.debug("Git command not found in PATH. Setting commit id to UNKNOWN.")
             self._run_config["optom_version"] = "UNKNOWN"
+
+        # make sure vtype_lise exists and is dict
+        if self._run_config.get("vtype_list") is None \
+                or not isinstance(self._run_config.get("vtype_list"), dict):
+            self._run_config["vtype_list"] = {}
 
         self._override_cfg_flags()
 
