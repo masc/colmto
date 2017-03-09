@@ -211,12 +211,21 @@ class Writer(object):
                 del l_group[i_path]
 
             if i_object_value.get("value") is not None and i_object_value.get("attr") is not None:
-                l_group.create_dataset(
-                    name=i_path, data=numpy.asarray(i_object_value.get("value")), **kwargs
-                ).attrs.update(
-                    i_object_value.get("attr")
-                    if isinstance(i_object_value.get("attr"), dict) else {}
-                )
+                try:
+                    l_group.create_dataset(
+                        name=i_path, data=numpy.asarray(i_object_value.get("value")), **kwargs
+                    ).attrs.update(
+                        i_object_value.get("attr")
+                        if isinstance(i_object_value.get("attr"), dict) else {}
+                    )
+                except TypeError as error:
+                    self._log.error(
+                        "error writing %s: %s (%s)",
+                        i_path,
+                        i_object_value.get("value"),
+                        error.message
+                    )
+                    raise TypeError
 
         f_hdf5.close()
 
