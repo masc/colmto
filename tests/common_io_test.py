@@ -333,7 +333,7 @@ def test_write_yaml():
     f_temp_test = tempfile.NamedTemporaryFile()
 
     args = optom.common.helper.Namespace(
-        loglevel=logging.DEBUG, quiet=False, logfile="foo.log"
+        loglevel="debug", quiet=False, logfile="foo.log"
     )
     optom.common.io.Writer(args).write_yaml(l_yaml_gold, f_temp_test.name)
     f_temp_test.seek(0)
