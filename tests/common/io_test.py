@@ -40,6 +40,7 @@ from lxml.etree import XSLT
 import yaml
 from nose.tools import assert_equals
 from nose.tools import assert_true
+from nose.tools import assert_raises
 
 
 def test_xslt():
@@ -545,6 +546,21 @@ def test_write_hdf5():
     }
 
     f_temp_test = tempfile.NamedTemporaryFile(suffix=".hdf5")
+
+    # test for exceptions
+    with assert_raises(TypeError):
+        optom.common.io.Writer(None).write_hdf5(
+            object_dict="foo",
+            hdf5_file=f_temp_test.name,
+            hdf5_base_path="root"
+        )
+
+    with assert_raises(IOError):
+        optom.common.io.Writer(None).write_hdf5(
+            object_dict=l_obj_dict,
+            hdf5_file="{}/".format(f_temp_test.name),
+            hdf5_base_path="root"
+        )
 
     optom.common.io.Writer(None).write_hdf5(
         object_dict=l_obj_dict,
