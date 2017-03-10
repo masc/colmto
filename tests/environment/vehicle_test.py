@@ -43,12 +43,23 @@ def test_basevehicle():
 
     # test custom values
     l_basevehicle = optom.environment.vehicle.BaseVehicle()
-    l_basevehicle.speed = 27.777
     l_basevehicle.position = numpy.array([23.0, 0])
     l_basevehicle.speed = 12.1
 
-    assert_equal(l_basevehicle.speed, 12.1)
-    assert_true(numpy.array_equal(l_basevehicle.position, numpy.array([23.0, 0])))
+    assert_equal(
+        l_basevehicle.speed,
+        12.1
+    )
+    assert_true(
+        numpy.array_equal(l_basevehicle.position, numpy.array([23.0, 0]))
+    )
+    assert_true(
+        numpy.array_equal(l_basevehicle.properties.get("position"), numpy.array([23.0, 0]))
+    )
+    assert_equal(
+        l_basevehicle.properties.get("speed"),
+        12.1
+    )
 
 
 def test_sumovehicle():
@@ -86,3 +97,102 @@ def test_sumovehicle():
     assert_equal(l_sumovehicle.vehicle_type, "passenger")
     assert_true(numpy.array_equal(l_sumovehicle.color, numpy.array((128, 64, 255, 255))))
     assert_equal(l_sumovehicle.start_time, 13)
+    assert_true(
+        numpy.array_equal(
+            l_sumovehicle.grid_position,
+            numpy.array((0, 0))
+        )
+    )
+    l_sumovehicle.grid_position = (1, 2)
+    assert_true(
+        numpy.array_equal(
+            l_sumovehicle.grid_position,
+            numpy.array((1, 2))
+        )
+    )
+    assert_true(
+        numpy.array_equal(
+            l_sumovehicle.properties.get("grid_position"), numpy.array((1, 2))
+        )
+    )
+    assert_equal(
+        l_sumovehicle.travel_time,
+        0.0
+    )
+    assert_equal(
+        l_sumovehicle.travel_stats,
+        {
+            "start_time": 0.0,
+            "travel_time": 0.0,
+            "vehicle_type": l_sumovehicle.vehicle_type,
+            "step": {
+                "dissatisfaction": [],
+                "number": [],
+                "pos_x": [],
+                "pos_y": [],
+                "relative_time_loss": [],
+                "speed": [],
+                "time_loss": []
+            },
+            "grid": {
+                "dissatisfaction": [],
+                "pos_x": [],
+                "pos_y": [],
+                "relative_time_loss": [],
+                "speed": [],
+                "time_loss": []
+            }
+        }
+    )
+
+
+def test_dissatisfaction():
+    """Test dissatisfaction method"""
+    l_sumovehicle = optom.environment.vehicle.SUMOVehicle()
+    l_data = (
+        9.079162e-05, 2.467587e-04, 6.704754e-04, 1.820444e-03, 4.933049e-03, 1.329671e-02,
+        3.533684e-02, 9.055700e-02, 2.130140e-01, 4.238831e-01, 6.666667e-01, 8.446376e-01,
+        9.366211e-01, 9.757111e-01, 9.909253e-01, 9.966423e-01, 9.987622e-01, 9.995443e-01,
+        9.998323e-01, 9.999383e-01, 9.999773e-01, 9.999916e-01, 9.999969e-01, 9.999989e-01,
+        9.999996e-01, 9.999998e-01, 9.999999e-01, 1.000000e+00, 1.000000e+00, 1.000000e+00
+    )
+    for i_time_loss in xrange(30):
+        assert_equal(
+            round(
+                # pylint: disable=protected-access
+                l_sumovehicle._dissatisfaction(
+                    time_loss=i_time_loss+10,
+                    optimal_travel_time=100,
+                    time_loss_threshold=0.2
+                ),
+                # pylint: enable=protected-access
+                7
+            ),
+            round(l_data[i_time_loss], 7)
+        )
+
+
+def test_update():
+    """Test update"""
+    l_sumovehicle = optom.environment.vehicle.SUMOVehicle()
+    l_sumovehicle.update(
+        position=(1, 2),
+        lane_index=1,
+        speed=12.1
+    )
+    assert_true(
+        numpy.array_equal(
+            l_sumovehicle.position,
+            numpy.array((1, 2))
+        )
+    )
+    assert_equal(
+        l_sumovehicle.speed,
+        12.1
+    )
+    assert_true(
+        numpy.array_equal(
+            l_sumovehicle.grid_position,
+            numpy.array((-1, 1))
+        )
+    )
