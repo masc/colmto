@@ -64,8 +64,6 @@ def test_behaviourfromstringorelse():
     )
 
 
-
-
 def test_sumo_policy():
     """
     Test SumoPolicy class
