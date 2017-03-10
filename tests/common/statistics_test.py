@@ -28,6 +28,54 @@ import optom.environment.vehicle
 from nose.tools import assert_equal
 
 
+def test_closestpositiontodetector():
+    """Test closest_position_to_detector"""
+    # pylint: disable=protected-access
+    assert_equal(
+        optom.common.statistics.Statistics._closest_position_to_detector(
+            vehicle_positions=[0],
+            detector_position=0
+        ),
+        0
+    )
+    assert_equal(
+        optom.common.statistics.Statistics._closest_position_to_detector(
+            vehicle_positions=[0, 1, 2],
+            detector_position=1
+        ),
+        1
+    )
+    assert_equal(
+        optom.common.statistics.Statistics._closest_position_to_detector(
+            vehicle_positions=[0, 1, 2],
+            detector_position=2
+        ),
+        2
+    )
+    assert_equal(
+        optom.common.statistics.Statistics._closest_position_to_detector(
+            vehicle_positions=[0, 1, 2, 10],
+            detector_position=8
+        ),
+        3
+    )
+    assert_equal(
+        optom.common.statistics.Statistics._closest_position_to_detector(
+            vehicle_positions=[0, 1, 2, 10],
+            detector_position=3
+        ),
+        2
+    )
+    assert_equal(
+        optom.common.statistics.Statistics._closest_position_to_detector(
+            vehicle_positions=[0, 1, 2, 10],
+            detector_position=11
+        ),
+        -1
+    )
+    # pylint: enable=protected-access
+
+
 def test_h_spread():
     """
     Test H-Spread function.
