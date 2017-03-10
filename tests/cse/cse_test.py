@@ -111,7 +111,6 @@ def test_sumo_cse():
         tuple()
     )
 
-
     l_sumo_cse = optom.cse.cse.SumoCSE().add_policies_from_cfg(
         [
             {
