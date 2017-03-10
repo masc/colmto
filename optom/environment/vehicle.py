@@ -255,13 +255,11 @@ class SUMOVehicle(BaseVehicle):
         """
 
         # pylint: disable=no-member
-        l_dsat = numpy.divide(
+        return numpy.divide(
             1.,
             1 + numpy.exp((-time_loss + time_loss_threshold * optimal_travel_time)) * .5
         )
         # pylint: enable=no-member
-
-        return l_dsat
 
     def record_travel_stats(self, time_step):
         r"""Record travel statistics to vehicle.
