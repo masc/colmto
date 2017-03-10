@@ -50,7 +50,7 @@ class Statistics(object):
         @param run_stats: run stats in dictionary
             { runID -> run stats provided by aggregate_vehicle_grid_stats }
         @param detector_positions:
-        @retval updated run_stats dictionary with aggregated stats (key: "aggregated")
+        @retval dictionary with aggregated stats
         """
 
         l_aggregated = {
