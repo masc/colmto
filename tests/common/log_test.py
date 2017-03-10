@@ -39,12 +39,12 @@ def test_logger():
     assert_equal(
         optom.common.log.LOGLEVEL,
         {
-            "CRITICAL": logging.CRITICAL,
-            "ERROR": logging.ERROR,
-            "WARNING": logging.WARNING,
+            "NOTSET": logging.NOTSET,
             "INFO": logging.INFO,
             "DEBUG": logging.DEBUG,
-            "NOTSET": logging.NOTSET
+            "WARNING": logging.WARNING,
+            "ERROR": logging.ERROR,
+            "CRITICAL": logging.CRITICAL
         }
     )
     f_temp_log = tempfile.NamedTemporaryFile()
