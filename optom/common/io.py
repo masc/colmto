@@ -186,10 +186,11 @@ class Writer(object):
         if not isinstance(object_dict, dict):
             raise TypeError(u"objectdict is not a dictionary")
 
-        f_hdf5 = h5py.File(hdf5_file, "a", libver="latest")
-
-        if not f_hdf5 and not isinstance(f_hdf5, h5py.File):
-            raise Exception
+        try:
+            f_hdf5 = h5py.File(hdf5_file, "a", libver="latest")
+        except IOError as error:
+            self._log.error("write_hdf5: %s", error.message)
+            raise IOError(error)
 
         # create group if it doesn't exist
         l_group = f_hdf5[hdf5_base_path] \
