@@ -26,8 +26,11 @@ optom: Test module for environment.policy.
 import random
 
 import numpy
+
 from nose.tools import assert_equal
 from nose.tools import assert_is_instance
+from nose.tools import assert_raises
+from nose.tools import assert_true
 
 import optom.cse.policy
 import optom.environment.vehicle
@@ -102,6 +105,99 @@ def test_sumo_null_policy():
 
     for i in xrange(len(l_vehicles)):
         assert_equal(l_vehicles[i].vehicle_class, l_results[i].vehicle_class)
+
+
+def test_sumo_extendable_policy():
+    """Test SUMOExtendablePolicy class"""
+    with assert_raises(AttributeError):
+        optom.cse.policy.SUMOExtendablePolicy(
+            vehicle_policies=[optom.cse.policy.SUMONullPolicy()],
+            rule="any"
+        )
+
+    with assert_raises(AttributeError):
+        optom.cse.policy.SUMOExtendablePolicy(
+            vehicle_policies=[optom.cse.policy.SUMOSpeedPolicy()],
+            rule="foo"
+        )
+
+    l_sumo_policy = optom.cse.policy.SUMOExtendablePolicy(
+        vehicle_policies=[optom.cse.policy.SUMOSpeedPolicy()],
+        rule="any"
+    )
+
+    assert_equal(l_sumo_policy.rule, "any")
+    l_sumo_policy.rule = "all"
+    assert_equal(l_sumo_policy.rule, "all")
+
+    with assert_raises(AttributeError):
+        l_sumo_policy.rule = "foo"
+
+    l_sumo_policy.add_vehicle_policy(optom.cse.policy.SUMOPositionPolicy())
+
+    with assert_raises(AttributeError):
+        l_sumo_policy.add_vehicle_policy(optom.cse.policy.SUMONullPolicy())
+
+    l_sumo_policy = optom.cse.policy.SUMOExtendablePolicy(vehicle_policies=[])
+    l_sumo_sub_policy = optom.cse.policy.SUMOSpeedPolicy(speed_range=(0., 60.))
+    l_sumo_policy.add_vehicle_policy(l_sumo_sub_policy)
+
+    assert_true(
+        l_sumo_policy.subpolicies_apply_to(
+            optom.environment.vehicle.SUMOVehicle(
+                speed_max=50.,
+            )
+        )
+    )
+
+    assert_true(
+        l_sumo_sub_policy.applies_to(
+            optom.environment.vehicle.SUMOVehicle(
+                speed_max=50.,
+            )
+        )
+    )
+
+    l_sumo_policy = optom.cse.policy.SUMOExtendablePolicy(vehicle_policies=[], rule="all")
+    l_sumo_policy.add_vehicle_policy(l_sumo_sub_policy)
+
+    assert_true(
+        l_sumo_policy.subpolicies_apply_to(
+            optom.environment.vehicle.SUMOVehicle(
+                speed_max=50.,
+            )
+        )
+    )
+
+    assert_true(
+        l_sumo_sub_policy.applies_to(
+            optom.environment.vehicle.SUMOVehicle(
+                speed_max=50.,
+            )
+        )
+    )
+
+
+def test_sumo_universal_policy():
+    """Test SUMOUniversalPolicy class"""
+
+    with assert_raises(AttributeError):
+        optom.cse.policy.SUMOUniversalPolicy().applies_to(
+            "foo"
+        )
+
+    assert_true(
+        optom.cse.policy.SUMOUniversalPolicy().applies_to(
+            optom.environment.vehicle.SUMOVehicle()
+        )
+    )
+
+    assert_equal(
+        optom.cse.policy.SUMOUniversalPolicy().apply(
+            [optom.environment.vehicle.SUMOVehicle()]
+        )[0].properties["vClass"],
+        "custom1"
+    )
 
 
 def test_sumo_speed_policy():
