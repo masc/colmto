@@ -28,6 +28,15 @@ import optom.environment.vehicle
 from nose.tools import assert_equal
 
 
+def test_statistics():
+    """Test statistics class"""
+    optom.common.statistics.Statistics(None)
+    args = optom.common.helper.Namespace(
+        loglevel="debug", quiet=False, logfile="foo.log"
+    )
+    optom.common.statistics.Statistics(args)
+
+
 def test_closestpositiontodetector():
     """Test closest_position_to_detector"""
     # pylint: disable=protected-access
