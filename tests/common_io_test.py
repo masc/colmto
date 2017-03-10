@@ -23,14 +23,18 @@
 """
 optom: Test module for common.io.
 """
+# pylint: disable=no-name-in-module
+# pylint: disable=no-member
+
 import json
 import tempfile
+import logging
+import gzip
 
 import optom.common.io
 import optom.common.helper
 
-import logging
-import gzip
+import h5py
 from lxml import etree
 from lxml.etree import XSLT
 import yaml
@@ -85,10 +89,8 @@ def test_reader_read_etree():
     f_temp_test.write(l_xml_string)
     f_temp_test.seek(0)
 
-    l_reader = optom.common.io.Reader(None)
-
     for i_elements in zip(
-            l_reader.read_etree(f_temp_test.name).iter(),
+            optom.common.io.Reader(None).read_etree(f_temp_test.name).iter(),
             optom.common.io.etree.parse(f_temp_gold.name).iter()):
         assert_equals(
             i_elements[0].items(),
@@ -164,10 +166,9 @@ def test_reader_read_json():
     args = optom.common.helper.Namespace(
         loglevel=logging.DEBUG, quiet=False, logfile="foo.log"
     )
-    l_reader = optom.common.io.Reader(args)
 
     assert_equals(
-        l_reader.read_json(f_temp_test.name),
+        optom.common.io.Reader(args).read_json(f_temp_test.name),
         l_json_gold
     )
 
@@ -181,7 +182,7 @@ def test_reader_read_json():
     f_temp_test.seek(0)
 
     assert_equals(
-        l_reader.read_yaml(f_temp_test.name),
+        optom.common.io.Reader(None).read_yaml(f_temp_test.name),
         l_json_gold
     )
     f_temp_test.close()
@@ -249,12 +250,12 @@ def test_reader_read_yaml():
     f_temp_test.write(yaml.dump(l_yaml_gold))
     f_temp_test.seek(0)
 
-    l_reader = optom.common.io.Reader(None)
-
     assert_equals(
-        l_reader.read_yaml(f_temp_test.name),
+        optom.common.io.Reader(None).read_yaml(f_temp_test.name),
         l_yaml_gold
     )
+
+    f_temp_test.close()
 
     # gzip
     f_temp_test = tempfile.NamedTemporaryFile(suffix=".gz")
@@ -264,7 +265,300 @@ def test_reader_read_yaml():
     f_temp_test.seek(0)
 
     assert_equals(
-        l_reader.read_yaml(f_temp_test.name),
+        optom.common.io.Reader(None).read_yaml(f_temp_test.name),
         l_yaml_gold
     )
+    f_temp_test.close()
+
+
+def test_write_yaml():
+    """Test write_yaml method from Writer class."""
+    l_yaml_gold = {
+        "vehicle56": {
+            "timesteps": {
+                "981.00": {
+                    "lane": "21segment.4080_1",
+                    "angle": "90.00",
+                    "lanepos": "778.36",
+                    "y": "1.65",
+                    "x": "6218.36",
+                    "speed": "8.25"
+                },
+                "1322.00": {
+                    "lane": "21end_exit_0",
+                    "angle": "90.00",
+                    "lanepos": "778.48",
+                    "y": "-1.65",
+                    "x": "8939.98",
+                    "speed": "7.28"
+                },
+                "767.00": {
+                    "lane": "21segment.2720_1",
+                    "angle": "90.00",
+                    "lanepos": "428.48",
+                    "y": "1.65",
+                    "x": "4508.48",
+                    "speed": "8.00"
+                },
+                "1365.00": {
+                    "lane": "21end_exit_0",
+                    "angle": "90.00",
+                    "lanepos": "1123.24",
+                    "y": "-1.65",
+                    "x": "9284.74",
+                    "speed": "7.64"
+                },
+                "476.00": {
+                    "lane": "enter_21start_0",
+                    "angle": "90.00",
+                    "lanepos": "409.40",
+                    "y": "-1.65",
+                    "x": "409.40",
+                    "speed": "7.56"
+                },
+                "1210.00": {
+                    "lane": "21segment.5440_1",
+                    "angle": "90.00",
+                    "lanepos": "1273.80",
+                    "y": "1.65",
+                    "x": "8073.80",
+                    "speed": "11.97"
+                }
+            }
+        }
+    }
+
+    f_temp_test = tempfile.NamedTemporaryFile()
+
+    args = optom.common.helper.Namespace(
+        loglevel=logging.DEBUG, quiet=False, logfile="foo.log"
+    )
+    optom.common.io.Writer(args).write_yaml(l_yaml_gold, f_temp_test.name)
+    f_temp_test.seek(0)
+
+    assert_equals(
+        yaml.safe_load(f_temp_test),
+        l_yaml_gold
+    )
+
+    f_temp_test.close()
+
+    # gzip
+    f_temp_test = tempfile.NamedTemporaryFile(suffix=".gz")
+    optom.common.io.Writer(None).write_yaml(l_yaml_gold, f_temp_test.name)
+    f_temp_test.seek(0)
+
+    assert_equals(
+        yaml.safe_load(gzip.GzipFile(f_temp_test.name, "r")),
+        l_yaml_gold
+    )
+    f_temp_test.close()
+
+
+def test_write_json():
+    """Test write_json method from Writer class."""
+    l_json_gold = {
+        "vehicle56": {
+            "timesteps": {
+                "981.00": {
+                    "lane": "21segment.4080_1",
+                    "angle": "90.00",
+                    "lanepos": "778.36",
+                    "y": "1.65",
+                    "x": "6218.36",
+                    "speed": "8.25"
+                },
+                "1322.00": {
+                    "lane": "21end_exit_0",
+                    "angle": "90.00",
+                    "lanepos": "778.48",
+                    "y": "-1.65",
+                    "x": "8939.98",
+                    "speed": "7.28"
+                },
+                "767.00": {
+                    "lane": "21segment.2720_1",
+                    "angle": "90.00",
+                    "lanepos": "428.48",
+                    "y": "1.65",
+                    "x": "4508.48",
+                    "speed": "8.00"
+                },
+                "1365.00": {
+                    "lane": "21end_exit_0",
+                    "angle": "90.00",
+                    "lanepos": "1123.24",
+                    "y": "-1.65",
+                    "x": "9284.74",
+                    "speed": "7.64"
+                },
+                "476.00": {
+                    "lane": "enter_21start_0",
+                    "angle": "90.00",
+                    "lanepos": "409.40",
+                    "y": "-1.65",
+                    "x": "409.40",
+                    "speed": "7.56"
+                },
+                "1210.00": {
+                    "lane": "21segment.5440_1",
+                    "angle": "90.00",
+                    "lanepos": "1273.80",
+                    "y": "1.65",
+                    "x": "8073.80",
+                    "speed": "11.97"
+                }
+            }
+        }
+    }
+
+    args = optom.common.helper.Namespace(
+        loglevel=logging.DEBUG, quiet=False, logfile="foo.log"
+    )
+    f_temp_test = tempfile.NamedTemporaryFile()
+    optom.common.io.Writer(args).write_json(l_json_gold, f_temp_test.name)
+    f_temp_test.seek(0)
+
+    assert_equals(
+        json.load(f_temp_test),
+        l_json_gold
+    )
+
+    f_temp_test.close()
+
+    # gzip
+    f_temp_test = tempfile.NamedTemporaryFile(suffix=".gz")
+    optom.common.io.Writer(None).write_json(l_json_gold, f_temp_test.name)
+    f_temp_test.seek(0)
+
+    assert_equals(
+        json.load(gzip.GzipFile(f_temp_test.name, "r")),
+        l_json_gold
+    )
+    f_temp_test.close()
+
+    # test write.json_pretty
+    f_temp_test = tempfile.NamedTemporaryFile()
+    optom.common.io.Writer(None).write_json_pretty(l_json_gold, f_temp_test.name)
+    f_temp_test.seek(0)
+
+    assert_equals(
+        json.load(f_temp_test),
+        l_json_gold
+    )
+
+    f_temp_test.close()
+
+    # gzip
+    f_temp_test = tempfile.NamedTemporaryFile(suffix=".gz")
+    optom.common.io.Writer(None).write_json_pretty(l_json_gold, f_temp_test.name)
+    f_temp_test.seek(0)
+
+    assert_equals(
+        json.load(gzip.GzipFile(f_temp_test.name, "r")),
+        l_json_gold
+    )
+    f_temp_test.close()
+
+
+def test_flatten_object_dict():
+    """test flatten_object_dict"""
+    l_test_dict = {
+        "foo": {
+            "baz": {
+                "value": 23,
+                "attr": "baz"
+            }
+        },
+        "bar": {
+            "bar": {
+                "value": 42,
+                "attr": "bar"
+            }
+        },
+        "baz": {
+            "foo": {
+                "value": 21,
+                "attr": "foo"
+            }
+        }
+    }
+    l_gold_dict = {
+        "foo/baz": {
+            "value": 23,
+            "attr": "baz"
+        },
+        "bar/bar": {
+            "value": 42,
+            "attr": "bar"
+        },
+        "baz/foo": {
+            "value": 21,
+            "attr": "foo"
+        }
+    }
+
+    assert_equals(
+        # pylint: disable=protected-access
+        optom.common.io.Writer(None)._flatten_object_dict(l_test_dict),
+        # pylint: enable=protected-access
+        l_gold_dict
+    )
+
+
+def test_write_csv():
+    """test write_csv"""
+    f_temp_test = tempfile.NamedTemporaryFile()
+    optom.common.io.Writer(None).write_csv(
+        ["foo", "bar"],
+        [{"foo": 1, "bar": 1}, {"foo": 2, "bar": 2}],
+        f_temp_test.name
+    )
+    f_temp_test.seek(0)
+
+    with f_temp_test as c:
+        assert_equals(
+            "".join(c.readlines()),
+            "foo,bar\r\n1,1\r\n2,2\r\n"
+        )
+
+    f_temp_test.close()
+
+
+def test_write_hdf5():
+    """test write_hdf5"""
+    l_obj_dict = {
+        "foo/baz": {
+            "value": 23,
+            "attr": "baz"
+        },
+        "bar/bar": {
+            "value": 42,
+            "attr": "bar"
+        },
+        "baz/foo": {
+            "value": 21,
+            "attr": "foo"
+        }
+    }
+
+    f_temp_test = tempfile.NamedTemporaryFile(suffix=".hdf5")
+
+    optom.common.io.Writer(None).write_hdf5(
+        object_dict=l_obj_dict,
+        hdf5_file=f_temp_test.name,
+        hdf5_base_path="root"
+    )
+    f_temp_test.seek(0)
+    l_hdf = h5py.File(f_temp_test.name, "r")
+    l_test_dict = {}
+    l_hdf["root"].visititems(
+        lambda key, value: l_test_dict.update({key: value.value})
+        if isinstance(value, h5py.Dataset) else None
+    )
+    assert_equals(
+        l_test_dict,
+        {u'bar/bar': 42, u'baz/foo': 21, u'foo/baz': 23}
+    )
+
     f_temp_test.close()
