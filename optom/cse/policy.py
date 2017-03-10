@@ -100,8 +100,21 @@ class SUMOExtendablePolicy(object):
         @param vehicle_policies List of policies
         @param rule Rule for applying sub-policies ("any", "all")
         """
+
+        # check policy types
+        for i_vehicle_policy in vehicle_policies:
+            if not isinstance(i_vehicle_policy, SUMOVehiclePolicy):
+                raise AttributeError(
+                    "%s is not of optom.cse.policy.SUMOVehiclePolicy", i_vehicle_policy
+                )
+
         self._vehicle_policies = vehicle_policies
+
+        if rule not in ("any", "all"):
+            raise AttributeError
+
         self._rule = rule
+
         super(SUMOExtendablePolicy, self).__init__()
 
     @property
@@ -146,7 +159,7 @@ class SUMOExtendablePolicy(object):
         @retval self
         """
 
-        if not isinstance(vehicle_policy, optom.cse.policy.SUMOVehiclePolicy):
+        if not isinstance(vehicle_policy, SUMOVehiclePolicy):
             raise AttributeError("%s is not of optom.cse.policy.SUMOVehiclePolicy", vehicle_policy)
 
         self._vehicle_policies.append(vehicle_policy)
