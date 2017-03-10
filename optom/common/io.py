@@ -187,7 +187,7 @@ class Writer(object):
             raise TypeError(u"objectdict is not a dictionary")
 
         try:
-            f_hdf5 = h5py.File(hdf5_file, "a", libver="latest")
+            f_hdf5 = h5py.File(hdf5_file, mode="a", libver="latest")
         except IOError as error:
             self._log.error("write_hdf5: %s", error.message)
             raise IOError(error)
