@@ -516,9 +516,9 @@ def test_write_csv():
     )
     f_temp_test.seek(0)
 
-    with f_temp_test as c:
+    with f_temp_test as csv_file:
         assert_equals(
-            "".join(c.readlines()),
+            "".join(csv_file.readlines()),
             "foo,bar\r\n1,1\r\n2,2\r\n"
         )
 
