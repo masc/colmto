@@ -23,8 +23,6 @@
 """
 optom: Test module for common.io.
 """
-# pylint: disable=no-name-in-module
-# pylint: disable=no-member
 
 import json
 import tempfile
@@ -35,8 +33,10 @@ import optom.common.io
 import optom.common.helper
 
 import h5py
+# pylint: disable=no-name-in-module
 from lxml import etree
 from lxml.etree import XSLT
+# pylint: enable=no-name-in-module
 import yaml
 from nose.tools import assert_equals
 from nose.tools import assert_true
@@ -51,9 +51,11 @@ def test_xslt():
     assert_true(
         isinstance(
             optom.common.io.xslt(
+                # pylint: disable=no-member
                 etree.XML(
                     l_xslt_template
                 )
+                # pylint: enable=no-member
             ),
             XSLT
         )
