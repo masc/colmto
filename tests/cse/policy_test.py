@@ -42,6 +42,30 @@ def test_base_policy():
     assert_is_instance(l_base_policy, optom.cse.policy.BasePolicy)
 
 
+def test_behaviourfromstringorelse():
+    """Test optom.cse.policy.BasePolicy.behaviour_from_string_or_else."""
+    assert_equal(
+        optom.cse.policy.BasePolicy(
+            optom.cse.policy.BEHAVIOUR.deny
+        ).behaviour_from_string_or_else("Allow", "foo"),
+        optom.cse.policy.BEHAVIOUR.allow
+    )
+    assert_equal(
+        optom.cse.policy.BasePolicy(
+            optom.cse.policy.BEHAVIOUR.deny
+        ).behaviour_from_string_or_else("Deny", "foo"),
+        optom.cse.policy.BEHAVIOUR.deny
+    )
+    assert_equal(
+        optom.cse.policy.BasePolicy(
+            optom.cse.policy.BEHAVIOUR.deny
+        ).behaviour_from_string_or_else("Meh", "foo"),
+        "foo"
+    )
+
+
+
+
 def test_sumo_policy():
     """
     Test SumoPolicy class
