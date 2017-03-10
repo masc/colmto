@@ -25,6 +25,7 @@ optom: Test module for environment.vehicle.
 """
 import numpy
 from nose.tools import assert_equal
+from nose.tools import assert_almost_equal
 from nose.tools import assert_true
 
 import optom.environment.vehicle
@@ -157,18 +158,15 @@ def test_dissatisfaction():
         9.999996e-01, 9.999998e-01, 9.999999e-01, 1.000000e+00, 1.000000e+00, 1.000000e+00
     )
     for i_time_loss in xrange(30):
-        assert_equal(
-            round(
-                # pylint: disable=protected-access
-                l_sumovehicle._dissatisfaction(
-                    time_loss=i_time_loss+10,
-                    optimal_travel_time=100,
-                    time_loss_threshold=0.2
-                ),
-                # pylint: enable=protected-access
-                7
+        assert_almost_equal(
+            # pylint: disable=protected-access
+            l_sumovehicle._dissatisfaction(
+                time_loss=i_time_loss+10,
+                optimal_travel_time=100,
+                time_loss_threshold=0.2
             ),
-            round(l_data[i_time_loss], 7)
+            # pylint: enable=protected-access
+            l_data[i_time_loss]
         )
 
 
