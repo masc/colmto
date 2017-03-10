@@ -547,6 +547,47 @@ def test_write_hdf5():
 
     f_temp_test = tempfile.NamedTemporaryFile(suffix=".hdf5")
 
+    optom.common.io.Writer(None).write_hdf5(
+        object_dict=l_obj_dict,
+        hdf5_file=f_temp_test.name,
+        hdf5_base_path="root"
+    )
+    f_temp_test.seek(0)
+    l_hdf = h5py.File(f_temp_test.name, "r")
+    l_test_dict = {}
+    l_hdf["root"].visititems(
+        lambda key, value: l_test_dict.update({key: value.value})
+        if isinstance(value, h5py.Dataset) else None
+    )
+    l_hdf.close()
+    assert_equals(
+        l_test_dict,
+        {u'bar/bar': 42, u'baz/foo': 21, u'foo/baz': 23}
+    )
+
+    optom.common.io.Writer(None).write_hdf5(
+        object_dict={
+            "foo/baz": {
+                "value": 11,
+                "attr": {"info": "meh"}
+            }
+        },
+        hdf5_file=f_temp_test.name,
+        hdf5_base_path="root"
+    )
+
+    l_hdf = h5py.File(f_temp_test.name, "r")
+    l_test_dict = {}
+    assert_equals(
+        l_hdf["root/foo/baz"].value,
+        11
+    )
+    assert_equals(
+        l_hdf["root/foo/baz"].attrs.get("info"),
+        "meh"
+    )
+    l_hdf.close()
+
     # test for exceptions
     with assert_raises(TypeError):
         optom.common.io.Writer(None).write_hdf5(
@@ -562,21 +603,14 @@ def test_write_hdf5():
             hdf5_base_path="root"
         )
 
-    optom.common.io.Writer(None).write_hdf5(
-        object_dict=l_obj_dict,
-        hdf5_file=f_temp_test.name,
-        hdf5_base_path="root"
-    )
-    f_temp_test.seek(0)
-    l_hdf = h5py.File(f_temp_test.name, "r")
-    l_test_dict = {}
-    l_hdf["root"].visititems(
-        lambda key, value: l_test_dict.update({key: value.value})
-        if isinstance(value, h5py.Dataset) else None
-    )
-    assert_equals(
-        l_test_dict,
-        {u'bar/bar': 42, u'baz/foo': 21, u'foo/baz': 23}
-    )
-
-    f_temp_test.close()
+    with assert_raises(TypeError):
+        optom.common.io.Writer(None).write_hdf5(
+            object_dict={
+                "foo/baz": {
+                    "value": lambda x: x,
+                    "attr": {"info": "meh"}
+                }
+            },
+            hdf5_file=f_temp_test.name,
+            hdf5_base_path="root"
+        )
