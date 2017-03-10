@@ -30,6 +30,7 @@ from nose.tools import assert_equal
 from nose.tools import assert_is_instance
 
 import optom.cse.policy
+import optom.environment.vehicle
 
 
 def test_base_policy():
