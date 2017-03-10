@@ -25,11 +25,12 @@ optom: Test module for optom.common.log.
 """
 import logging
 
+import os
+import tempfile
+
 from nose.tools import assert_equal
 from nose.tools import assert_true
 from nose.tools import assert_raises
-import os
-import tempfile
 
 import optom.common.log
 
