@@ -25,16 +25,31 @@ optom: Test module for common.statistics.
 """
 import optom.common.statistics
 import optom.environment.vehicle
+import optom.common.helper
+
 from nose.tools import assert_equal
+from nose.tools import assert_is_instance
+from nose.tools import assert_raises
 
 
 def test_statistics():
     """Test statistics class"""
-    optom.common.statistics.Statistics(None)
-    args = optom.common.helper.Namespace(
-        loglevel="debug", quiet=False, logfile="foo.log"
+
+    assert_is_instance(
+        optom.common.statistics.Statistics(None),
+        optom.common.statistics.Statistics
     )
-    optom.common.statistics.Statistics(args)
+    assert_is_instance(
+        optom.common.statistics.Statistics(
+            optom.common.helper.Namespace(
+                loglevel="debug", quiet=False, logfile="foo.log"
+            )
+        ),
+        optom.common.statistics.Statistics
+    )
+
+    with assert_raises(AttributeError):
+        optom.common.statistics.Statistics("foo")
 
 
 def test_closestpositiontodetector():
