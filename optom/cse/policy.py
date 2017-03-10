@@ -202,8 +202,8 @@ class SUMOUniversalPolicy(SUMOPolicy):
         @param vehicle Vehicle
         @retval boolean
         """
-        if vehicle:
-            return True
+        if not isinstance(vehicle, optom.environment.vehicle.BaseVehicle):
+            raise AttributeError
 
         return True
 
@@ -237,8 +237,8 @@ class SUMONullPolicy(SUMOPolicy):
         @param vehicle Vehicle
         @retval boolean
         """
-        if vehicle:
-            return False
+        if not isinstance(vehicle, optom.environment.vehicle.BaseVehicle):
+            raise AttributeError
 
         return False
 
