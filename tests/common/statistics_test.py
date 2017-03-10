@@ -33,8 +33,7 @@ from nose.tools import assert_raises
 
 
 def test_statistics():
-    """Test statistics class"""
-
+    """Test statistics class."""
     assert_is_instance(
         optom.common.statistics.Statistics(None),
         optom.common.statistics.Statistics
