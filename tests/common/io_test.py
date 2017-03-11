@@ -542,6 +542,10 @@ def test_write_hdf5():
         "baz/foo": {
             "value": 21,
             "attr": "foo"
+        },
+        "none/here": {
+            "value": None,
+            "attr": None
         }
     }
 
