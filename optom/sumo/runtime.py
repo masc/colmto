@@ -31,7 +31,7 @@ import optom.cse.cse
 
 try:
     import traci
-except ImportError:
+except ImportError:  # pragma: no cover
     raise ("please declare environment variable 'SUMO_HOME' as the root"
            "directory of your sumo installation (it should contain folders 'bin',"
            "'tools' and 'docs')")

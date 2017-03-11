@@ -38,7 +38,7 @@ import numpy
 
 try:
     from yaml import CSafeLoader as SafeLoader, CSafeDumper as SafeDumper
-except ImportError:
+except ImportError:  # pragma: no cover
     from yaml import SafeLoader, SafeDumper
 
 import yaml
@@ -48,27 +48,27 @@ import h5py
 try:
     from lxml import etree
     from lxml.etree import XSLT
-except ImportError:
+except ImportError:  # pragma: no cover
     try:
         # Python 2.5
         import xml.etree.cElementTree as etree
         from xml.etree import XSLT
-    except ImportError:
+    except ImportError:  # pragma: no cover
         try:
             # Python 2.5
             import xml.etree.ElementTree as etree
             from xml.etree import XSLT
-        except ImportError:
+        except ImportError:  # pragma: no cover
             try:
                 # normal cElementTree install
                 import cElementTree as etree
                 from xml.etree import XSLT
-            except ImportError:
+            except ImportError:  # pragma: no cover
                 try:
                     # normal ElementTree install
                     import elementtree.ElementTree as etree
                     from xml.etree import XSLT
-                except ImportError:
+                except ImportError:  # pragma: no cover
                     print("Failed to import ElementTree from any known place")
 
 import optom.common.log
