@@ -50,6 +50,19 @@ def test_logger():
     )
     f_temp_log = tempfile.NamedTemporaryFile()
 
+    optom.common.log.logger(
+        name="foo",
+        logfile=f_temp_log.name,
+        quiet=False,
+        loglevel=logging.INFO
+    )
+    optom.common.log.logger(
+        name="foo",
+        logfile=f_temp_log.name,
+        quiet=False,
+        loglevel=logging.INFO
+    )
+
     for i_level in optom.common.log.LOGLEVEL.iterkeys():
         l_log = optom.common.log.logger(
             name="foo{}".format(i_level),
