@@ -28,9 +28,11 @@ import random
 import numpy
 
 from nose.tools import assert_equal
+from nose.tools import assert_false
 from nose.tools import assert_is_instance
 from nose.tools import assert_raises
 from nose.tools import assert_true
+from nose.tools import assert_tuple_equal
 
 import optom.cse.policy
 import optom.environment.vehicle
@@ -105,6 +107,74 @@ def test_sumo_null_policy():
 
     for i in xrange(len(l_vehicles)):
         assert_equal(l_vehicles[i].vehicle_class, l_results[i].vehicle_class)
+        assert_false(l_sumo_policy.applies_to(l_vehicles[i]))
+
+
+def test_sumo_vtype_policy():
+    """Test SUMOVTypePolicy class"""
+    assert_is_instance(optom.cse.policy.SUMOVTypePolicy(), optom.cse.policy.SUMOVTypePolicy)
+
+    assert_equal(
+        str(
+            optom.cse.policy.SUMOVTypePolicy(
+                vehicle_type="passenger",
+                behaviour=optom.cse.policy.BEHAVIOUR.deny
+            ).add_vehicle_policy(
+                optom.cse.policy.SUMOPositionPolicy(
+                    position_bbox=((0., -1.), (100., 1.))
+                )
+            )
+        ),
+        "<class 'optom.cse.policy.SUMOVTypePolicy'>: vehicle_type = passenger, behaviour = 0, "
+        "subpolicies: []: <class 'optom.cse.policy.SUMOPositionPolicy'>: "
+        "position_bbox = ((0.0, -1.0), (100.0, 1.0)), behaviour = 0, subpolicies: []: "
+    )
+
+    assert_true(
+        optom.cse.policy.SUMOVTypePolicy(
+            vehicle_type="passenger",
+            behaviour=optom.cse.policy.BEHAVIOUR.deny
+        ).applies_to(
+            optom.environment.vehicle.SUMOVehicle(
+                vehicle_type="passenger"
+            )
+        )
+    )
+
+    assert_false(
+        optom.cse.policy.SUMOVTypePolicy(
+            vehicle_type="truck",
+            behaviour=optom.cse.policy.BEHAVIOUR.allow
+        ).applies_to(
+            optom.environment.vehicle.SUMOVehicle(
+                vehicle_type="passenger"
+            )
+        )
+    )
+
+    assert_equal(
+        optom.cse.policy.SUMOVTypePolicy(
+            vehicle_type="passenger",
+            behaviour=optom.cse.policy.BEHAVIOUR.deny
+        ).apply([optom.environment.vehicle.SUMOVehicle(vehicle_type="passenger")])[0].vehicle_class,
+        "custom1"
+    )
+
+    assert_equal(
+        optom.cse.policy.SUMOVTypePolicy(
+            vehicle_type="passenger",
+            behaviour=optom.cse.policy.BEHAVIOUR.allow
+        ).apply([optom.environment.vehicle.SUMOVehicle(vehicle_type="passenger")])[0].vehicle_class,
+        "custom2"
+    )
+
+    assert_equal(
+        optom.cse.policy.SUMOVTypePolicy(
+            vehicle_type="truck",
+            behaviour=optom.cse.policy.BEHAVIOUR.deny
+        ).apply([optom.environment.vehicle.SUMOVehicle(vehicle_type="passenger")])[0].vehicle_class,
+        "custom2"
+    )
 
 
 def test_sumo_extendable_policy():
@@ -195,14 +265,14 @@ def test_sumo_universal_policy():
     assert_equal(
         optom.cse.policy.SUMOUniversalPolicy().apply(
             [optom.environment.vehicle.SUMOVehicle()]
-        )[0].properties["vClass"],
+        )[0].vehicle_class,
         "custom1"
     )
 
 
 def test_sumo_speed_policy():
     """
-    Test SumoSpeedPolicy class
+    Test SUMOSpeedPolicy class
     """
     l_sumo_policy = optom.cse.policy.SUMOSpeedPolicy(speed_range=numpy.array((0., 60.)))
     assert_is_instance(l_sumo_policy, optom.cse.policy.SUMOSpeedPolicy)
@@ -226,3 +296,77 @@ def test_sumo_speed_policy():
                 l_results[i].vehicle_class,
                 optom.cse.policy.SUMOPolicy.to_allowed_class()
             )
+
+    assert_equal(
+        str(
+            optom.cse.policy.SUMOSpeedPolicy(
+                speed_range=(0., 60.),
+                behaviour=optom.cse.policy.BEHAVIOUR.deny
+            ).add_vehicle_policy(
+                optom.cse.policy.SUMOPositionPolicy(
+                    position_bbox=((0., -1.), (100., 1.))
+                )
+            )
+        ),
+        "<class 'optom.cse.policy.SUMOSpeedPolicy'>: speed_range = [  0.  60.], behaviour = 0, "
+        "subpolicies: []: <class 'optom.cse.policy.SUMOPositionPolicy'>: "
+        "position_bbox = ((0.0, -1.0), (100.0, 1.0)), behaviour = 0, subpolicies: []: "
+    )
+
+
+def test_sumo_position_policy():
+    """
+    Test SUMOPositionPolicy class
+    """
+    l_sumo_policy = optom.cse.policy.SUMOPositionPolicy(position_bbox=((0., -1.), (100., 1.)))
+    assert_is_instance(l_sumo_policy, optom.cse.policy.SUMOPositionPolicy)
+
+    l_vehicles = [
+        optom.environment.vehicle.SUMOVehicle() for _ in xrange(4711)
+    ]
+    for i_vehicle in l_vehicles:
+        i_vehicle.position = (random.randrange(0, 200), 0.)
+
+    l_results = l_sumo_policy.apply(l_vehicles)
+
+    for i in xrange(len(l_results)):
+        if 0. <= l_vehicles[i].position[0] <= 100.0:
+            assert_true(
+                l_sumo_policy.applies_to(l_vehicles[i])
+            )
+            assert_equal(
+                l_results[i].vehicle_class,
+                optom.cse.policy.SUMOPolicy.to_disallowed_class()
+            )
+        else:
+            assert_false(
+                l_sumo_policy.applies_to(l_vehicles[i])
+            )
+            assert_equal(
+                l_results[i].vehicle_class,
+                optom.cse.policy.SUMOPolicy.to_allowed_class()
+            )
+
+    assert_tuple_equal(
+        optom.cse.policy.SUMOPositionPolicy(
+            position_bbox=((0., -1.), (100., 1.)),
+            behaviour=optom.cse.policy.BEHAVIOUR.deny
+        ).position_bbox,
+        ((0., -1.), (100., 1.))
+    )
+
+    assert_equal(
+        str(
+            optom.cse.policy.SUMOPositionPolicy(
+                position_bbox=((0., -1.), (100., 1.)),
+                behaviour=optom.cse.policy.BEHAVIOUR.deny
+            ).add_vehicle_policy(
+                optom.cse.policy.SUMOSpeedPolicy(
+                    speed_range=(0., 60.)
+                )
+            )
+        ),
+        "<class 'optom.cse.policy.SUMOPositionPolicy'>: position_bbox = ((0.0, -1.0), (100.0, 1.0))"
+        ", behaviour = 0, subpolicies: []: <class 'optom.cse.policy.SUMOSpeedPolicy'>: speed_range "
+        "= [  0.  60.], behaviour = 0, subpolicies: []: "
+    )
