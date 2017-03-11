@@ -41,7 +41,7 @@ def logger(name, loglevel=logging.NOTSET, quiet=False,
     """Create a logger instance."""
 
     if os.path.dirname(logfile) != "" and not os.path.exists(os.path.dirname(logfile)):
-        os.makedirs(os.path.dirname(logfile))
+        os.makedirs(os.path.dirname(logfile))  # pragma: no cover
 
     l_log = logging.getLogger(name)
     if isinstance(loglevel, int):
@@ -50,7 +50,7 @@ def logger(name, loglevel=logging.NOTSET, quiet=False,
         l_level = LOGLEVEL.get(str(loglevel).upper()) \
             if LOGLEVEL.get(str(loglevel).upper()) is not None else logging.NOTSET
     else:
-        raise KeyError("loglevel argument {} is not a valid logging log level.".format(loglevel))
+        raise TypeError("loglevel argument {} is not a valid logging log level.".format(loglevel))
 
     l_log.setLevel(l_level if l_level is not None else logging.NOTSET)
 
@@ -83,7 +83,7 @@ def logger(name, loglevel=logging.NOTSET, quiet=False,
     if l_add_qhandler:
         # create a stdout handler if not set to quiet
         if not isinstance(quiet, bool):
-            raise KeyError("quiet ({}) is {}, but bool expected.".format(quiet, type(quiet)))
+            raise TypeError("quiet ({}) is {}, but bool expected.".format(quiet, type(quiet)))
 
         if not quiet:
             l_shandler = logging.StreamHandler(sys.stdout)

@@ -78,7 +78,7 @@ def test_logger():
         logging.NOTSET
     )
 
-    with assert_raises(KeyError):
+    with assert_raises(TypeError):
         optom.common.log.logger(
             name="bar",
             logfile=f_temp_log.name,
@@ -86,7 +86,7 @@ def test_logger():
             loglevel=["this should fail"]
         )
 
-    with assert_raises(KeyError):
+    with assert_raises(TypeError):
         optom.common.log.logger(
             name="barz",
             logfile=f_temp_log.name,
