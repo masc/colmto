@@ -30,7 +30,7 @@ import os
 
 try:
     from cjson import encode as jsondumps, decode as jsonloads
-except ImportError:
+except ImportError:  # pragma: no cover
     from json import loads as jsonloads, dumps as jsondumps
 
 import json
