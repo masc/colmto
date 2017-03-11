@@ -20,7 +20,7 @@ machine:
         SUMO_HOME: /usr/share/sumo
         TEXINSTALL: minimal
         DOCUMENT: OpTOM-doc
-        PATH: /tmp/texlive/bin/x86_64-linux
+        PATH: $PATH:/tmp/texlive/bin/x86_64-linux
     python:
         version: 2.7.12
 
