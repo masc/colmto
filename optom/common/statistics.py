@@ -35,7 +35,7 @@ import numpy
 class Statistics(object):
     """Statistics class for computing/aggregating SUMO results"""
 
-    def __init__(self, args):
+    def __init__(self, args=None):
         if args is not None:
             self._log = optom.common.log.logger(__name__, args.loglevel, args.quiet, args.logfile)
             self._writer = optom.common.io.Writer(args)
