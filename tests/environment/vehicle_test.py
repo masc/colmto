@@ -27,6 +27,8 @@ import numpy
 from nose.tools import assert_equal
 from nose.tools import assert_almost_equal
 from nose.tools import assert_true
+from nose.tools import assert_list_equal
+
 
 import optom.environment.vehicle
 
@@ -193,4 +195,72 @@ def test_update():
             l_sumovehicle.grid_position,
             numpy.array((-1, 1))
         )
+    )
+
+
+def test_record_travel_stats():
+    """Test optom.environment.vehicle.SUMOVehicle.record_travel_stats"""
+    l_sumovehicle = optom.environment.vehicle.SUMOVehicle(
+        vehicle_type="passenger",
+        speed_deviation=0.0,
+        speed_max=100.,
+    )
+    l_sumovehicle.properties["dsat_threshold"] = 0.
+    l_sumovehicle.record_travel_stats(1)
+    l_sumovehicle.record_travel_stats(2)
+    assert_equal(
+        l_sumovehicle.travel_stats.get("travel_time"),
+        2.0
+    )
+    assert_list_equal(
+        l_sumovehicle.travel_stats.get("step").get("number"),
+        [1, 2]
+    )
+    assert_list_equal(
+        l_sumovehicle.travel_stats.get("step").get("pos_x"),
+        [0.0, 0.0]
+    )
+    assert_list_equal(
+        l_sumovehicle.travel_stats.get("step").get("pos_y"),
+        [0.0, 0.0]
+    )
+    assert_list_equal(
+        l_sumovehicle.travel_stats.get("step").get("time_loss"),
+        [0.0, 2.0]
+    )
+    assert_list_equal(
+        l_sumovehicle.travel_stats.get("step").get("relative_time_loss"),
+        [0.0, float('inf')]
+    )
+    assert_almost_equal(
+        l_sumovehicle.travel_stats.get("step").get("dissatisfaction")[0],
+        0.0
+    )
+    assert_almost_equal(
+        l_sumovehicle.travel_stats.get("step").get("dissatisfaction")[1],
+        0.93662106166696235
+    )
+    assert_list_equal(
+        l_sumovehicle.travel_stats.get("grid").get("dissatisfaction"),
+        [[0.0]]
+    )
+    assert_list_equal(
+        l_sumovehicle.travel_stats.get("grid").get("pos_x"),
+        [[0, 0]]
+    )
+    assert_list_equal(
+        l_sumovehicle.travel_stats.get("grid").get("pos_y"),
+        [[0, 0]]
+    )
+    assert_list_equal(
+        l_sumovehicle.travel_stats.get("grid").get("speed"),
+        [[0.0, 0.0]]
+    )
+    assert_list_equal(
+        l_sumovehicle.travel_stats.get("grid").get("time_loss"),
+        [[0.0]]
+    )
+    assert_list_equal(
+        l_sumovehicle.travel_stats.get("grid").get("relative_time_loss"),
+        [[0.0]]
     )
