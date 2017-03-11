@@ -20,23 +20,21 @@ machine:
         SUMO_HOME: /usr/share/sumo
         TEXINSTALL: minimal
         DOCUMENT: OpTOM-doc
-
+        PATH: $PATH:/tmp/texlive/bin/x86_64-linux
     python:
         version: 2.7.12
 
 dependencies:
     cache_directories:
-        - "~/texmf"
-        - "/usr/local/texlive/"
-
+        - "/tmp/texlive/"
+        
     pre:
         - sudo add-apt-repository -y ppa:sumo/stable
         - sudo apt-get update
         - sudo apt-get install doxygen graphviz sumo libhdf5-dev pandoc tk-dev python-tk
         - pip install pylint radon codecov doxypy
-        - mkdir -p /tmp/tex && curl -L http://mirror.ctan.org/systems/texlive/tlnet/install-tl-unx.tar.gz | tar xz --strip 1 -C /tmp/tex
-        - if [ ! -d /usr/local/texlive/ ]; then echo -e "selected_scheme scheme-$TEXINSTALL\nTEXDIR /usr/local/texlive/\nTEXMFCONFIG ~/.texlive/texmf-config\nTEXMFHOME ~/texmf\nTEXMFLOCAL /usr/local/texlive/texmf-local\nTEXMFSYSCONFIG /usr/local/texlive/texmf-config\nTEXMFSYSVAR /usr/local/texlive/texmf-var\nTEXMFVAR ~/.texlive/texmf-var\nbinary_x86_64-linux 1\ncollection-basic 1\ncollection-bibtexextra 1\ncollection-binextra 1\ncollection-context 0\ncollection-fontsextra 1\ncollection-fontsrecommended 1\ncollection-fontutils 1\ncollection-formatsextra 1\ncollection-games 1\ncollection-genericextra 1\ncollection-genericrecommended 1\ncollection-htmlxml 1\ncollection-humanities 1\ncollection-langafrican 0\ncollection-langarabic 0\ncollection-langchinese 0\ncollection-langcjk 0\ncollection-langcyrillic 0\ncollection-langczechslovak 0\ncollection-langenglish 1\ncollection-langeuropean 1\ncollection-langfrench 0\ncollection-langgerman 1\ncollection-langgreek 0\ncollection-langindic 0\ncollection-langitalian 0\ncollection-langjapanese 0\ncollection-langkorean 0\ncollection-langother 0\ncollection-langpolish 0\ncollection-langportuguese 0\ncollection-langspanish 0\ncollection-latex 1\ncollection-latexextra 1\ncollection-latexrecommended 1\ncollection-luatex 0\ncollection-mathscience 1\ncollection-metapost 1\ncollection-music 0\ncollection-omega 1\ncollection-pictures 1\ncollection-plainextra 1\ncollection-pstricks 1\ncollection-publishers 1\ncollection-texworks 0\ncollection-xetex 0\nin_place 0\noption_adjustrepo 1\noption_autobackup 0\noption_backupdir tlpkg/backups\noption_desktop_integration 0\noption_doc 0\noption_file_assocs 0\noption_fmt 1\noption_letter 0\noption_menu_integration 0\noption_path 1\noption_post_code 1\noption_src 1\noption_sys_bin /usr/local/bin\noption_sys_info /usr/local/share/info\noption_sys_man /usr/local/share/man\noption_w32_multi_user 1\noption_write18_restricted 1\nportable 0\n" > /tmp/tex/textlive.profile; sudo /tmp/tex/install-tl -profile /tmp/tex/textlive.profile; fi
-        - sudo tlmgr update --self --all --reinstall-forcibly-removed
+        - if [ ! -d /tmp/texlive/ ]; then curl -L https://tesseract.in.tu-clausthal.de:8443/index.php/s/3ZKzReAc69yBNou/download | sudo tar xJp --strip 2 -C /tmp; fi
+        - sudo /tmp/texlive/bin/x86_64-linux/tlmgr update --self --all --reinstall-forcibly-removed
 
 checkout:
   post:
