@@ -26,9 +26,11 @@ optom: Test module for common.statistics.
 import optom.common.statistics
 import optom.environment.vehicle
 import optom.common.helper
+import optom.common.io
 
 from nose.tools import assert_equal
 from nose.tools import assert_is_instance
+from nose.tools import assert_not_is_instance
 from nose.tools import assert_raises
 
 
@@ -117,4 +119,81 @@ def test_h_spread():
     assert_equal(
         optom.common.statistics.Statistics.h_spread(xrange(10**6)),
         499999.5
+    )
+
+
+def test_aggregate_hdf5():
+    """Test aggregate_vehicle_grid_stats and stats_to_hdf5_structure."""
+    l_statistics = optom.common.statistics.Statistics()
+
+    l_vehicles = {
+        i_vid: optom.environment.vehicle.SUMOVehicle(
+            vehicle_type="passenger",
+            speed_deviation=0.0,
+            speed_max=100.,
+        ).update(
+            position=(0, 0),
+            lane_index=0,
+            speed=10.
+        ) for i_vid in xrange(2)
+    }
+    l_vehicles.update(
+        {
+            i_vid: optom.environment.vehicle.SUMOVehicle(
+                vehicle_type="truck",
+                speed_deviation=0.0,
+                speed_max=100.,
+            ).update(
+                position=(0, 0),
+                lane_index=0,
+                speed=10.
+            ) for i_vid in xrange(2, 4)
+        }
+    )
+    l_vehicles.update(
+        {
+            i_vid: optom.environment.vehicle.SUMOVehicle(
+                vehicle_type="tractor",
+                speed_deviation=0.0,
+                speed_max=100.,
+            ).update(
+                position=(0, 0),
+                lane_index=0,
+                speed=10.
+            ) for i_vid in xrange(4, 6)
+        }
+    )
+
+    for i_vehicle in l_vehicles.itervalues():
+        i_vehicle.properties["dsat_threshold"] = 0.0
+
+    for i_step in xrange(1, 3):
+        for i_vehicle in l_vehicles.itervalues():
+            i_vehicle.record_travel_stats(i_step)
+            i_vehicle.update(
+                position=(i_vehicle.position[0]+10., 0),
+                lane_index=0,
+                speed=10.
+            )
+
+    l_statistics.aggregate_vehicle_grid_stats(l_vehicles)
+
+    for i_vehicle in l_vehicles.itervalues():
+        for i_element in i_vehicle.travel_stats.get("grid").get("pos_x"):
+            assert_not_is_instance(i_element, list)
+        for i_element in i_vehicle.travel_stats.get("grid").get("pos_y"):
+            assert_not_is_instance(i_element, list)
+        for i_element in i_vehicle.travel_stats.get("grid").get("speed"):
+            assert_not_is_instance(i_element, list)
+        for i_element in i_vehicle.travel_stats.get("grid").get("time_loss"):
+            assert_not_is_instance(i_element, list)
+        for i_element in i_vehicle.travel_stats.get("grid").get("relative_time_loss"):
+            assert_not_is_instance(i_element, list)
+        for i_element in i_vehicle.travel_stats.get("grid").get("dissatisfaction"):
+            assert_not_is_instance(i_element, list)
+
+    l_statistics.stats_to_hdf5_structure(
+        l_vehicles,
+        0,
+        [0, 4, 6]
     )
