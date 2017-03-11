@@ -109,6 +109,9 @@ def test_sumo_null_policy():
         assert_equal(l_vehicles[i].vehicle_class, l_results[i].vehicle_class)
         assert_false(l_sumo_policy.applies_to(l_vehicles[i]))
 
+    with assert_raises(AttributeError):
+        l_sumo_policy.applies_to("foo")
+
 
 def test_sumo_vtype_policy():
     """Test SUMOVTypePolicy class"""
