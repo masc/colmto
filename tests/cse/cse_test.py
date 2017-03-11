@@ -79,7 +79,7 @@ def test_sumo_cse():
     assert_in(l_policy_position, l_sumo_cse.policies)
     assert_in(l_policy_position, l_sumo_cse.policies)
 
-    with assert_raises(AttributeError):
+    with assert_raises(TypeError):
         l_sumo_cse.add_policy("foo")
 
     l_vehicles = [

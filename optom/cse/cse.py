@@ -103,7 +103,7 @@ class SumoCSE(BaseCSE):
         """
 
         if not isinstance(policy, optom.cse.policy.SUMOVehiclePolicy):
-            raise AttributeError
+            raise TypeError
 
         if policy_cfg is not None \
                 and policy_cfg.get("vehicle_policies", {}).get("rule", False):

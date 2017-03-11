@@ -104,14 +104,14 @@ class SUMOExtendablePolicy(object):
         # check policy types
         for i_vehicle_policy in vehicle_policies:
             if not isinstance(i_vehicle_policy, SUMOVehiclePolicy):
-                raise AttributeError(
+                raise TypeError(
                     "%s is not of optom.cse.policy.SUMOVehiclePolicy", i_vehicle_policy
                 )
 
         self._vehicle_policies = vehicle_policies
 
         if rule not in ("any", "all"):
-            raise AttributeError
+            raise ValueError
 
         self._rule = rule
 
@@ -145,7 +145,7 @@ class SUMOExtendablePolicy(object):
         @param rule Rule for applying sub-policies ("any", "all")
         """
         if rule not in ("any", "all"):
-            raise AttributeError
+            raise ValueError
         self._rule = rule
 
     def add_vehicle_policy(self, vehicle_policy):
@@ -160,7 +160,7 @@ class SUMOExtendablePolicy(object):
         """
 
         if not isinstance(vehicle_policy, SUMOVehiclePolicy):
-            raise AttributeError("%s is not of optom.cse.policy.SUMOVehiclePolicy", vehicle_policy)
+            raise TypeError("%s is not of optom.cse.policy.SUMOVehiclePolicy", vehicle_policy)
 
         self._vehicle_policies.append(vehicle_policy)
 
@@ -203,7 +203,7 @@ class SUMOUniversalPolicy(SUMOPolicy):
         @retval boolean
         """
         if not isinstance(vehicle, optom.environment.vehicle.BaseVehicle):
-            raise AttributeError
+            raise TypeError
 
         return True
 
@@ -238,7 +238,7 @@ class SUMONullPolicy(SUMOPolicy):
         @retval boolean
         """
         if not isinstance(vehicle, optom.environment.vehicle.BaseVehicle):
-            raise AttributeError
+            raise TypeError
 
         return False
 
