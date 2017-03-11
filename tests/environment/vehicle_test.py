@@ -264,3 +264,31 @@ def test_record_travel_stats():
         l_sumovehicle.travel_stats.get("grid").get("relative_time_loss"),
         [[0.0]]
     )
+    l_sumovehicle.update(position=(3., 0.), lane_index=0, speed=3.)
+    l_sumovehicle.record_travel_stats(3)
+    assert_list_equal(
+        l_sumovehicle.travel_stats.get("grid").get("dissatisfaction")[0],
+        [0.0]
+    )
+    assert_list_equal(
+        l_sumovehicle.travel_stats.get("grid").get("time_loss")[0],
+        [0.0]
+    )
+    assert_list_equal(
+        l_sumovehicle.travel_stats.get("grid").get("relative_time_loss")[0],
+        [0.0]
+    )
+    l_sumovehicle.update(position=(6., 0.), lane_index=0, speed=3.)
+    l_sumovehicle.record_travel_stats(4)
+    assert_almost_equal(
+        l_sumovehicle.travel_stats.get("grid").get("dissatisfaction"),
+        [[0.0], [0.99036954025194568]]
+    )
+    assert_almost_equal(
+        l_sumovehicle.travel_stats.get("grid").get("time_loss"),
+        [[0.0], [3.9399999999999999]]
+    )
+    assert_almost_equal(
+        l_sumovehicle.travel_stats.get("grid").get("relative_time_loss"),
+        [[0.0], [65.666666666666671]]
+    )
