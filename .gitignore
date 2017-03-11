@@ -4,6 +4,7 @@
 !buildout.cfg
 !optom.iml
 !circle.yml
+!codecov.yml
 !setup.cfg
 !optom/resources/*.yaml
 !site/*
