@@ -34,6 +34,7 @@ dependencies:
         - sudo apt-get install doxygen graphviz sumo libhdf5-dev pandoc tk-dev python-tk
         - pip install pylint radon codecov doxypy
         - if [ ! -d /tmp/texlive/ ]; then curl -L https://tesseract.in.tu-clausthal.de:8443/index.php/s/3ZKzReAc69yBNou/download | sudo tar xJp --strip 2 -C /tmp; fi
+        - echo $PATH
         - sudo tlmgr update --self --all --reinstall-forcibly-removed
 
 checkout:
