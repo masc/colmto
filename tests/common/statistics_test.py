@@ -123,7 +123,10 @@ def test_h_spread():
 
 
 def test_aggregate_hdf5():
-    """Test aggregate_vehicle_grid_stats and stats_to_hdf5_structure."""
+    """
+    Test aggregate_vehicle_grid_stats -> stats_to_hdf5_structure -> aggregate_run_stats_to_hdf5
+    chain
+    """
     l_statistics = optom.common.statistics.Statistics()
 
     l_vehicles = {
@@ -192,8 +195,13 @@ def test_aggregate_hdf5():
         for i_element in i_vehicle.travel_stats.get("grid").get("dissatisfaction"):
             assert_not_is_instance(i_element, list)
 
-    l_statistics.stats_to_hdf5_structure(
-        l_vehicles,
-        0,
+    l_statistics.aggregate_run_stats_to_hdf5(
+        {
+            0: l_statistics.stats_to_hdf5_structure(
+                l_vehicles,
+                0,
+                [0, 4, 6]
+            )
+        },
         [0, 4, 6]
     )
