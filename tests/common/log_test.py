@@ -54,7 +54,7 @@ def test_logger():
         optom.common.log.logger(
             name="foo",
             logfile=f_temp_log.name,
-            quiet=False,
+            quiet=True,
             loglevel=logging.INFO
         ),
         optom.common.log.logger(
