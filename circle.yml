@@ -27,7 +27,7 @@ machine:
 dependencies:
     cache_directories:
         - "/tmp/texlive/"
-        
+
     pre:
         - sudo add-apt-repository -y ppa:sumo/stable
         - sudo apt-get update
@@ -61,7 +61,7 @@ test:
         - rm -Rf *
         - rm .pre-commit-config.yaml
         - mv -f /tmp/.gitignore /tmp/circle.yml /tmp/optom /tmp/tests /tmp/run.py /tmp/site /tmp/README.md /tmp/LICENSE.md .
-        - pylint optom tests run.py -f html --import-graph=optom-imports.png > pylint.html; true
+        - sh site/pylint.sh > pylint.html || true
         - pandoc --from html --to markdown_github pylint.html -o pylint.md
         - echo -e "\n## Import Graph\n" >> pylint.md
         - cp pylint.md pylint_doc.md
