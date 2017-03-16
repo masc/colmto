@@ -115,6 +115,76 @@ def aggregate_run_stats_to_hdf5(hdf5_stats, detector_positions):
             } for i_interval in zip(detector_positions[:-1], detector_positions[1:])
         }
     }
+    print("|   |   |   |-- efficiency (global)")
+    l_aggregated["global"]["efficiency"] = {}
+    for i_vtype in ["alltypes", "passenger", "truck", "tractor"]:
+        if l_aggregated["global"]["efficiency"].get(i_vtype) is None:
+            l_aggregated["global"]["efficiency"][i_vtype] = {}
+        for i_stat in [
+            "dissatisfaction_start",
+            "dissatisfaction_end",
+            "dissatisfaction_delta",
+            "time_loss_start",
+            "time_loss_end",
+            "time_loss_delta",
+            "relative_time_loss_start",
+            "relative_time_loss_end",
+            "relative_time_loss_delta"
+        ]:
+            l_aggregated["global"]["efficiency"][i_vtype][i_stat] = {
+                "value": [
+                    numpy.sum(
+                        i_hdf5_stat[
+                            os.path.join(
+                                i_run, "global", "driver", i_vtype, i_stat
+                            )
+                        ]
+                    ) for i_hdf5_stat in hdf5_stats for i_run in i_hdf5_stat
+                ],
+                "attr": {
+                    "description": "efficiency as sum of {}".format(i_stat)
+                }
+            }
+
+    print("|   |   |   |-- efficiency {}".format(detector_positions))
+    for i_interval in zip(detector_positions[:-1], detector_positions[1:]):
+        l_aggregated["intervals"]["{}-{}".format(*i_interval)]["efficiency"] = {}
+        for i_vtype in ["alltypes", "passenger", "truck", "tractor"]:
+            if l_aggregated[
+                    "intervals"
+            ]["{}-{}".format(*i_interval)]["efficiency"].get(i_vtype) is None:
+                l_aggregated[
+                    "intervals"
+                ]["{}-{}".format(*i_interval)]["efficiency"][i_vtype] = {}
+            for i_stat in [
+                "dissatisfaction_start",
+                "dissatisfaction_end",
+                "dissatisfaction_delta",
+                "time_loss_start",
+                "time_loss_end",
+                "time_loss_delta",
+                "relative_time_loss_start",
+                "relative_time_loss_end",
+                "relative_time_loss_delta"
+            ]:
+                l_aggregated[
+                        "intervals"]["{}-{}".format(*i_interval)]["efficiency"][i_vtype][i_stat] = {
+                    "value": [
+                        numpy.sum(
+                            i_hdf5_stat[os.path.join(
+                                i_run,
+                                "intervals",
+                                "{}-{}".format(*i_interval),
+                                "driver",
+                                i_vtype,
+                                i_stat
+                            )]
+                        ) for i_hdf5_stat in hdf5_stats for i_run in i_hdf5_stat
+                    ],
+                    "attr": {
+                        "description": "efficiency as sum of {}".format(i_stat)
+                    }
+                }
 
     return l_aggregated
 
