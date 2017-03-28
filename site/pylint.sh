@@ -1,1 +1,1 @@
-pylint optom tests/* run.py -f html --import-graph=optom-imports.png
+pylint colmto tests/* run.py -f html --import-graph=colmto-imports.png

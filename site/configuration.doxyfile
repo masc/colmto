@@ -110,7 +110,7 @@ WARN_LOGFILE           =
 #---------------------------------------------------------------------------
 # Configuration options related to the input files
 #---------------------------------------------------------------------------
-INPUT                  = optom \
+INPUT                  = colmto \
                          tests \
                          README_doc.md \
                          LICENSE.md
