@@ -4,7 +4,8 @@
 # #############################################################################
 # # LGPL License                                                              #
 # #                                                                           #
-# # This file is part of the Optimisation of Overtaking Manoeuvres project.   #
+# # This file is part of the Cooperative Lane Management and Traffic flow     #
+# # Optimisation project.                                                     #
 # # Copyright (c) 2017, Malte Aschermann (malte.aschermann@tu-clausthal.de)   #
 # # This program is free software: you can redistribute it and/or modify      #
 # # it under the terms of the GNU Lesser General Public License as            #
@@ -21,7 +22,7 @@
 # #############################################################################
 # @endcond
 """
-optom: Test module for common.io.
+colmto: Test module for common.io.
 """
 
 import json
@@ -29,8 +30,8 @@ import tempfile
 import logging
 import gzip
 
-import optom.common.io
-import optom.common.helper
+import colmto.common.io
+import colmto.common.helper
 
 import h5py
 # pylint: disable=no-name-in-module
@@ -51,7 +52,7 @@ def test_xslt():
 
     assert_true(
         isinstance(
-            optom.common.io.xslt(
+            colmto.common.io.xslt(
                 # pylint: disable=no-member
                 etree.XML(
                     l_xslt_template
@@ -93,8 +94,8 @@ def test_reader_read_etree():
     f_temp_test.seek(0)
 
     for i_elements in zip(
-            optom.common.io.Reader(None).read_etree(f_temp_test.name).iter(),
-            optom.common.io.etree.parse(f_temp_gold.name).iter()):
+            colmto.common.io.Reader(None).read_etree(f_temp_test.name).iter(),
+            colmto.common.io.etree.parse(f_temp_gold.name).iter()):
         assert_equals(
             i_elements[0].items(),
             i_elements[1].items()
@@ -166,12 +167,12 @@ def test_reader_read_json():
     f_temp_test.write(json.dumps(l_json_gold))
     f_temp_test.seek(0)
 
-    args = optom.common.helper.Namespace(
+    args = colmto.common.helper.Namespace(
         loglevel=logging.DEBUG, quiet=False, logfile="foo.log"
     )
 
     assert_equals(
-        optom.common.io.Reader(args).read_json(f_temp_test.name),
+        colmto.common.io.Reader(args).read_json(f_temp_test.name),
         l_json_gold
     )
 
@@ -185,7 +186,7 @@ def test_reader_read_json():
     f_temp_test.seek(0)
 
     assert_equals(
-        optom.common.io.Reader(None).read_yaml(f_temp_test.name),
+        colmto.common.io.Reader(None).read_yaml(f_temp_test.name),
         l_json_gold
     )
     f_temp_test.close()
@@ -254,7 +255,7 @@ def test_reader_read_yaml():
     f_temp_test.seek(0)
 
     assert_equals(
-        optom.common.io.Reader(None).read_yaml(f_temp_test.name),
+        colmto.common.io.Reader(None).read_yaml(f_temp_test.name),
         l_yaml_gold
     )
 
@@ -268,7 +269,7 @@ def test_reader_read_yaml():
     f_temp_test.seek(0)
 
     assert_equals(
-        optom.common.io.Reader(None).read_yaml(f_temp_test.name),
+        colmto.common.io.Reader(None).read_yaml(f_temp_test.name),
         l_yaml_gold
     )
     f_temp_test.close()
@@ -333,10 +334,10 @@ def test_write_yaml():
 
     f_temp_test = tempfile.NamedTemporaryFile()
 
-    args = optom.common.helper.Namespace(
+    args = colmto.common.helper.Namespace(
         loglevel="debug", quiet=False, logfile="foo.log"
     )
-    optom.common.io.Writer(args).write_yaml(l_yaml_gold, f_temp_test.name)
+    colmto.common.io.Writer(args).write_yaml(l_yaml_gold, f_temp_test.name)
     f_temp_test.seek(0)
 
     assert_equals(
@@ -348,7 +349,7 @@ def test_write_yaml():
 
     # gzip
     f_temp_test = tempfile.NamedTemporaryFile(suffix=".gz")
-    optom.common.io.Writer(None).write_yaml(l_yaml_gold, f_temp_test.name)
+    colmto.common.io.Writer(None).write_yaml(l_yaml_gold, f_temp_test.name)
     f_temp_test.seek(0)
 
     assert_equals(
@@ -415,11 +416,11 @@ def test_write_json():
         }
     }
 
-    args = optom.common.helper.Namespace(
+    args = colmto.common.helper.Namespace(
         loglevel=logging.DEBUG, quiet=False, logfile="foo.log"
     )
     f_temp_test = tempfile.NamedTemporaryFile()
-    optom.common.io.Writer(args).write_json(l_json_gold, f_temp_test.name)
+    colmto.common.io.Writer(args).write_json(l_json_gold, f_temp_test.name)
     f_temp_test.seek(0)
 
     assert_equals(
@@ -431,7 +432,7 @@ def test_write_json():
 
     # gzip
     f_temp_test = tempfile.NamedTemporaryFile(suffix=".gz")
-    optom.common.io.Writer(None).write_json(l_json_gold, f_temp_test.name)
+    colmto.common.io.Writer(None).write_json(l_json_gold, f_temp_test.name)
     f_temp_test.seek(0)
 
     assert_equals(
@@ -442,7 +443,7 @@ def test_write_json():
 
     # test write.json_pretty
     f_temp_test = tempfile.NamedTemporaryFile()
-    optom.common.io.Writer(None).write_json_pretty(l_json_gold, f_temp_test.name)
+    colmto.common.io.Writer(None).write_json_pretty(l_json_gold, f_temp_test.name)
     f_temp_test.seek(0)
 
     assert_equals(
@@ -454,7 +455,7 @@ def test_write_json():
 
     # gzip
     f_temp_test = tempfile.NamedTemporaryFile(suffix=".gz")
-    optom.common.io.Writer(None).write_json_pretty(l_json_gold, f_temp_test.name)
+    colmto.common.io.Writer(None).write_json_pretty(l_json_gold, f_temp_test.name)
     f_temp_test.seek(0)
 
     assert_equals(
@@ -503,7 +504,7 @@ def test_flatten_object_dict():
 
     assert_equals(
         # pylint: disable=protected-access
-        optom.common.io.Writer(None)._flatten_object_dict(l_test_dict),
+        colmto.common.io.Writer(None)._flatten_object_dict(l_test_dict),
         # pylint: enable=protected-access
         l_gold_dict
     )
@@ -512,7 +513,7 @@ def test_flatten_object_dict():
 def test_write_csv():
     """test write_csv"""
     f_temp_test = tempfile.NamedTemporaryFile()
-    optom.common.io.Writer(None).write_csv(
+    colmto.common.io.Writer(None).write_csv(
         ["foo", "bar"],
         [{"foo": 1, "bar": 1}, {"foo": 2, "bar": 2}],
         f_temp_test.name
@@ -551,7 +552,7 @@ def test_write_hdf5():
 
     f_temp_test = tempfile.NamedTemporaryFile(suffix=".hdf5")
 
-    optom.common.io.Writer(None).write_hdf5(
+    colmto.common.io.Writer(None).write_hdf5(
         object_dict=l_obj_dict,
         hdf5_file=f_temp_test.name,
         hdf5_base_path="root"
@@ -569,7 +570,7 @@ def test_write_hdf5():
         {u'bar/bar': 42, u'baz/foo': 21, u'foo/baz': 23}
     )
 
-    optom.common.io.Writer(None).write_hdf5(
+    colmto.common.io.Writer(None).write_hdf5(
         object_dict={
             "foo/baz": {
                 "value": 11,
@@ -594,21 +595,21 @@ def test_write_hdf5():
 
     # test for exceptions
     with assert_raises(TypeError):
-        optom.common.io.Writer(None).write_hdf5(
+        colmto.common.io.Writer(None).write_hdf5(
             object_dict="foo",
             hdf5_file=f_temp_test.name,
             hdf5_base_path="root"
         )
 
     with assert_raises(IOError):
-        optom.common.io.Writer(None).write_hdf5(
+        colmto.common.io.Writer(None).write_hdf5(
             object_dict=l_obj_dict,
             hdf5_file="{}/".format(f_temp_test.name),
             hdf5_base_path="root"
         )
 
     with assert_raises(TypeError):
-        optom.common.io.Writer(None).write_hdf5(
+        colmto.common.io.Writer(None).write_hdf5(
             object_dict={
                 "foo/baz": {
                     "value": lambda x: x,

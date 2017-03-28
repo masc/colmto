@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
-# @package optom
+# @package tests
 # @cond LICENSE
 # #############################################################################
 # # LGPL License                                                              #
 # #                                                                           #
-# # This file is part of the Optimisation of 2+1 Manoeuvres project.          #
-# # Copyright (c) 2016, Malte Aschermann (malte.aschermann@tu-clausthal.de)   #
+# # This file is part of the Cooperative Lane Management and Traffic flow     #
+# # Optimisation project.                                                     #
+# # Copyright (c) 2017, Malte Aschermann (malte.aschermann@tu-clausthal.de)   #
 # # This program is free software: you can redistribute it and/or modify      #
 # # it under the terms of the GNU Lesser General Public License as            #
 # # published by the Free Software Foundation, either version 3 of the        #
@@ -27,7 +28,7 @@ import os
 import sys
 import h5py
 import numpy
-import optom.common.io
+import colmto.common.io
 
 
 def aggregate_run_stats_to_hdf5(hdf5_stats, detector_positions):
@@ -194,7 +195,7 @@ def main(argv):
     Main function
     @param argv cmdline arguments
     """
-    l_writer = optom.common.io.Writer()
+    l_writer = colmto.common.io.Writer()
 
     if len(argv) < 3:
         print("Usage: aggregate_runs_in_hdf5.py [hdf5-input-file ...] [hdf5-output-file]")

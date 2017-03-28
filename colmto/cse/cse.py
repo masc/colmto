@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
-# @package optom.cse
+# @package tests
 # @cond LICENSE
 # #############################################################################
 # # LGPL License                                                              #
 # #                                                                           #
-# # This file is part of the Optimisation of 2+1 Manoeuvres project.          #
+# # This file is part of the Cooperative Lane Management and Traffic flow     #
+# # Optimisation project.                                                     #
 # # Copyright (c) 2017, Malte Aschermann (malte.aschermann@tu-clausthal.de)   #
 # # This program is free software: you can redistribute it and/or modify      #
 # # it under the terms of the GNU Lesser General Public License as            #
@@ -23,8 +24,8 @@
 # pylint: disable=too-few-public-methods
 # pylint: disable=no-self-use
 """CSE classes"""
-import optom.common.log
-import optom.cse.policy
+import colmto.common.log
+import colmto.cse.policy
 
 
 class BaseCSE(object):
@@ -36,8 +37,8 @@ class BaseCSE(object):
         @param args: argparse configuration
         """
         if args is not None:
-            self._log = optom.common.log.logger(__name__, args.loglevel, args.quiet, args.logfile)
-        self._log = optom.common.log.logger(__name__)
+            self._log = colmto.common.log.logger(__name__, args.loglevel, args.quiet, args.logfile)
+        self._log = colmto.common.log.logger(__name__)
         self._vehicles = set()
         self._policies = []
 
@@ -69,15 +70,15 @@ class BaseCSE(object):
         """
         for i_policy in self._policies:
             if i_policy.applies_to(vehicle) \
-                    and i_policy.behaviour == optom.cse.policy.BEHAVIOUR.deny:
+                    and i_policy.behaviour == colmto.cse.policy.BEHAVIOUR.deny:
                 vehicle.change_vehicle_class(
-                    optom.cse.policy.SUMOPolicy.to_disallowed_class()
+                    colmto.cse.policy.SUMOPolicy.to_disallowed_class()
                 )
                 return self
 
         # default case: no applicable policy found
         vehicle.change_vehicle_class(
-            optom.cse.policy.SUMOPolicy.to_allowed_class()
+            colmto.cse.policy.SUMOPolicy.to_allowed_class()
         )
 
         return self
@@ -87,11 +88,11 @@ class SumoCSE(BaseCSE):
     """First-come-first-served CSE (basically do nothing and allow all vehicles access to OTL."""
 
     _valid_policies = {
-        "SUMOUniversalPolicy": optom.cse.policy.SUMOUniversalPolicy,
-        "SUMONullPolicy": optom.cse.policy.SUMONullPolicy,
-        "SUMOSpeedPolicy": optom.cse.policy.SUMOSpeedPolicy,
-        "SUMOPositionPolicy": optom.cse.policy.SUMOPositionPolicy,
-        "SUMOVTypePolicy": optom.cse.policy.SUMOVTypePolicy
+        "SUMOUniversalPolicy": colmto.cse.policy.SUMOUniversalPolicy,
+        "SUMONullPolicy": colmto.cse.policy.SUMONullPolicy,
+        "SUMOSpeedPolicy": colmto.cse.policy.SUMOSpeedPolicy,
+        "SUMOPositionPolicy": colmto.cse.policy.SUMOPositionPolicy,
+        "SUMOVTypePolicy": colmto.cse.policy.SUMOVTypePolicy
     }
 
     def add_policy(self, policy, policy_cfg=None):
@@ -102,7 +103,7 @@ class SumoCSE(BaseCSE):
         @retval self
         """
 
-        if not isinstance(policy, optom.cse.policy.SUMOVehiclePolicy):
+        if not isinstance(policy, colmto.cse.policy.SUMOVehiclePolicy):
             raise TypeError
 
         if policy_cfg is not None \
@@ -112,9 +113,9 @@ class SumoCSE(BaseCSE):
             for i_subpolicy in policy_cfg.get("vehicle_policies", {}).get("policies", []):
                 policy.add_vehicle_policy(
                     self._valid_policies.get(i_subpolicy.get("type"))(
-                        behaviour=optom.cse.policy.BasePolicy.behaviour_from_string_or_else(
+                        behaviour=colmto.cse.policy.BasePolicy.behaviour_from_string_or_else(
                             i_subpolicy.get("behaviour"),
-                            optom.cse.policy.BEHAVIOUR.deny
+                            colmto.cse.policy.BEHAVIOUR.deny
                         ),
                         **i_subpolicy.get("args")
                     )
@@ -139,9 +140,9 @@ class SumoCSE(BaseCSE):
         for i_policy in policies_config:
             self.add_policy(
                 self._valid_policies.get(i_policy.get("type"))(
-                    behaviour=optom.cse.policy.BasePolicy.behaviour_from_string_or_else(
+                    behaviour=colmto.cse.policy.BasePolicy.behaviour_from_string_or_else(
                         i_policy.get("behaviour"),
-                        optom.cse.policy.BEHAVIOUR.deny
+                        colmto.cse.policy.BEHAVIOUR.deny
                     ),
                     **i_policy.get("args")
                 ),

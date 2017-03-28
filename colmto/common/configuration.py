@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
-# @package optom
+# @package tests
 # @cond LICENSE
 # #############################################################################
 # # LGPL License                                                              #
 # #                                                                           #
-# # This file is part of the Optimisation of 2+1 Manoeuvres project.          #
+# # This file is part of the Cooperative Lane Management and Traffic flow     #
+# # Optimisation project.                                                     #
 # # Copyright (c) 2017, Malte Aschermann (malte.aschermann@tu-clausthal.de)   #
 # # This program is free software: you can redistribute it and/or modify      #
 # # it under the terms of the GNU Lesser General Public License as            #
@@ -29,8 +30,8 @@ import os
 
 import sh
 
-import optom.common.io
-import optom.common.log
+import colmto.common.io
+import colmto.common.log
 
 
 _DEFAULT_CONFIG_RUN = {
@@ -324,7 +325,7 @@ _DEFAULT_CONFIG_VTYPES = {
 
 
 class Configuration(object):
-    """Configuration reads OPTOM's general cfg files."""
+    """Configuration reads CoLMTO's general cfg files."""
 
     def __init__(self, args):
         """
@@ -332,9 +333,9 @@ class Configuration(object):
         Command line args override cfgs.
         """
 
-        self._log = optom.common.log.logger(__name__, args.loglevel, args.quiet, args.logfile)
-        self._reader = optom.common.io.Reader(args)
-        self._writer = optom.common.io.Writer(args)
+        self._log = colmto.common.log.logger(__name__, args.loglevel, args.quiet, args.logfile)
+        self._reader = colmto.common.io.Reader(args)
+        self._writer = colmto.common.io.Writer(args)
         self._args = args
 
         if self._args.runconfigfile is None:
@@ -378,12 +379,12 @@ class Configuration(object):
         # otherwise set version to "UNKNOWN"
         try:
             l_git_commit_id = sh.Command("git")(["rev-parse", "HEAD"])
-            self._run_config["optom_version"] = str(l_git_commit_id).replace("\n", "")
+            self._run_config["colmto_version"] = str(l_git_commit_id).replace("\n", "")
         except sh.ErrorReturnCode:
-            self._run_config["optom_version"] = "UNKNOWN"
+            self._run_config["colmto_version"] = "UNKNOWN"
         except sh.CommandNotFound:
             self._log.debug("Git command not found in PATH. Setting commit id to UNKNOWN.")
-            self._run_config["optom_version"] = "UNKNOWN"
+            self._run_config["colmto_version"] = "UNKNOWN"
 
         # make sure vtype_lise exists and is dict
         if self._run_config.get("vtype_list") is None \

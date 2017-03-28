@@ -4,7 +4,8 @@
 # #############################################################################
 # # LGPL License                                                              #
 # #                                                                           #
-# # This file is part of the Optimisation of 2+1 Manoeuvres project.          #
+# # This file is part of the Cooperative Lane Management and Traffic flow     #
+# # Optimisation project.                                                     #
 # # Copyright (c) 2017, Malte Aschermann (malte.aschermann@tu-clausthal.de)   #
 # # This program is free software: you can redistribute it and/or modify      #
 # # it under the terms of the GNU Lesser General Public License as            #
@@ -21,12 +22,12 @@
 # #############################################################################
 # @endcond
 """
-optom: Test module for common.statistics.
+colmto: Test module for common.statistics.
 """
-import optom.common.statistics
-import optom.environment.vehicle
-import optom.common.helper
-import optom.common.io
+import colmto.common.statistics
+import colmto.environment.vehicle
+import colmto.common.helper
+import colmto.common.io
 
 from nose.tools import assert_equal
 from nose.tools import assert_is_instance
@@ -37,62 +38,62 @@ from nose.tools import assert_raises
 def test_statistics():
     """Test statistics class."""
     assert_is_instance(
-        optom.common.statistics.Statistics(None),
-        optom.common.statistics.Statistics
+        colmto.common.statistics.Statistics(None),
+        colmto.common.statistics.Statistics
     )
     assert_is_instance(
-        optom.common.statistics.Statistics(
-            optom.common.helper.Namespace(
+        colmto.common.statistics.Statistics(
+            colmto.common.helper.Namespace(
                 loglevel="debug", quiet=False, logfile="foo.log"
             )
         ),
-        optom.common.statistics.Statistics
+        colmto.common.statistics.Statistics
     )
 
     with assert_raises(AttributeError):
-        optom.common.statistics.Statistics("foo")
+        colmto.common.statistics.Statistics("foo")
 
 
 def test_closestpositiontodetector():
     """Test closest_position_to_detector"""
     # pylint: disable=protected-access
     assert_equal(
-        optom.common.statistics.Statistics._closest_position_to_detector(
+        colmto.common.statistics.Statistics._closest_position_to_detector(
             vehicle_positions=[0],
             detector_position=0
         ),
         0
     )
     assert_equal(
-        optom.common.statistics.Statistics._closest_position_to_detector(
+        colmto.common.statistics.Statistics._closest_position_to_detector(
             vehicle_positions=[0, 1, 2],
             detector_position=1
         ),
         1
     )
     assert_equal(
-        optom.common.statistics.Statistics._closest_position_to_detector(
+        colmto.common.statistics.Statistics._closest_position_to_detector(
             vehicle_positions=[0, 1, 2],
             detector_position=2
         ),
         2
     )
     assert_equal(
-        optom.common.statistics.Statistics._closest_position_to_detector(
+        colmto.common.statistics.Statistics._closest_position_to_detector(
             vehicle_positions=[0, 1, 2, 10],
             detector_position=8
         ),
         3
     )
     assert_equal(
-        optom.common.statistics.Statistics._closest_position_to_detector(
+        colmto.common.statistics.Statistics._closest_position_to_detector(
             vehicle_positions=[0, 1, 2, 10],
             detector_position=3
         ),
         2
     )
     assert_equal(
-        optom.common.statistics.Statistics._closest_position_to_detector(
+        colmto.common.statistics.Statistics._closest_position_to_detector(
             vehicle_positions=[0, 1, 2, 10],
             detector_position=11
         ),
@@ -112,12 +113,12 @@ def test_h_spread():
               1099, 1166, 1333, 1499, 1693, 1699, 1775, 1895)
 
     assert_equal(
-        optom.common.statistics.Statistics.h_spread(l_data),
+        colmto.common.statistics.Statistics.h_spread(l_data),
         704
     )
 
     assert_equal(
-        optom.common.statistics.Statistics.h_spread(xrange(10**6)),
+        colmto.common.statistics.Statistics.h_spread(xrange(10 ** 6)),
         499999.5
     )
 
@@ -127,10 +128,10 @@ def test_aggregate_hdf5():
     Test aggregate_vehicle_grid_stats -> stats_to_hdf5_structure -> aggregate_run_stats_to_hdf5
     chain
     """
-    l_statistics = optom.common.statistics.Statistics()
+    l_statistics = colmto.common.statistics.Statistics()
 
     l_vehicles = {
-        i_vid: optom.environment.vehicle.SUMOVehicle(
+        i_vid: colmto.environment.vehicle.SUMOVehicle(
             vehicle_type="passenger",
             speed_deviation=0.0,
             speed_max=100.,
@@ -142,7 +143,7 @@ def test_aggregate_hdf5():
     }
     l_vehicles.update(
         {
-            i_vid: optom.environment.vehicle.SUMOVehicle(
+            i_vid: colmto.environment.vehicle.SUMOVehicle(
                 vehicle_type="truck",
                 speed_deviation=0.0,
                 speed_max=100.,
@@ -155,7 +156,7 @@ def test_aggregate_hdf5():
     )
     l_vehicles.update(
         {
-            i_vid: optom.environment.vehicle.SUMOVehicle(
+            i_vid: colmto.environment.vehicle.SUMOVehicle(
                 vehicle_type="tractor",
                 speed_deviation=0.0,
                 speed_max=100.,

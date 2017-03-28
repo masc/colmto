@@ -4,7 +4,8 @@
 # #############################################################################
 # # LGPL License                                                              #
 # #                                                                           #
-# # This file is part of the Optimisation of 2+1 Manoeuvres project.          #
+# # This file is part of the Cooperative Lane Management and Traffic flow     #
+# # Optimisation project.                                                     #
 # # Copyright (c) 2017, Malte Aschermann (malte.aschermann@tu-clausthal.de)   #
 # # This program is free software: you can redistribute it and/or modify      #
 # # it under the terms of the GNU Lesser General Public License as            #
@@ -21,7 +22,7 @@
 # #############################################################################
 # @endcond
 """
-optom: Test module for optom.common.log.
+colmto: Test module for colmto.common.log.
 """
 import logging
 
@@ -32,13 +33,13 @@ from nose.tools import assert_equal
 from nose.tools import assert_true
 from nose.tools import assert_raises
 
-import optom.common.log
+import colmto.common.log
 
 
 def test_logger():
     """Test logger"""
     assert_equal(
-        optom.common.log.LOGLEVEL,
+        colmto.common.log.LOGLEVEL,
         {
             "NOTSET": logging.NOTSET,
             "INFO": logging.INFO,
@@ -51,13 +52,13 @@ def test_logger():
     f_temp_log = tempfile.NamedTemporaryFile()
 
     l_logs = [
-        optom.common.log.logger(
+        colmto.common.log.logger(
             name="foo",
             logfile=f_temp_log.name,
             quiet=True,
             loglevel=logging.INFO
         ),
-        optom.common.log.logger(
+        colmto.common.log.logger(
             name="foo",
             logfile=f_temp_log.name,
             quiet=False,
@@ -68,8 +69,8 @@ def test_logger():
     for i_logger in l_logs:
         i_logger.info("foo")
 
-    for i_level in optom.common.log.LOGLEVEL.iterkeys():
-        l_log = optom.common.log.logger(
+    for i_level in colmto.common.log.LOGLEVEL.iterkeys():
+        l_log = colmto.common.log.logger(
             name="foo{}".format(i_level),
             logfile=f_temp_log.name,
             quiet=True,
@@ -84,10 +85,10 @@ def test_logger():
         )
         assert_equal(
             l_log.level,
-            optom.common.log.LOGLEVEL.get(i_level)
+            colmto.common.log.LOGLEVEL.get(i_level)
         )
     assert_equal(
-        optom.common.log.logger(
+        colmto.common.log.logger(
             name="bar",
             logfile=f_temp_log.name,
             quiet=True,
@@ -97,7 +98,7 @@ def test_logger():
     )
 
     with assert_raises(TypeError):
-        optom.common.log.logger(
+        colmto.common.log.logger(
             name="bar",
             logfile=f_temp_log.name,
             quiet=True,
@@ -105,7 +106,7 @@ def test_logger():
         )
 
     with assert_raises(TypeError):
-        optom.common.log.logger(
+        colmto.common.log.logger(
             name="barz",
             logfile=f_temp_log.name,
             quiet="foo",

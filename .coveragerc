@@ -1,6 +1,6 @@
 [run]
 branch = True
-source = optom
+source = colmto
 
 [report]
 exclude_lines =

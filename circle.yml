@@ -19,7 +19,7 @@ machine:
         GIT_COMMITTER_EMAIL: masc@tu-clausthal.de
         SUMO_HOME: /usr/share/sumo
         TEXINSTALL: minimal
-        DOCUMENT: OpTOM-doc
+        DOCUMENT: CoLMTO-doc
         PATH: $PATH:/tmp/texlive/bin/x86_64-linux
     python:
         version: 2.7.12
@@ -51,7 +51,7 @@ test:
         # codecov
         - nosetests -w tests --with-coverage
         - bash <(curl -s https://codecov.io/bash) -t 910321f1-7584-4bc8-b264-bce881241d83
-        - mv -f optom tests site run.py README.md LICENSE.md /tmp
+        - mv -f colmto tests site run.py README.md LICENSE.md /tmp
         - git checkout gh-pages
         - mv -f circle.yml .gitignore /tmp
         - git checkout master
@@ -60,12 +60,12 @@ test:
         - git checkout --orphan gh-pages
         - rm -Rf *
         - rm .pre-commit-config.yaml
-        - mv -f /tmp/.gitignore /tmp/circle.yml /tmp/optom /tmp/tests /tmp/run.py /tmp/site /tmp/README.md /tmp/LICENSE.md .
+        - mv -f /tmp/.gitignore /tmp/circle.yml /tmp/colmto /tmp/tests /tmp/run.py /tmp/site /tmp/README.md /tmp/LICENSE.md .
         - sh site/pylint.sh > pylint.html || true
         - pandoc --from html --to markdown_github pylint.html -o pylint.md
         - echo -e "\n## Import Graph\n" >> pylint.md
         - cp pylint.md pylint_doc.md
-        - echo -e "\n![ImportGraph](https://github.com/masc/optom/blob/gh-pages/docs/sources/optom-imports.png)" >> pylint.md
+        - echo -e "\n![ImportGraph](https://github.com/masc/colmto/blob/gh-pages/docs/sources/colmto-imports.png)" >> pylint.md
         - echo -e "\n# Code Statistics\n\n" > REPORT.md
         - echo -e "## Copyright & License\n\n- Copyright 2017, Malte Aschermann\n- License LGPL\n\n" > README_doc.md
         - sh site/radon.sh > radon.md
@@ -77,9 +77,9 @@ test:
         - cd docs/latex/ && make && cd ..
         - mv docs/latex/refman.pdf docs/$DOCUMENT.pdf
         - rm -Rf docs/latex
-        - mv optom-imports.png docs/sources
-        - rm -Rf optom tests site run.py README_doc.md pylint.html pylint.md pylint_doc.md radon.md
+        - mv colmto-imports.png docs/sources
+        - rm -Rf colmto tests site run.py README_doc.md pylint.html pylint.md pylint_doc.md radon.md
         # add & commit
         - git add --all .
-        - git commit -m "CircleCI run complete. Report https://github.com/masc/optom/blob/gh-pages/REPORT.md , Doku http://masc.github.io/optom/docs/sources/index.html"
+        - git commit -m "CircleCI run complete. Report https://github.com/masc/colmto/blob/gh-pages/REPORT.md , Doku http://masc.github.io/colmto/docs/sources/index.html"
         - git push origin gh-pages

@@ -2,11 +2,11 @@
 !.gitignore
 !.gitmodules
 !buildout.cfg
-!optom.iml
+!colmto.iml
 !circle.yml
 !codecov.yml
 !setup.cfg
-!optom/resources/*.yaml
+!colmto/resources/*.yaml
 !site/*
 !*.txt
 !*.py

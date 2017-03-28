@@ -4,7 +4,8 @@
 # #############################################################################
 # # LGPL License                                                              #
 # #                                                                           #
-# # This file is part of the Optimisation of 2+1 Manoeuvres project.          #
+# # This file is part of the Cooperative Lane Management and Traffic flow     #
+# # Optimisation project.                                                     #
 # # Copyright (c) 2017, Malte Aschermann (malte.aschermann@tu-clausthal.de)   #
 # # This program is free software: you can redistribute it and/or modify      #
 # # it under the terms of the GNU Lesser General Public License as            #
@@ -21,17 +22,17 @@
 # #############################################################################
 # @endcond
 """
-optom: Test module for common.colormaps.
+colmto: Test module for common.colormaps.
 """
 from nose.tools import assert_equal
 
-import optom.common.visualisation
+import colmto.common.visualisation
 
 
 def test_cmap_names():
     """Test case for cmap_names function."""
     assert_equal(
-        sorted(optom.common.visualisation.cmap_names()),
+        sorted(colmto.common.visualisation.cmap_names()),
         sorted(["magma", "magma_r", "inferno", "inferno_r",
                 "plasma", "plasma_r", "viridis", "viridis_r"])
     )
@@ -140,8 +141,8 @@ def test_mapped_cmap():
     ]
 
     l_colors = [
-        [optom.common.visualisation.mapped_cmap(i_cmap, 10)(i) for i in xrange(10)]
-        for i_cmap in optom.common.visualisation.cmap_names()
+        [colmto.common.visualisation.mapped_cmap(i_cmap, 10)(i) for i in xrange(10)]
+        for i_cmap in colmto.common.visualisation.cmap_names()
         ]
 
     assert_equal(l_colors, l_results)

@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
-# @package optom
+# @package tests
 # @cond LICENSE
 # #############################################################################
 # # LGPL License                                                              #
 # #                                                                           #
-# # This file is part of the Optimisation of 2+1 Manoeuvres project.          #
-# # Copyright (c) 2016, Malte Aschermann (malte.aschermann@tu-clausthal.de)   #
+# # This file is part of the Cooperative Lane Management and Traffic flow     #
+# # Optimisation project.                                                     #
+# # Copyright (c) 2017, Malte Aschermann (malte.aschermann@tu-clausthal.de)   #
 # # This program is free software: you can redistribute it and/or modify      #
 # # it under the terms of the GNU Lesser General Public License as            #
 # # published by the Free Software Foundation, either version 3 of the        #
@@ -20,29 +21,17 @@
 # # along with this program. If not, see http://www.gnu.org/licenses/         #
 # #############################################################################
 # @endcond
-"""Configuration super class."""
-from __future__ import division
-from __future__ import print_function
-
-import sys
-import h5py
+"""Helper module"""
 
 
-def main(argv):
-    """
-    main
-    @param argv: cmdline args
-    """
-    if len(sys.argv) != 3:
-        print("Usage: merge_scenario_hdf5.py hdf5-input-file hdf5-output-file")
-        return
+class Enum(tuple):
+    """Enum class for python 2"""
+    __getattr__ = tuple.index
 
-    f_src = h5py.File(argv[1], "r")
-    f_destination = h5py.File(argv[2], "a", libver="latest")
-    for i_key in f_src.keys():
-        f_src.copy(source=i_key, dest=f_destination)
-    f_destination.close()
-    f_src.close()
 
-if __name__ == "__main__":
-    main(sys.argv)
+class Namespace(object):
+    """Namespace similar to argparse"""
+    # pylint: disable=too-few-public-methods
+    def __init__(self, **kwargs):
+        """C'tor."""
+        self.__dict__.update(kwargs)

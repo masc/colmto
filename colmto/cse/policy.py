@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
-# @package optom.cse
+# @package tests
 # @cond LICENSE
 # #############################################################################
 # # LGPL License                                                              #
 # #                                                                           #
-# # This file is part of the Optimisation of 2+1 Manoeuvres project.          #
+# # This file is part of the Cooperative Lane Management and Traffic flow     #
+# # Optimisation project.                                                     #
 # # Copyright (c) 2017, Malte Aschermann (malte.aschermann@tu-clausthal.de)   #
 # # This program is free software: you can redistribute it and/or modify      #
 # # it under the terms of the GNU Lesser General Public License as            #
@@ -24,9 +25,9 @@
 """Policy related classes"""
 import numpy
 
-import optom.common.helper
+import colmto.common.helper
 
-BEHAVIOUR = optom.common.helper.Enum(["deny", "allow"])
+BEHAVIOUR = colmto.common.helper.Enum(["deny", "allow"])
 
 SUMO_VCLASS = {
     BEHAVIOUR.allow: "custom2",
@@ -41,7 +42,7 @@ class BasePolicy(object):
         """
         C'tor
         @param behaviour Default, i.e. baseline policy.
-                       Enum of optom.cse.policy.BEHAVIOUR.deny/allow
+                       Enum of colmto.cse.policy.BEHAVIOUR.deny/allow
         """
         self._behaviour = behaviour
 
@@ -105,7 +106,7 @@ class SUMOExtendablePolicy(object):
         for i_vehicle_policy in vehicle_policies:
             if not isinstance(i_vehicle_policy, SUMOVehiclePolicy):
                 raise TypeError(
-                    "%s is not of optom.cse.policy.SUMOVehiclePolicy", i_vehicle_policy
+                    "%s is not of colmto.cse.policy.SUMOVehiclePolicy", i_vehicle_policy
                 )
 
         self._vehicle_policies = vehicle_policies
@@ -152,15 +153,15 @@ class SUMOExtendablePolicy(object):
         """
         Adds a vehicle policy, specifically for vehicle attributes.
 
-        Policy must derive from optom.cse.policy.SUMOVehiclePolicy.
+        Policy must derive from colmto.cse.policy.SUMOVehiclePolicy.
 
-        @param vehicle_policy Iterable of policies derived from optom.cse.policy.SUMOVehiclePolicy
+        @param vehicle_policy Iterable of policies derived from colmto.cse.policy.SUMOVehiclePolicy
 
         @retval self
         """
 
         if not isinstance(vehicle_policy, SUMOVehiclePolicy):
-            raise TypeError("%s is not of optom.cse.policy.SUMOVehiclePolicy", vehicle_policy)
+            raise TypeError("%s is not of colmto.cse.policy.SUMOVehiclePolicy", vehicle_policy)
 
         self._vehicle_policies.append(vehicle_policy)
 
@@ -202,7 +203,7 @@ class SUMOUniversalPolicy(SUMOPolicy):
         @param vehicle Vehicle
         @retval boolean
         """
-        if not isinstance(vehicle, optom.environment.vehicle.BaseVehicle):
+        if not isinstance(vehicle, colmto.environment.vehicle.BaseVehicle):
             raise TypeError
 
         return True
@@ -237,7 +238,7 @@ class SUMONullPolicy(SUMOPolicy):
         @param vehicle Vehicle
         @retval boolean
         """
-        if not isinstance(vehicle, optom.environment.vehicle.BaseVehicle):
+        if not isinstance(vehicle, colmto.environment.vehicle.BaseVehicle):
             raise TypeError
 
         return False

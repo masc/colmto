@@ -4,7 +4,8 @@
 # #############################################################################
 # # LGPL License                                                              #
 # #                                                                           #
-# # This file is part of the Optimisation of 2+1 Manoeuvres project.          #
+# # This file is part of the Cooperative Lane Management and Traffic flow     #
+# # Optimisation project.                                                     #
 # # Copyright (c) 2017, Malte Aschermann (malte.aschermann@tu-clausthal.de)   #
 # # This program is free software: you can redistribute it and/or modify      #
 # # it under the terms of the GNU Lesser General Public License as            #
@@ -21,7 +22,7 @@
 # #############################################################################
 # @endcond
 """
-optom: Test module for environment.vehicle.
+colmto: Test module for environment.vehicle.
 """
 import numpy
 from nose.tools import assert_equal
@@ -30,7 +31,7 @@ from nose.tools import assert_true
 from nose.tools import assert_list_equal
 
 
-import optom.environment.vehicle
+import colmto.environment.vehicle
 
 
 def test_basevehicle():
@@ -39,13 +40,13 @@ def test_basevehicle():
     """
 
     # test default values
-    l_basevehicle = optom.environment.vehicle.BaseVehicle()
+    l_basevehicle = colmto.environment.vehicle.BaseVehicle()
 
     assert_equal(l_basevehicle.speed, 0.0)
     assert_true(numpy.array_equal(l_basevehicle.position, numpy.array([0.0, 0])))
 
     # test custom values
-    l_basevehicle = optom.environment.vehicle.BaseVehicle()
+    l_basevehicle = colmto.environment.vehicle.BaseVehicle()
     l_basevehicle.position = numpy.array([23.0, 0])
     l_basevehicle.speed = 12.1
 
@@ -71,7 +72,7 @@ def test_sumovehicle():
     """
 
     # test default values
-    l_sumovehicle = optom.environment.vehicle.SUMOVehicle()
+    l_sumovehicle = colmto.environment.vehicle.SUMOVehicle()
 
     assert_equal(l_sumovehicle.speed_max, 0.0)
     assert_equal(l_sumovehicle.speed, 0.0)
@@ -80,7 +81,7 @@ def test_sumovehicle():
     assert_true(numpy.array_equal(l_sumovehicle.color, numpy.array((255, 255, 0, 255))))
 
     # test custom values
-    l_sumovehicle = optom.environment.vehicle.SUMOVehicle(
+    l_sumovehicle = colmto.environment.vehicle.SUMOVehicle(
         speed_max=27.777,
         speed_deviation=1.2,
         vehicle_type="passenger",
@@ -151,7 +152,7 @@ def test_sumovehicle():
 
 def test_dissatisfaction():
     """Test dissatisfaction method"""
-    l_sumovehicle = optom.environment.vehicle.SUMOVehicle()
+    l_sumovehicle = colmto.environment.vehicle.SUMOVehicle()
     l_data = (
         9.079162e-05, 2.467587e-04, 6.704754e-04, 1.820444e-03, 4.933049e-03, 1.329671e-02,
         3.533684e-02, 9.055700e-02, 2.130140e-01, 4.238831e-01, 6.666667e-01, 8.446376e-01,
@@ -174,7 +175,7 @@ def test_dissatisfaction():
 
 def test_update():
     """Test update"""
-    l_sumovehicle = optom.environment.vehicle.SUMOVehicle()
+    l_sumovehicle = colmto.environment.vehicle.SUMOVehicle()
     l_sumovehicle.update(
         position=(1, 2),
         lane_index=1,
@@ -199,8 +200,8 @@ def test_update():
 
 
 def test_record_travel_stats():
-    """Test optom.environment.vehicle.SUMOVehicle.record_travel_stats"""
-    l_sumovehicle = optom.environment.vehicle.SUMOVehicle(
+    """Test colmto.environment.vehicle.SUMOVehicle.record_travel_stats"""
+    l_sumovehicle = colmto.environment.vehicle.SUMOVehicle(
         vehicle_type="passenger",
         speed_deviation=0.0,
         speed_max=100.,

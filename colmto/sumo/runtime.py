@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
-# @package optom
+# @package tests
 # @cond LICENSE
 # #############################################################################
 # # LGPL License                                                              #
 # #                                                                           #
-# # This file is part of the Optimisation of 2+1 Manoeuvres project.          #
+# # This file is part of the Cooperative Lane Management and Traffic flow     #
+# # Optimisation project.                                                     #
 # # Copyright (c) 2017, Malte Aschermann (malte.aschermann@tu-clausthal.de)   #
 # # This program is free software: you can redistribute it and/or modify      #
 # # it under the terms of the GNU Lesser General Public License as            #
@@ -26,8 +27,8 @@ from __future__ import print_function
 
 import subprocess
 
-import optom.common.log
-import optom.cse.cse
+import colmto.common.log
+import colmto.cse.cse
 
 try:
     import traci
@@ -46,7 +47,7 @@ class Runtime(object):
         self._args = args
         self._sumo_config = sumo_config
         self._sumo_binary = sumo_binary
-        self._log = optom.common.log.logger(__name__, args.loglevel, args.quiet, args.logfile)
+        self._log = colmto.common.log.logger(__name__, args.loglevel, args.quiet, args.logfile)
 
     def run_standalone(self, run_config):
         """
@@ -80,12 +81,12 @@ class Runtime(object):
         Run provided scenario with TraCI by providing a ref to an optimisation entity.
 
         @param run_config run configuration
-        @param cse central optimisation entity instance of optom.cse.cse.SumoCSE
+        @param cse central optimisation entity instance of colmto.cse.cse.SumoCSE
 
         @retval list of vehicles, containing travel stats
         """
 
-        if not isinstance(cse, optom.cse.cse.SumoCSE):
+        if not isinstance(cse, colmto.cse.cse.SumoCSE):
             raise AttributeError("Provided CSE object is not of type SumoCSE.")
 
         self._log.debug("starting sumo process")
@@ -113,10 +114,10 @@ class Runtime(object):
         )
 
         # add polygon of otl denied positions if --gui enabled
-        # and cse contains instance objects of optom.cse.policy.SUMOPositionPolicy
+        # and cse contains instance objects of colmto.cse.policy.SUMOPositionPolicy
         if self._args.gui:
             for i_policy in cse.policies:
-                if isinstance(i_policy, optom.cse.policy.SUMOPositionPolicy):
+                if isinstance(i_policy, colmto.cse.policy.SUMOPositionPolicy):
                     traci.polygon.add(
                         polygonID=str(i_policy),
                         shape=(
@@ -179,7 +180,7 @@ class Runtime(object):
                         i_vehicle_id,
                         l_vehicle.vehicle_class
                     )
-                    if l_vehicle.vehicle_class == optom.cse.policy.SUMOPolicy.to_disallowed_class():
+                    if l_vehicle.vehicle_class == colmto.cse.policy.SUMOPolicy.to_disallowed_class():
                         traci.vehicle.setColor(
                             i_vehicle_id,
                             (255, 0, 0, 255)

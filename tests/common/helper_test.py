@@ -4,7 +4,8 @@
 # #############################################################################
 # # LGPL License                                                              #
 # #                                                                           #
-# # This file is part of the Optimisation of 2+1 Manoeuvres project.          #
+# # This file is part of the Cooperative Lane Management and Traffic flow     #
+# # Optimisation project.                                                     #
 # # Copyright (c) 2017, Malte Aschermann (malte.aschermann@tu-clausthal.de)   #
 # # This program is free software: you can redistribute it and/or modify      #
 # # it under the terms of the GNU Lesser General Public License as            #
@@ -21,9 +22,9 @@
 # #############################################################################
 # @endcond
 """
-optom: Test module for common.helper.
+colmto: Test module for common.helper.
 """
-import optom.common.helper
+import colmto.common.helper
 from nose.tools import assert_equal
 
 
@@ -31,7 +32,7 @@ def test_enum():
     """
     Test enum
     """
-    l_enum = optom.common.helper.Enum(["foo", "bar", "baz"])
+    l_enum = colmto.common.helper.Enum(["foo", "bar", "baz"])
     assert_equal(l_enum.foo, 0)
     assert_equal(l_enum.bar, 1)
     assert_equal(l_enum.baz, 2)
@@ -42,7 +43,7 @@ def test_namespace():
     Test namespace
     """
     # pylint: disable=no-member
-    l_namespace = optom.common.helper.Namespace(foo=0, bar=1, baz=2)
+    l_namespace = colmto.common.helper.Namespace(foo=0, bar=1, baz=2)
     assert_equal(l_namespace.foo, 0)
     assert_equal(l_namespace.bar, 1)
     assert_equal(l_namespace.baz, 2)

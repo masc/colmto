@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
-# @package optom
+# @package tests
 # @cond LICENSE
 # #############################################################################
 # # LGPL License                                                              #
 # #                                                                           #
-# # This file is part of the Optimisation of 2+1 Manoeuvres project.          #
+# # This file is part of the Cooperative Lane Management and Traffic flow     #
+# # Optimisation project.                                                     #
 # # Copyright (c) 2017, Malte Aschermann (malte.aschermann@tu-clausthal.de)   #
 # # This program is free software: you can redistribute it and/or modify      #
 # # it under the terms of the GNU Lesser General Public License as            #
@@ -37,12 +38,12 @@ except ImportError:  # pragma: no cover
            "directory of your sumo installation (it should contain folders 'bin',"
            "'tools' and 'docs')")
 
-import optom.common.io
-import optom.common.statistics
-import optom.common.log
-import optom.cse.cse
-import optom.sumo.sumocfg
-import optom.sumo.runtime
+import colmto.common.io
+import colmto.common.statistics
+import colmto.common.log
+import colmto.cse.cse
+import colmto.sumo.sumocfg
+import colmto.sumo.runtime
 
 
 class SumoSim(object):
@@ -51,17 +52,17 @@ class SumoSim(object):
     def __init__(self, args):
         """C'tor."""
 
-        self._log = optom.common.log.logger(__name__, args.loglevel, args.quiet, args.logfile)
+        self._log = colmto.common.log.logger(__name__, args.loglevel, args.quiet, args.logfile)
         self._args = args
-        self._sumocfg = optom.sumo.sumocfg.SumoConfig(
+        self._sumocfg = colmto.sumo.sumocfg.SumoConfig(
             args,
             sumolib.checkBinary("netconvert"),
             sumolib.checkBinary("duarouter")
         )
-        self._writer = optom.common.io.Writer(args)
-        self._statistics = optom.common.statistics.Statistics(args)
+        self._writer = colmto.common.io.Writer(args)
+        self._statistics = colmto.common.statistics.Statistics(args)
         self._allscenarioruns = {}  # map scenarios -> runid -> files
-        self._runtime = optom.sumo.runtime.Runtime(
+        self._runtime = colmto.sumo.runtime.Runtime(
             args,
             self._sumocfg,
             sumolib.checkBinary("sumo")
@@ -127,7 +128,7 @@ class SumoSim(object):
                                         i_run,
                                         l_vtype_list.get(scenario_name)
                                     ),
-                                    optom.cse.cse.SumoCSE(
+                                    colmto.cse.cse.SumoCSE(
                                         self._args
                                     ).add_policies_from_cfg(
                                         self._sumocfg.run_config.get("policies")

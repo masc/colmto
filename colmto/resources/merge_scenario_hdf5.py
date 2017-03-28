@@ -21,7 +21,29 @@
 # # along with this program. If not, see http://www.gnu.org/licenses/         #
 # #############################################################################
 # @endcond
-import colmto.main as colmto
+"""Configuration super class."""
+from __future__ import division
+from __future__ import print_function
+
+import sys
+import h5py
+
+
+def main(argv):
+    """
+    main
+    @param argv: cmdline args
+    """
+    if len(sys.argv) != 3:
+        print("Usage: merge_scenario_hdf5.py hdf5-input-file hdf5-output-file")
+        return
+
+    f_src = h5py.File(argv[1], "r")
+    f_destination = h5py.File(argv[2], "a", libver="latest")
+    for i_key in f_src.keys():
+        f_src.copy(source=i_key, dest=f_destination)
+    f_destination.close()
+    f_src.close()
 
 if __name__ == "__main__":
-    colmto.Colmto().run()
+    main(sys.argv)

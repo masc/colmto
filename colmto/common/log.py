@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
-# @package optom
+# @package tests
 # @cond LICENSE
 # #############################################################################
 # # LGPL License                                                              #
 # #                                                                           #
-# # This file is part of the Optimisation of 2+1 Manoeuvres project.          #
+# # This file is part of the Cooperative Lane Management and Traffic flow     #
+# # Optimisation project.                                                     #
 # # Copyright (c) 2017, Malte Aschermann (malte.aschermann@tu-clausthal.de)   #
 # # This program is free software: you can redistribute it and/or modify      #
 # # it under the terms of the GNU Lesser General Public License as            #
@@ -37,7 +38,7 @@ LOGLEVEL = {
 
 
 def logger(name, loglevel=logging.NOTSET, quiet=False,
-           logfile=os.path.expanduser(u"~/.optom/optom.log")):
+           logfile=os.path.expanduser(u"~/.colmto/colmto.log")):
     """Create a logger instance."""
 
     if os.path.dirname(logfile) != "" and not os.path.exists(os.path.dirname(logfile)):

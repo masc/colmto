@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
-# @package optom.common
+# @package tests
 # @cond LICENSE
 # #############################################################################
 # # LGPL License                                                              #
 # #                                                                           #
-# # This file is part of the Optimisation of 2+1 Manoeuvres project.          #
+# # This file is part of the Cooperative Lane Management and Traffic flow     #
+# # Optimisation project.                                                     #
 # # Copyright (c) 2017, Malte Aschermann (malte.aschermann@tu-clausthal.de)   #
 # # This program is free software: you can redistribute it and/or modify      #
 # # it under the terms of the GNU Lesser General Public License as            #
@@ -26,8 +27,8 @@ from __future__ import print_function
 
 import bisect
 
-import optom.common.io
-import optom.common.log
+import colmto.common.io
+import colmto.common.log
 
 import numpy
 
@@ -37,11 +38,11 @@ class Statistics(object):
 
     def __init__(self, args=None):
         if args is not None:
-            self._log = optom.common.log.logger(__name__, args.loglevel, args.quiet, args.logfile)
-            self._writer = optom.common.io.Writer(args)
+            self._log = colmto.common.log.logger(__name__, args.loglevel, args.quiet, args.logfile)
+            self._writer = colmto.common.io.Writer(args)
         else:
-            self._log = optom.common.log.logger(__name__)
-            self._writer = optom.common.io.Writer(None)
+            self._log = colmto.common.log.logger(__name__)
+            self._writer = colmto.common.io.Writer(None)
 
     @staticmethod
     def aggregate_run_stats_to_hdf5(run_stats, detector_positions):

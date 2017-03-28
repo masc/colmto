@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
-# @package optom
+# @package tests
 # @cond LICENSE
 # #############################################################################
 # # LGPL License                                                              #
 # #                                                                           #
-# # This file is part of the Optimisation of 2+1 Manoeuvres project.          #
+# # This file is part of the Cooperative Lane Management and Traffic flow     #
+# # Optimisation project.                                                     #
 # # Copyright (c) 2017, Malte Aschermann (malte.aschermann@tu-clausthal.de)   #
 # # This program is free software: you can redistribute it and/or modify      #
 # # it under the terms of the GNU Lesser General Public License as            #
@@ -71,7 +72,7 @@ except ImportError:  # pragma: no cover
                 except ImportError:  # pragma: no cover
                     print("Failed to import ElementTree from any known place")
 
-import optom.common.log
+import colmto.common.log
 
 
 def xslt(template):
@@ -89,9 +90,9 @@ class Reader(object):
     def __init__(self, args):
         """C'tor."""
         if args is not None:
-            self._log = optom.common.log.logger(__name__, args.loglevel, args.quiet, args.logfile)
+            self._log = colmto.common.log.logger(__name__, args.loglevel, args.quiet, args.logfile)
         else:
-            self._log = optom.common.log.logger(__name__)
+            self._log = colmto.common.log.logger(__name__)
 
     def read_etree(self, fname):
         """Parses xml file with etree. Returns etree object"""
@@ -129,9 +130,9 @@ class Writer(object):
 
     def __init__(self, args=None):
         if args is not None:
-            self._log = optom.common.log.logger(__name__, args.loglevel, args.quiet, args.logfile)
+            self._log = colmto.common.log.logger(__name__, args.loglevel, args.quiet, args.logfile)
         else:
-            self._log = optom.common.log.logger(__name__)
+            self._log = colmto.common.log.logger(__name__)
 
     def write_json_pretty(self, obj, filename):
         """Write json in human readable form (slow!). If filename ends with .gz, compress file."""

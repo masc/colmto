@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
-# @package optom
+# @package tests
 # @cond LICENSE
 # #############################################################################
 # # LGPL License                                                              #
 # #                                                                           #
-# # This file is part of the Optimisation of 2+1 Manoeuvres project.          #
+# # This file is part of the Cooperative Lane Management and Traffic flow     #
+# # Optimisation project.                                                     #
 # # Copyright (c) 2017, Malte Aschermann (malte.aschermann@tu-clausthal.de)   #
 # # This program is free software: you can redistribute it and/or modify      #
 # # it under the terms of the GNU Lesser General Public License as            #
@@ -32,22 +33,22 @@ from collections import OrderedDict
 
 import numpy
 
-import optom.common.configuration
-import optom.common.io
-import optom.common.log
-import optom.common.visualisation
-import optom.environment.vehicle
+import colmto.common.configuration
+import colmto.common.io
+import colmto.common.log
+import colmto.common.visualisation
+import colmto.environment.vehicle
 
 
-class SumoConfig(optom.common.configuration.Configuration):
+class SumoConfig(colmto.common.configuration.Configuration):
     """Create SUMO configuration files"""
 
     def __init__(self, args, netconvertbinary, duarouterbinary):
         """C'tor"""
         super(SumoConfig, self).__init__(args)
 
-        self._log = optom.common.log.logger(__name__, args.loglevel, args.quiet, args.logfile)
-        self._writer = optom.common.io.Writer(args)
+        self._log = colmto.common.log.logger(__name__, args.loglevel, args.quiet, args.logfile)
+        self._writer = colmto.common.io.Writer(args)
 
         self._binaries = {
             "netconvert": netconvertbinary,
@@ -76,7 +77,7 @@ class SumoConfig(optom.common.configuration.Configuration):
                 for i_scenario in self.scenario_config.itervalues()
                 ]
         )
-        self._speed_colormap = optom.common.visualisation.mapped_cmap(
+        self._speed_colormap = colmto.common.visualisation.mapped_cmap(
             "plasma",
             l_global_maxspeed
         )
@@ -289,19 +290,19 @@ class SumoConfig(optom.common.configuration.Configuration):
         if self._args.onlyoneotlsegment:
             l_length = 2 * l_segmentlength  # two times segment length
 
-        l_nodes = optom.common.io.etree.Element("nodes")
-        optom.common.io.etree.SubElement(
+        l_nodes = colmto.common.io.etree.Element("nodes")
+        colmto.common.io.etree.SubElement(
             l_nodes, "node", attrib={"id": "enter", "x": str(-l_segmentlength), "y": "0"}
         )
-        optom.common.io.etree.SubElement(
+        colmto.common.io.etree.SubElement(
             l_nodes, "node", attrib={"id": "21start", "x": "0", "y": "0"}
         )
-        optom.common.io.etree.SubElement(
+        colmto.common.io.etree.SubElement(
             l_nodes, "node", attrib={"id": "21end", "x": str(l_length), "y": "0"}
         )
 
         # dummy node for easier from-to routing
-        optom.common.io.etree.SubElement(
+        colmto.common.io.etree.SubElement(
             l_nodes,
             "node",
             attrib={
@@ -316,7 +317,7 @@ class SumoConfig(optom.common.configuration.Configuration):
         )
 
         with open(nodefile, "w") as f_nodesxml:
-            f_nodesxml.write(optom.common.io.etree.tostring(l_nodes, pretty_print=True))
+            f_nodesxml.write(colmto.common.io.etree.tostring(l_nodes, pretty_print=True))
 
     def _generate_edge_xml(
             self, scenario_name, scenario_config, edgefile, forcerebuildscenarios=False):
@@ -344,10 +345,10 @@ class SumoConfig(optom.common.configuration.Configuration):
         l_segmentlength = l_length / (l_nbswitches + 1)
 
         # create edges xml
-        l_edges = optom.common.io.etree.Element("edges")
+        l_edges = colmto.common.io.etree.Element("edges")
 
         # Entering edge with one lane, leading to 2+1 Roadway
-        optom.common.io.etree.SubElement(
+        colmto.common.io.etree.SubElement(
             l_edges,
             "edge",
             attrib={
@@ -360,7 +361,7 @@ class SumoConfig(optom.common.configuration.Configuration):
         )
 
         # 2+1 Roadway
-        l_21edge = optom.common.io.etree.SubElement(
+        l_21edge = colmto.common.io.etree.SubElement(
             l_edges,
             "edge",
             attrib={
@@ -375,7 +376,7 @@ class SumoConfig(optom.common.configuration.Configuration):
 
         # deny access to lane 1 (OTL) to vehicle with vClass "custom2"
         # <lane index="1" disallow="custom2"/>
-        optom.common.io.etree.SubElement(
+        colmto.common.io.etree.SubElement(
             l_21edge,
             "lane",
             attrib={
@@ -394,7 +395,7 @@ class SumoConfig(optom.common.configuration.Configuration):
         self._generate_switches(l_21edge, scenario_config)
 
         # Exit lane
-        optom.common.io.etree.SubElement(
+        colmto.common.io.etree.SubElement(
             l_edges,
             "edge",
             attrib={
@@ -408,7 +409,7 @@ class SumoConfig(optom.common.configuration.Configuration):
         )
 
         with open(edgefile, "w") as f_edgexml:
-            f_edgexml.write(optom.common.io.etree.tostring(l_edges, pretty_print=True))
+            f_edgexml.write(colmto.common.io.etree.tostring(l_edges, pretty_print=True))
 
     def _generate_switches(self, edge, scenario_config):
         """
@@ -428,7 +429,7 @@ class SumoConfig(optom.common.configuration.Configuration):
             # add splits and joins
             l_add_otl_lane = True
             for i_segmentpos in l_parameters.get("switchpositions"):
-                optom.common.io.etree.SubElement(
+                colmto.common.io.etree.SubElement(
                     edge,
                     "split",
                     attrib={
@@ -447,7 +448,7 @@ class SumoConfig(optom.common.configuration.Configuration):
             for i_segmentpos in xrange(0, int(l_length), int(l_segmentlength)) \
                     if not self._args.onlyoneotlsegment \
                     else xrange(0, int(2 * l_segmentlength - 1), int(l_segmentlength)):
-                optom.common.io.etree.SubElement(
+                colmto.common.io.etree.SubElement(
                     edge,
                     "split",
                     attrib={
@@ -476,37 +477,41 @@ class SumoConfig(optom.common.configuration.Configuration):
         @param forcerebuildscenarios: Rebuild scenarios,
                                         even if they already exist for current run
         """
+        if not isinstance(simtimeinterval, list):
+            raise TypeError
+
+        if not len(simtimeinterval) == 2:
+            raise ValueError
 
         if os.path.isfile(config_files.get("configfile")) and not forcerebuildscenarios:
             return
-        assert isinstance(simtimeinterval, list) and len(simtimeinterval) == 2
 
-        l_configuration = optom.common.io.etree.Element("configuration")
-        l_input = optom.common.io.etree.SubElement(l_configuration, "input")
-        optom.common.io.etree.SubElement(
+        l_configuration = colmto.common.io.etree.Element("configuration")
+        l_input = colmto.common.io.etree.SubElement(l_configuration, "input")
+        colmto.common.io.etree.SubElement(
             l_input,
             "net-file",
             attrib={"value": config_files.get("netfile")}
         )
-        optom.common.io.etree.SubElement(
+        colmto.common.io.etree.SubElement(
             l_input,
             "route-files",
             attrib={"value": config_files.get("routefile")}
         )
-        optom.common.io.etree.SubElement(
+        colmto.common.io.etree.SubElement(
             l_input,
             "gui-settings-file",
             attrib={"value": config_files.get("settingsfile")}
         )
-        l_time = optom.common.io.etree.SubElement(l_configuration, "time")
-        optom.common.io.etree.SubElement(
+        l_time = colmto.common.io.etree.SubElement(l_configuration, "time")
+        colmto.common.io.etree.SubElement(
             l_time,
             "begin",
             attrib={"value": str(simtimeinterval[0])}
         )
 
         with open(config_files.get("configfile"), "w") as f_configxml:
-            f_configxml.write(optom.common.io.etree.tostring(l_configuration, pretty_print=True))
+            f_configxml.write(colmto.common.io.etree.tostring(l_configuration, pretty_print=True))
 
     @staticmethod
     def _generate_settings_xml(
@@ -523,19 +528,19 @@ class SumoConfig(optom.common.configuration.Configuration):
         if os.path.isfile(settingsfile) and not forcerebuildscenarios:
             return
 
-        l_viewsettings = optom.common.io.etree.Element("viewsettings")
-        optom.common.io.etree.SubElement(
+        l_viewsettings = colmto.common.io.etree.Element("viewsettings")
+        colmto.common.io.etree.SubElement(
             l_viewsettings, "viewport",
             attrib={"x": str(scenarioconfig.get("parameters").get("length") / 2),
                     "y": "0",
                     "zoom": "100"}
         )
-        optom.common.io.etree.SubElement(
+        colmto.common.io.etree.SubElement(
             l_viewsettings, "delay", attrib={"value": str(runcfg.get("sumo").get("gui-delay"))}
         )
 
         with open(settingsfile, "w") as f_configxml:
-            f_configxml.write(optom.common.io.etree.tostring(l_viewsettings, pretty_print=True))
+            f_configxml.write(colmto.common.io.etree.tostring(l_viewsettings, pretty_print=True))
 
     @staticmethod
     def _next_timestep(lamb, prev_start_time, distribution="poisson"):
@@ -573,10 +578,11 @@ class SumoConfig(optom.common.configuration.Configuration):
         @param initialsorting: initial sorting of vehicles (by max speed)
                                 ["best", "random", "worst"]
         @param scenario_name: name of scenario
-        @retval OrderedDict of ID -> optom.environment.vehicle.Vehicle
+        @retval OrderedDict of ID -> colmto.environment.vehicle.Vehicle
         """
 
-        assert initialsorting in ["best", "random", "worst"]
+        if initialsorting not in ["best", "random", "worst"]:
+            raise ValueError
 
         self._log.debug(
             "Create vehicle distribution with %s", self._run_config.get("vtypedistribution")
@@ -589,7 +595,7 @@ class SumoConfig(optom.common.configuration.Configuration):
         ) else self._run_config.get("vehiclespersecond").get("value")
 
         l_vehicle_list = [
-            optom.environment.vehicle.SUMOVehicle(
+            colmto.environment.vehicle.SUMOVehicle(
                 vehicle_type=vtype,
                 vtype_sumo_cfg=self.vtypes_config.get(vtype),
                 speed_deviation=self._run_config.get(
@@ -602,7 +608,7 @@ class SumoConfig(optom.common.configuration.Configuration):
                     self.scenario_config.get(scenario_name).get("parameters").get("speedlimit")
                 )
             ) for vtype in vtype_list
-        ]
+            ]
 
         # sort speeds according to initial sorting flag
         if initialsorting == "best":
@@ -672,7 +678,7 @@ class SumoConfig(optom.common.configuration.Configuration):
         )
 
         # xml
-        l_trips = optom.common.io.etree.Element("trips")
+        l_trips = colmto.common.io.etree.Element("trips")
 
         # create a sumo vehicle_type for each vehicle
         for i_vid, i_vehicle in l_vehicles.iteritems():
@@ -709,11 +715,11 @@ class SumoConfig(optom.common.configuration.Configuration):
 
             l_vattr["type"] = l_vattr.get("vType")
 
-            optom.common.io.etree.SubElement(l_trips, "vType", attrib=l_vattr)
+            colmto.common.io.etree.SubElement(l_trips, "vType", attrib=l_vattr)
 
         # add trip for each vehicle
         for i_vid, i_vehicle in l_vehicles.iteritems():
-            optom.common.io.etree.SubElement(l_trips, "trip", attrib={
+            colmto.common.io.etree.SubElement(l_trips, "trip", attrib={
                 "id": i_vid,
                 "depart": str(i_vehicle.start_time),
                 "from": "enter_21start",
@@ -723,7 +729,7 @@ class SumoConfig(optom.common.configuration.Configuration):
             })
 
         with open(tripfile, "w") as f_tripxml:
-            f_tripxml.write(optom.common.io.etree.tostring(l_trips, pretty_print=True))
+            f_tripxml.write(colmto.common.io.etree.tostring(l_trips, pretty_print=True))
 
         return l_vehicles
 

@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
-# @package optom
+# @package tests
 # @cond LICENSE
 # #############################################################################
 # # LGPL License                                                              #
 # #                                                                           #
-# # This file is part of the Optimisation of 2+1 Manoeuvres project.          #
+# # This file is part of the Cooperative Lane Management and Traffic flow     #
+# # Optimisation project.                                                     #
 # # Copyright (c) 2017, Malte Aschermann (malte.aschermann@tu-clausthal.de)   #
 # # This program is free software: you can redistribute it and/or modify      #
 # # it under the terms of the GNU Lesser General Public License as            #
@@ -21,24 +22,24 @@
 # #############################################################################
 # @endcond
 # pylint: disable=too-few-public-methods
-"""Optom main module."""
+"""Colmto main module."""
 import argparse
 import datetime
 import os
 
-import optom.common.configuration
-import optom.common.log
-import optom.sumo.sumosim
+import colmto.common.configuration
+import colmto.common.log
+import colmto.sumo.sumosim
 
 
-class Optom(object):
-    """Optom main class"""
+class Colmto(object):
+    """Colmto main class"""
 
     def __init__(self):
         """C'tor."""
-        l_config_dir = os.path.expanduser(u"~/.optom")
+        l_config_dir = os.path.expanduser(u"~/.colmto")
 
-        l_parser = argparse.ArgumentParser(description="Process parameters for OPTOM.")
+        l_parser = argparse.ArgumentParser(description="Process parameters for CoLMTO.")
 
         l_parser.add_argument(
             "--runconfigfile", dest="runconfigfile", type=str,
@@ -90,7 +91,7 @@ class Optom(object):
         )
         l_parser.add_argument(
             "--logfile", dest="logfile", type=str,
-            default=os.path.join(l_config_dir, u"optom.log")
+            default=os.path.join(l_config_dir, u"colmto.log")
         )
         l_parser.add_argument(
             "--loglevel", dest="loglevel", type=str,
@@ -135,11 +136,11 @@ class Optom(object):
         )
         self._args = l_parser.parse_args()
 
-        # place default config in ~/.optom if there exists none or --fresh-configs set
+        # place default config in ~/.colmto if there exists none or --fresh-configs set
         if not os.path.exists(l_config_dir):
             os.mkdir(l_config_dir)
 
-        self._log = optom.common.log.logger(
+        self._log = colmto.common.log.logger(
             __name__,
             self._args.loglevel,
             self._args.quiet,
@@ -147,11 +148,11 @@ class Optom(object):
         )
 
     def run(self):
-        """Run OPTOM"""
-        self._log.info("---- Starting OPTOM ----")
-        l_configuration = optom.common.configuration.Configuration(self._args)
+        """Run CoLMTO"""
+        self._log.info("---- Starting CoLMTO ----")
+        l_configuration = colmto.common.configuration.Configuration(self._args)
         self._log.debug("Initial loading of configuration done")
 
         if l_configuration.run_config.get("sumo").get("enabled") or self._args.runsumo:
             self._log.info("---- Starting SUMO Baseline Simulation ----")
-            optom.sumo.sumosim.SumoSim(self._args).run_scenarios()
+            colmto.sumo.sumosim.SumoSim(self._args).run_scenarios()

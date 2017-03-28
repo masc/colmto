@@ -1,5 +1,5 @@
 """
-Optimisation of 2+1 Manoeuvres
+ooperative Lane Management and Traffic flow Optimisation
 
 Copyright 2017, Malte Aschermann.
 Licensed under LGPL.
@@ -24,9 +24,9 @@ class PyTest(TestCommand):
 
 version = "0.1"
 
-setup(name="optom",
+setup(name="colmto",
       version=version,
-      description="Optimisation of 2+1 Manoeuvres",
+      description="Cooperative Lane Management and Traffic flow Optimisation (CoLMTO)",
       long_description=open("README.md").read(),
       classifiers=[  # Get strings from http://pypi.python.org/pypi?%3Aaction=list_classifiers
         "Programming Language :: Python"
@@ -58,6 +58,6 @@ setup(name="optom",
       # TODO: List executable scripts, provided by the package (this is just an example)
       entry_points={
         "console_scripts":
-        ["optom=run"]
+        ["colmto=run"]
       }
 )

@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
-# @package optom
+# @package tests
 # @cond LICENSE
 # #############################################################################
 # # LGPL License                                                              #
 # #                                                                           #
-# # This file is part of the Optimisation of 2+1 Manoeuvres project.          #
+# # This file is part of the Cooperative Lane Management and Traffic flow     #
+# # Optimisation project.                                                     #
 # # Copyright (c) 2017, Malte Aschermann (malte.aschermann@tu-clausthal.de)   #
 # # This program is free software: you can redistribute it and/or modify      #
 # # it under the terms of the GNU Lesser General Public License as            #
@@ -24,7 +25,7 @@
 from __future__ import division
 import numpy
 
-import optom.cse.policy
+import colmto.cse.policy
 
 
 class BaseVehicle(object):
@@ -110,7 +111,7 @@ class SUMOVehicle(BaseVehicle):
                 "speedDev": speed_deviation,
                 "maxSpeed": speed_max,
                 "vType": vehicle_type,
-                "vClass": optom.cse.policy.SUMOPolicy.to_allowed_class(),
+                "vClass": colmto.cse.policy.SUMOPolicy.to_allowed_class(),
                 "grid_position": numpy.array((0, 0)),
                 "baseline_relative_time_loss": 0.0
             }
